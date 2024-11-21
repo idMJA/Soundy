@@ -38,7 +38,7 @@ module.exports = {
             });
         }
 
-        // Validate and parse time string (MM:SS or HH:MM:SS)
+        // Validate and parse time string (MM:SS or HH:MM:SS) 
         const timeRegex = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/;
         const matches = time.match(timeRegex);
 
