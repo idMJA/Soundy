@@ -14,6 +14,7 @@ module.exports = {
     previousEmoji: "⏮️",
     skipEmoji: "⏭️", 
     stopEmoji: "⏹️",
+    rewind: "⏪",
     trashEmoji: "🗑️",
     volUpEmoji: "🔊",
     volDownEmoji: "🔉",
