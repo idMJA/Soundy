@@ -1,5 +1,6 @@
 const { Manager } = require('magmastream');
 const nodes = require('./config/nodes');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = (client) => {
     const manager = new Manager({
@@ -15,16 +16,81 @@ module.exports = (client) => {
         reconnectTries: 3
     });
 
+    // Function to send node logs to Discord
+    const sendNodeLog = async (embed) => {
+        const channel = client.channels.cache.get(client.config.nodeLogsChannel);
+        if (channel) {
+            try {
+                await channel.send({ embeds: [embed] });
+            } catch (error) {
+                client.logs.error(`Failed to send node log to Discord: ${error}`);
+            }
+        }
+    };
+
     manager.on('nodeConnect', (node) => {
         client.logs.success(`Node ${node.options.identifier} connected successfully`);
+        
+        const embed = new EmbedBuilder()
+            .setColor('Green')
+            .setTitle('🟢 Node Connected')
+            .setDescription(`Node \`${node.options.identifier}\` has successfully connected.`)
+            .addFields(
+                { name: 'Host', value: `\`${node.options.host}\`` },
+                { name: 'Port', value: `\`${node.options.port}\`` }
+            )
+            .setTimestamp();
+            
+        sendNodeLog(embed);
     });
 
     manager.on('nodeError', (node, error) => {
         client.logs.error(`Node ${node.options.identifier} encountered an error:`, error);
+        
+        const embed = new EmbedBuilder()
+            .setColor('Red')
+            .setTitle('🔴 Node Error')
+            .setDescription(`Node \`${node.options.identifier}\` encountered an error.`)
+            .addFields(
+                { name: 'Host', value: `\`${node.options.host}\`` },
+                { name: 'Error', value: `\`\`\`${error.message || 'Unknown error'}\`\`\`` }
+            )
+            .setTimestamp();
+            
+        sendNodeLog(embed);
     });
 
     manager.on('nodeDisconnect', (node, reason) => {
         client.logs.warn(`Lavalink ${node.options.identifier}: Closed, Code ${reason.code}, Reason ${reason.reason || 'No reason'}`);
+        
+        const embed = new EmbedBuilder()
+            .setColor('Yellow')
+            .setTitle('🟡 Node Disconnected')
+            .setDescription(`Node \`${node.options.identifier}\` has disconnected.`)
+            .addFields(
+                { name: 'Host', value: `\`${node.options.host}\`` },
+                { name: 'Code', value: `\`${reason.code}\`` },
+                { name: 'Reason', value: `\`${reason.reason || 'No reason provided'}\`` }
+            )
+            .setTimestamp();
+            
+        sendNodeLog(embed);
+    });
+
+    manager.on('nodeReconnect', (node) => {
+        client.logs.info(`Node ${node.options.identifier} is attempting to reconnect...`);
+        
+        const embed = new EmbedBuilder()
+            .setColor('Orange')
+            .setTitle('🟠 Node Reconnecting')
+            .setDescription(`Node \`${node.options.identifier}\` is attempting to reconnect.`)
+            .addFields(
+                { name: 'Host', value: `\`${node.options.host}\`` },
+                { name: 'Port', value: `\`${node.options.port}\`` }
+            )
+            .setTimestamp();
+            
+        sendNodeLog(embed);
     });
 
     manager.on('playerDestroy', (player) => {
@@ -37,6 +103,18 @@ module.exports = (client) => {
 
     manager.on('trackError', (player, track, payload) => {
         client.logs.error(`Track error in guild ${player.guild}:`, payload.error);
+        
+        const embed = new EmbedBuilder()
+            .setColor('Red')
+            .setTitle('🔴 Track Error')
+            .setDescription(`A track error occurred in guild \`${player.guild}\`.`)
+            .addFields(
+                { name: 'Track', value: `\`${track.title}\`` },
+                { name: 'Error', value: `\`\`\`${payload.error || 'Unknown error'}\`\`\`` }
+            )
+            .setTimestamp();
+            
+        sendNodeLog(embed);
     });
 
     return manager;

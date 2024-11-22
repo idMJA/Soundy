@@ -33,6 +33,7 @@ module.exports = {
     bugReportChannel: "1357924680123456789", // channel id for bug reports
     botLeaveChannel: "2468135790123456789", // channel id for bot leave
     botJoinChannel: "3691470258012345678", // channel id for bot join
+    botUpdateChannel: "1234567890987654321", // channel id for bot updates
 
     ...emoji
 };
