@@ -1,5 +1,5 @@
 # Soundy
-Play a high quality music in your Discord server for free.
+A powerful music bot built with Discord.js and Magmastream to play high quality music in your Discord server for free.
 
 [![wakatime](https://wakatime.com/badge/github/idMJA/Soundy.svg)](https://wakatime.com/badge/github/idMJA/Soundy)
 
