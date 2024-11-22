@@ -15,7 +15,7 @@ module.exports = {
         // Set static presence
         client.user.setPresence({ 
             activities: [{ 
-                name: `/help | @${client.user.username}`, 
+                name: client.config.activity || `/help | @${client.user.username}`, 
                 type: ActivityType[client.config.activityType] || ActivityType.Listening 
             }],
             status: client.config.status || 'idle'

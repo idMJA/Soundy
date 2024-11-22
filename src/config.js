@@ -7,8 +7,9 @@ module.exports = {
     // MUSIC CONFIG //
     searchPlatform: "spotify", // spotify, soundcloud, deezer, applemusic, youtube (patched from lavalink), youtube music (patched from lavalink)
     // BOT INFO //
+    activity: "/help | @Soundy",
     status: "idle", // idle, listening, watching, competing
-    activityType: "Listening", // Listening, Watching, Competing, Playing
+    activityType: "Listening", // Listening, Watching, Competing, Playing, Custom
     eventListeners: 200, // amount of event listeners
     developers: ['885731228874051624', '932817217614118943'], // developer ids
     noPerms: `You **do not** have the required permissions to use this command!`,
