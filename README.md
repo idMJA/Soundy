@@ -1,19 +1,6 @@
 # Soundy
 A powerful music bot built with Discord.js and Magmastream to play high quality music in your Discord server for free.
 
-[![wakatime](https://wakatime.com/badge/github/idMJA/Soundy.svg)](https://wakatime.com/badge/github/idMJA/Soundy)
-
-## 🌟 Quick Start (Without Self-Hosting)
-Want to use Soundy without hosting it yourself? Here's how:
-
-1. [Invite Soundy](https://discord.com/oauth2/authorize?client_id=1260252174861074442&permissions=8&scope=bot%20applications.commands) to your Discord server
-
-2. Join our [Support Server](https://discord.gg/pTbFUFdppU) for help and updates
-
-3. Start using Soundy right away with slash commands!
-
-That's it! No setup required. Just invite and enjoy high quality music.
-
 ## Features
 - 🔌 Using [Magmastream](https://github.com/Magmastream-NPM/magmastream) Lavalink Client
 - ⚡ Slash Commands 
@@ -33,6 +20,18 @@ That's it! No setup required. Just invite and enjoy high quality music.
 - Java v13+ (for Lavalink server)
 - Discord Bot Token & Client ID ([Guide](https://discordjs.guide/preparations/setting-up-a-bot-application.html#creating-your-bot))
 - Lavalink Server (see [Lavalink](https://lavalink.dev/))
+
+
+## 🌟 Quick Start (Without Self-Hosting)
+Want to use Soundy without hosting it yourself? Here's how:
+
+1. [Invite Soundy](https://discord.com/oauth2/authorize?client_id=1260252174861074442&permissions=8&scope=bot%20applications.commands) to your Discord server
+
+2. Join our [Support Server](https://discord.gg/pTbFUFdppU) for help and updates
+
+3. Start using Soundy right away with slash commands!
+
+That's it! No setup required. Just invite and enjoy high quality music.
 
 ## 🚀 Configuration & Installation
 
@@ -86,6 +85,11 @@ This project is licensed under the [GNU Affero General Public License v3.0](LICE
 
 You are free to use and modify the code. However, you must provide attribution by linking back to the original repository and include this copyright notice.
 
+### Credits for Soundy
+- [idMJA](https://github.com/idMJA) - Creator of Soundy
+- [88JC](https://github.com/88JC) - Rewind, replay, and seek commands
+- [L RMN](https://github.com/lrmn7) - Filters Configs
+- [Lavamusic](https://github.com/appujet/lavamusic) - Ideas
 
 ## Support
 Join our [Support Server](https://discord.gg/pTbFUFdppU) for help and updates
