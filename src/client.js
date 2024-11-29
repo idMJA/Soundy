@@ -37,7 +37,6 @@ module.exports = (client) => {
             .setDescription(`Node \`${node.options.identifier}\` has successfully connected.`)
             .addFields(
                 { name: 'Host', value: `\`${node.options.host}\`` },
-                { name: 'Port', value: `\`${node.options.port}\`` }
             )
             .setTimestamp();
             
@@ -86,7 +85,6 @@ module.exports = (client) => {
             .setDescription(`Node \`${node.options.identifier}\` is attempting to reconnect.`)
             .addFields(
                 { name: 'Host', value: `\`${node.options.host}\`` },
-                { name: 'Port', value: `\`${node.options.port}\`` }
             )
             .setTimestamp();
             
@@ -104,13 +102,18 @@ module.exports = (client) => {
     manager.on('trackError', (player, track, payload) => {
         client.logs.error(`Track error in guild ${player.guild}:`, payload.error);
         
+        // Get guild name from client
+        const guild = client.guilds.cache.get(player.guild);
+        const guildName = guild ? guild.name : 'Unknown Server';
+        
         const embed = new EmbedBuilder()
             .setColor('Red')
             .setTitle('🔴 Track Error')
-            .setDescription(`A track error occurred in guild \`${player.guild}\`.`)
+            .setDescription(`A track error occurred in server \`${guildName}\` (ID: \`${player.guild}\`).`)
             .addFields(
                 { name: 'Track', value: `\`${track.title}\`` },
-                { name: 'Error', value: `\`\`\`${payload.error || 'Unknown error'}\`\`\`` }
+                { name: 'Author', value: `\`${track.author}\`` },
+                { name: 'Error', value: `\`\`\`${payload.exception?.message || payload.error || 'Unknown error'}\`\`\`` }
             )
             .setTimestamp();
             
