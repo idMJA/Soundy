@@ -87,9 +87,9 @@ You are free to use and modify the code. However, you must provide attribution b
 
 ### Credits for Soundy
 - [idMJA](https://github.com/idMJA) - Creator of Soundy
-- [88JC](https://github.com/88JC) - Rewind, replay, and seek commands
+- [Jecky](https://github.com/88JC) - Rewind, replay, and seek commands
 - [L RMN](https://github.com/lrmn7) - Filters Configs
-- [Lavamusic](https://github.com/appujet/lavamusic) - Ideas
+- [Lavamusic](https://github.com/appujet/lavamusic) - Inspiration & Ideas
 
 ## Support
 Join our [Support Server](https://discord.gg/pTbFUFdppU) for help and updates
