@@ -1,6 +1,6 @@
 {
-  "name": "soundy",
-  "version": "3.0.2",
+  "name": "soundy-v3.1",
+  "version": "1.0.0",
   "main": "src/shard.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
