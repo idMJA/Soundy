@@ -28,4 +28,8 @@ module.exports = {
     pingEmoji: "📶",
     questionEmoji: "❓",
     pencilEmoji: "✏️",
+
+    // NODE EMOJIS //
+    nodeOnEmoji: "🟢",
+    nodeOffEmoji: "🔴",
 };
