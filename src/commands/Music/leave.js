@@ -5,7 +5,7 @@ module.exports = {
         .setName('leave')
         .setDescription('Make the bot leave the voice channel'),
     async execute(interaction, client) {
-        const player = client.kazagumo.players.get(interaction.guildId);
+        const player = client.manager.players.get(interaction.guildId);
         if (!player) {
             return interaction.reply({ content: 'There is no active player in this server.', ephemeral: true });
         }
