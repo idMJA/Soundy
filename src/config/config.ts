@@ -4,7 +4,7 @@ import { emoji } from "./emoji";
 const { TOKEN, DATABASE_URL, DATABASE_PASSWORD } = process.env;
 
 export const Configuration: SoundyConfiguration = {
-	defaultPrefix: "t!", // Default prefix for commands
+	defaultPrefix: "!", // Default prefix for commands
 	defaultSearchPlatform: "spotify", // Default search platform for music commands
 	defaultVolume: 100, // Default volume for music playback
 	defaultLocale: "en-US", // Default locale for the bot
@@ -17,13 +17,12 @@ export const Configuration: SoundyConfiguration = {
 		voteLink: "https://top.gg/bot/1168385371294420992/vote",
 	},
 	topgg: {
-		enabled: true,
+		enabled: false,
 		webhookAuth: "xxxx", // Replace with actual webhook auth token
-		token:
-			"xxxx", // Replace with actual Top.gg token
+		token: "xxxx", // Replace with actual Top.gg token
 	},
 	premium: {
-		enabled: true, // Enable or disable premium features
+		enabled: false, // Enable or disable premium features
 	},
 	cache: {
 		filename: "commands.json", // Name of the cache file
@@ -43,18 +42,12 @@ export const Configuration: SoundyConfiguration = {
 		warn: 0xffff00, // Color for warning responses
 	},
 	webhooks: {
-		nodeLog:
-			"xxx", // Node logs
-		guildLog:
-			"xxx", // Guild logs
-		commandLog:
-			"xxx", // Command logs
-		voteLog:
-			"xxx", // Vote logs
-		errorLog:
-			"xxx", // Error logs
-		report:
-			"xxx", // Bug or suggestion reports
+		nodeLog: "xxx", // Node logs
+		guildLog: "xxx", // Guild logs
+		commandLog: "xxx", // Command logs
+		voteLog: "xxx", // Vote logs
+		errorLog: "xxx", // Error logs
+		report: "xxx", // Bug or suggestion reports
 	},
 
 	emoji,
