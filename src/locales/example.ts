@@ -1,3 +1,5 @@
+import type English from "./en-US";
+
 export default {
 	metadata: {
 		name: "English",
@@ -7,7 +9,7 @@ export default {
 	// Commands
 	cmd: {
 		// Requested By
-		requested_by: ({ user }: { user: string }) => `Requested by ${user}`,
+		requested_by: ({ user }) => `Requested by ${user}`,
 		// Error
 		error:
 			"An error occurred while processing the command. Please try again later.",
@@ -25,7 +27,7 @@ export default {
 					},
 				},
 				run: {
-					description: ({ volume }: { volume: number }) =>
+					description: ({ volume }) =>
 						`Default volume has been set to ${volume}%`,
 				},
 			},
@@ -43,7 +45,7 @@ export default {
 						failed: "Failed to create music setup messages",
 						topic:
 							"Soundy Music Player - Type a song name or URL to play music.",
-						success: ({ channel }: { channel: string }) =>
+						success: ({ channel }) =>
 							`Successfully created music setup in ${channel}`,
 					},
 				},
@@ -98,8 +100,7 @@ export default {
 				},
 			},
 			run: {
-				success: ({ prefix }: { prefix: string }) =>
-					`Successfully set prefix to: ${prefix}`,
+				success: ({ prefix }) => `Successfully set prefix to: ${prefix}`,
 				reset: "Prefix has been reset to default",
 			},
 		},
@@ -109,8 +110,7 @@ export default {
 			description: "Apply audio filters to the music",
 			sub: {
 				run: {
-					success: ({ filter }: { filter: string }) =>
-						`Applied the ${filter} filter`,
+					success: ({ filter }) => `Applied the ${filter} filter`,
 					error: "An error occurred while applying the filter",
 				},
 				_8d: {
@@ -179,10 +179,7 @@ export default {
 			description: "Show information about Soundy",
 			run: {
 				title: "About Soundy",
-				footer: ({
-					guildCount,
-					userCount,
-				}: { guildCount: number; userCount: number }) =>
+				footer: ({ guildCount, userCount }) =>
 					`Serving ${guildCount} servers with ${userCount} users`,
 				about_me: {
 					button: "About",
@@ -200,27 +197,22 @@ export default {
 					11: "Support Server",
 					12: "Vote for me",
 					13: "Credits",
-					14: ({ author }: { author: string }) => `- Contributed by: ${author}`,
-					15: ({ developer }: { developer: string }) =>
-						`- Developed by: ${developer}`,
-					16: ({ country }: { country: string }) => `- Country: ${country}`,
+					14: ({ author }) => `- Contributed by: ${author}`,
+					15: ({ developer }) => `- Developed by: ${developer}`,
+					16: ({ country }) => `- Country: ${country}`,
 				},
 				contributors: {
 					button: "Contributors",
 					title: "Soundy Contributors",
 					1: "Special Thanks",
-					2: ({ author }: { author: string }) =>
-						`- ${author}: Creator of Soundy`,
-					3: ({ user }: { user: string }) =>
-						`- ${user}: Bug Fixer, and more contributions`,
-					4: ({ user }: { user: string }) =>
-						`- ${user}: Part of the source code`,
+					2: ({ author }) => `- ${author}: Creator of Soundy`,
+					3: ({ user }) => `- ${user}: Bug Fixer, and more contributions`,
+					4: ({ user }) => `- ${user}: Part of the source code`,
 					5: "Links",
 					6: "Tronix Development Community",
 					7: "All contributors and supporters",
 					8: "License",
-					9: ({ license }: { license: string }) =>
-						`This project is licensed under the ${license}`,
+					9: ({ license }) => `This project is licensed under the ${license}`,
 					10: "View License",
 				},
 				packages: {
@@ -242,13 +234,9 @@ export default {
 					run: {
 						title: "Top Music Servers",
 						description: "Most active music servers in the last 2 weeks",
-						fields: ({
-							totalPlays,
-							uniqueTracks,
-						}: { totalPlays: number; uniqueTracks: number }) =>
+						fields: ({ totalPlays, uniqueTracks }) =>
 							`Played ${totalPlays} tracks (${uniqueTracks} unique)`,
-						footer: ({ length }: { length: number }) =>
-							`Showing top ${length} servers`,
+						footer: ({ length }) => `Showing top ${length} servers`,
 						unknown: "Unknown Server",
 						no_data: "No music activity recorded in the last 2 weeks!",
 					},
@@ -265,8 +253,7 @@ export default {
 							trackId,
 						}: { author: string; playCount: number; trackId: string }) =>
 							`By ${author} • Played ${playCount} times\n[Link](${trackId})`,
-						footer: ({ length }: { length: number }) =>
-							`Showing top ${length} tracks`,
+						footer: ({ length }) => `Showing top ${length} tracks`,
 						no_data: "No tracks have been played in the last 2 weeks!",
 					},
 				},
@@ -276,10 +263,8 @@ export default {
 					run: {
 						title: "Top Music Users",
 						description: "Top music listeners in the last 2 weeks",
-						fields: ({ playCount }: { playCount: number }) =>
-							`Played ${playCount} tracks`,
-						footer: ({ length }: { length: number }) =>
-							`Showing top ${length} users`,
+						fields: ({ playCount }) => `Played ${playCount} tracks`,
+						footer: ({ length }) => `Showing top ${length} users`,
 						unknown: "Unknown User",
 						no_data: "No users have played music in the last 2 weeks!",
 					},
@@ -299,22 +284,17 @@ export default {
 			run: {
 				title: "Soundy Help Menu",
 				description: {
-					1: ({ user, bot }: { user: string; bot: string }) =>
+					1: ({ user, bot }) =>
 						`**Haii! ${user} I'm ${bot} your musical companion!**`,
-					2: ({ bot }: { bot: string }) =>
+					2: ({ bot }) =>
 						`**${bot} is a music bot designed to provide an amazing music listening experience on Discord. With its comprehensive and easy-to-use features, ${bot} is the perfect choice for your Discord server.**`,
 					3: "**Select A Category From The Menu Below.**",
-					4: ({
-						invite,
-						support,
-						vote,
-					}: { invite: string; support: string; vote: string }) =>
+					4: ({ invite, support, vote }) =>
 						`**[Invite Me](${invite}) • [Support Server](${support}) • [Vote](${vote})**`,
 				},
-				footer: ({ bot }: { bot: string }) => `Thanks for choosing ${bot}!`,
+				footer: ({ bot }) => `Thanks for choosing ${bot}!`,
 				select: "Select a category",
-				categoryTitle: ({ category }: { category: string }) =>
-					`${category} Commands`,
+				categoryTitle: ({ category }) => `${category} Commands`,
 				notFound: "Commands not found!",
 				unknown: "Unknown",
 			},
@@ -326,10 +306,10 @@ export default {
 			run: {
 				title: "Node Status Overview",
 				description: "Select a node to view detailed information",
-				fields: ({ players, uptime }: { players: number; uptime: string }) =>
+				fields: ({ players, uptime }) =>
 					`\`\`\`js\nPlayers: ${players}\nUptime: ${uptime}\`\`\``,
 				footer: "Select a node to view detailed information",
-				status: ({ status }: { status: string }) => `Status: ${status}`,
+				status: ({ status }) => `Status: ${status}`,
 				connected: "Connected",
 				disconnected: "Disconnected",
 				no_nodes: "No nodes found",
@@ -371,10 +351,7 @@ export default {
 			description: "Forward the current track by 10 seconds",
 			run: {
 				title: "Forward",
-				description: ({
-					forwardPosition,
-					currentTrack,
-				}: { forwardPosition: number; currentTrack: string }) =>
+				description: ({ forwardPosition, currentTrack }) =>
 					`Forwarded to ${forwardPosition} / ${currentTrack}`,
 				no_song: "No song is currently playing",
 				stream: "Cannot forward on a live stream",
@@ -403,7 +380,7 @@ export default {
 			description: "Make the bot join your voice channel",
 			run: {
 				title: "Join",
-				description: ({ voiceChannel }: { voiceChannel: string }) =>
+				description: ({ voiceChannel }) =>
 					`Woohoo! I've crashed the party in ${voiceChannel}!\nTime to turn up the volume and make some musical magic happen!`,
 			},
 		},
@@ -434,9 +411,9 @@ export default {
 				},
 			},
 			run: {
-				title: ({ song }: { song: string }) => `Lyrics for ${song}`,
+				title: ({ song }) => `Lyrics for ${song}`,
 				description: "Lyrics for the current song or a specific song",
-				footer: ({ user, provider }: { user: string; provider: string }) =>
+				footer: ({ user, provider }) =>
 					`Requested by ${user} | Powered by ${provider}`,
 				no_tracks: "No tracks found",
 				invalid_url: "Invalid URL provided",
@@ -461,10 +438,7 @@ export default {
 				},
 			},
 			run: {
-				description: ({
-					voiceChannel,
-					textChannel,
-				}: { voiceChannel: string; textChannel: string }) =>
+				description: ({ voiceChannel, textChannel }) =>
 					`Moved player to voice channel ${voiceChannel}${textChannel ? ` and text channel ${textChannel}` : ""}.`,
 			},
 		},
@@ -528,10 +502,7 @@ export default {
 			description: "Rewind the current track by 10 seconds",
 			run: {
 				title: "Rewind",
-				description: ({
-					rewindPosition,
-					currentTrack,
-				}: { rewindPosition: string; currentTrack: string }) =>
+				description: ({ rewindPosition, currentTrack }) =>
 					`Rewinded to ${rewindPosition} / ${currentTrack}`,
 				no_song: "No song is currently playing",
 				no_stream: "Cannot rewind on a live stream",
@@ -549,12 +520,11 @@ export default {
 			},
 			run: {
 				title: "Seek",
-				description: ({ time }: { time: string }) => `Seeked to ${time}`,
-				invalid_time: ({ time }: { time: string }) => `Invalid time: ${time}`,
+				description: ({ time }) => `Seeked to ${time}`,
+				invalid_time: ({ time }) => `Invalid time: ${time}`,
 				no_track: "No track is currently playing",
 				no_seekable: "This track is not seekable.",
-				time_exceeds: ({ time }: { time: string }) =>
-					`Time exceeds track duration: ${time}`,
+				time_exceeds: ({ time }) => `Time exceeds track duration: ${time}`,
 			},
 		},
 		// Shuffle Commands
@@ -593,8 +563,7 @@ export default {
 			name: "playlist",
 			description: "Manage your music playlists",
 			run: {
-				footer: ({ page, total }: { page: string; total: number }) =>
-					`Page ${page} • Total playlists: ${total}`,
+				footer: ({ page, total }) => `Page ${page} • Total playlists: ${total}`,
 				not_found: "Playlist not found",
 				no_tracks: "No tracks found",
 			},
@@ -613,7 +582,7 @@ export default {
 						},
 					},
 					run: {
-						added: ({ track, playlist }: { track: string; playlist: string }) =>
+						added: ({ track, playlist }) =>
 							`Added **${track} tracks** to playlist ${playlist}`,
 						// - Added **1 tracks** to playlist **Tonikaku Kawaii**
 						// - Added track **Unmei?** to playlist **Tonikaku Kawaii**
@@ -630,7 +599,7 @@ export default {
 						},
 					},
 					run: {
-						success: ({ playlist }: { playlist: string }) =>
+						success: ({ playlist }) =>
 							`Successfully created playlist \`${playlist}\``,
 						already_exists: "A playlist with this name already exists",
 						error: "An error occurred while creating the playlist",
@@ -646,8 +615,7 @@ export default {
 						},
 					},
 					run: {
-						deleted: ({ playlist }: { playlist: string }) =>
-							`Deleted playlist \`${playlist}\``,
+						deleted: ({ playlist }) => `Deleted playlist \`${playlist}\``,
 						error: "An error occurred while deleting the playlist.",
 					},
 				},
@@ -655,12 +623,8 @@ export default {
 					name: "list",
 					description: "List all your playlists",
 					run: {
-						title: ({ author }: { author: string }) => `${author}'s Playlists`,
-						list: ({
-							playlist,
-							tracks,
-						}: { playlist: string; tracks: number }) =>
-							`${playlist} - ${tracks} tracks`,
+						title: ({ author }) => `${author}'s Playlists`,
+						list: ({ playlist, tracks }) => `${playlist} - ${tracks} tracks`,
 						no_playlists: "You don't have any playlists",
 						error: "An error occurred while fetching your playlists",
 					},
@@ -675,10 +639,7 @@ export default {
 						},
 					},
 					run: {
-						loaded: ({
-							tracks,
-							playlist,
-						}: { tracks: number; playlist: string }) =>
+						loaded: ({ tracks, playlist }) =>
 							`Loaded **${tracks} tracks** from playlist ${playlist}`,
 						error: "An error occurred while loading the playlist",
 					},
@@ -697,8 +658,7 @@ export default {
 						},
 					},
 					run: {
-						removed: ({ name }: { name: string }) =>
-							`Removed track from playlist ${name}`,
+						removed: ({ name }) => `Removed track from playlist ${name}`,
 						invalid: "Invalid track number",
 						error:
 							"An error occurred while removing the track from the playlist",
@@ -714,7 +674,7 @@ export default {
 						},
 					},
 					run: {
-						title: ({ name }: { name: string }) => `Playlist: ${name}`,
+						title: ({ name }) => `Playlist: ${name}`,
 						empty: "This playlist is empty",
 						failed: "Failed to load track details",
 						error: "An error occurred while viewing the playlist",
@@ -743,7 +703,7 @@ export default {
 							"1. First step\n2. Second step\n3. Third step...",
 						success: "Bug Report Submitted",
 						error: "Error Submitting Bug Report",
-						success_description: ({ reportId }: { reportId: string }) =>
+						success_description: ({ reportId }) =>
 							`Your bug report has been successfully submitted.\n\n**Report ID:** ${reportId}`,
 						error_description:
 							"An error occurred while submitting your bug report. Please try again later",
@@ -767,7 +727,7 @@ export default {
 							"1. First step\n2. Second step\n3. Third step...",
 						success: "Suggestion Submitted",
 						error: "Error Submitting Suggestion",
-						success_description: ({ reportId }: { reportId: string }) =>
+						success_description: ({ reportId }) =>
 							`Your suggestion has been successfully submitted.\n\n**Report ID:** ${reportId}`,
 						error_description:
 							"An error occurred while submitting your suggestion. Please try again later",
@@ -788,8 +748,7 @@ export default {
 			no_connect:
 				"I need `CONNECT` and `SPEAK` permissions in your voice channel!",
 			failed: "Failed to join your voice channel!",
-			no_results: ({ query }: { query: string }) =>
-				`No results found for ${query}`,
+			no_results: ({ query }) => `No results found for ${query}`,
 			error: "An error occurred while processing your request!",
 		},
 		// Music Events
@@ -804,7 +763,7 @@ export default {
 			tracks: "Tracks",
 			added: "Added to Queue",
 			added_playlist: "Added Playlist to Queue",
-			added_songs: ({ songs }: { songs: string }) => `${songs} songs`, // 79 songs
+			added_songs: ({ songs }) => `${songs} songs`, // 79 songs
 			no_results: "No results found for the given query.",
 			pause: {
 				title: "Track Paused",
@@ -816,7 +775,7 @@ export default {
 				description: "The music has been resumed!\nLet's keep the party going!",
 			},
 		},
-		cooldown: ({ seconds }: { seconds: number }) =>
+		cooldown: ({ seconds }) =>
 			`Please wait ${seconds} seconds before using this command again.`,
 		// Manager
 		manager: {
@@ -829,7 +788,7 @@ export default {
 		premium: {
 			limit_reached: {
 				title: "You've used all your free commands!",
-				description: ({ time }: { time: number }) =>
+				description: ({ time }) =>
 					`Please vote for Soundy on top.gg to get ${time} hours of unlimited access.`,
 			},
 			vote_now: "Vote Now",
@@ -841,10 +800,10 @@ export default {
 		},
 		// Voice
 		voice: {
-			no_same: ({ channel }: { channel: string }) =>
+			no_same: ({ channel }) =>
 				`You must be in the same voice channel as me on ${channel}!`,
 			no_vc: "You must be in a voice channel to use this command!",
-			no_perms: ({ channel }: { channel: string }) =>
+			no_perms: ({ channel }) =>
 				`I don't have the required permissions in ${channel}!`,
 			missing_perms: "Missing Permissions",
 			failed: "Failed to join your voice channel!",
@@ -852,7 +811,7 @@ export default {
 		// Listeners
 		listeners: {
 			no_members: "No members left in the voice channel",
-			disconnect: ({ time }: { time: string }) =>
+			disconnect: ({ time }) =>
 				`Channel is empty! Player will be disconnected in ${time}`,
 			resume: "Members joined! Resuming the players",
 		},
@@ -860,10 +819,10 @@ export default {
 		mention: {
 			title: "Welcome to Soundy!",
 			description: {
-				1: ({ prefix }: { prefix: string }) =>
+				1: ({ prefix }) =>
 					`Use \`${prefix}help\` or \`/help\` to discover all my amazing commands`,
 				2: "Need help? Join our Support Server for assistance",
-				3: ({ prefix }: { prefix: string }) =>
+				3: ({ prefix }) =>
 					`Want to get started? Just type \`${prefix}play\` or \`/play\` to begin your musical journey!`,
 				4: "Features:",
 				5: "High quality music streaming",
@@ -904,8 +863,7 @@ export default {
 		// Loop
 		loop: {
 			title: "Loop Mode Updated",
-			description: ({ mode }: { mode: string }) =>
-				`Loop mode updated to ${mode}`,
+			description: ({ mode }) => `Loop mode updated to ${mode}`,
 			select_title: "Loop Mode Selection",
 			select_description: "Select a loop mode to change to:",
 			off: "Off",
@@ -928,10 +886,9 @@ export default {
 		queue: {
 			name: "Queue",
 			now_playing: "Now Playing",
-			total: ({ total }: { total: number }) => `Total tracks: ${total}`,
-			track: ({ track, author }: { track: string; author: string }) =>
-				`${track} by ${author}`,
-			requested_by: ({ user }: { user: string }) => `Requested by ${user}`,
+			total: ({ total }) => `Total tracks: ${total}`,
+			track: ({ track, author }) => `${track} by ${author}`,
+			requested_by: ({ user }) => `Requested by ${user}`,
 			up_next: "Up Next",
 			unknown_artist: "Unknown Artist",
 		},
@@ -954,38 +911,34 @@ export default {
 		// Volume
 		volume: {
 			title: "Volume Set",
-			description: ({ volume }: { volume: string }) =>
-				`Volume has been set to ${volume}`,
+			description: ({ volume }) => `Volume has been set to ${volume}`,
 		},
 
 		// Node Select
 		nodeSelect: {
-			title: ({ node }: { node: string }) => `Node Information - ${node}`,
-			status: ({ status }: { status: string }) => `Status: ${status}`,
+			title: ({ node }) => `Node Information - ${node}`,
+			status: ({ status }) => `Status: ${status}`,
 			connected: "Connected",
 			disconnected: "Disconnected",
 			description: "Select a node to view detailed information",
-			players: ({ players }: { players: number }) => `Players: ${players}`,
-			playing_players: ({ playingPlayers }: { playingPlayers: number }) =>
+			players: ({ players }) => `Players: ${players}`,
+			playing_players: ({ playingPlayers }) =>
 				`Playing Players: ${playingPlayers}`,
-			uptime: ({ uptime }: { uptime: string }) => `Uptime: ${uptime}`,
+			uptime: ({ uptime }) => `Uptime: ${uptime}`,
 			cpu: "CPU",
-			cores: ({ cores }: { cores: number }) => `Cores: ${cores}`,
-			system_load: ({ systemLoad }: { systemLoad: string }) =>
-				`System Load: ${systemLoad}%`,
-			lavalink_load: ({ lavalinkLoad }: { lavalinkLoad: string }) =>
-				`Lavalink Load: ${lavalinkLoad}%`,
+			cores: ({ cores }) => `Cores: ${cores}`,
+			system_load: ({ systemLoad }) => `System Load: ${systemLoad}%`,
+			lavalink_load: ({ lavalinkLoad }) => `Lavalink Load: ${lavalinkLoad}%`,
 			memory: "Memory",
-			used: ({ used }: { used: string }) => `Used: ${used}`,
-			reservable: ({ reservable }: { reservable: string }) =>
-				`Reservable: ${reservable}`,
+			used: ({ used }) => `Used: ${used}`,
+			reservable: ({ reservable }) => `Reservable: ${reservable}`,
 			no_node: "This node is no longer available.",
 		},
 	},
 	// Middleware
 	middlewares: {
 		cooldown: {
-			description: ({ seconds }: { seconds: number }) =>
+			description: ({ seconds }) =>
 				`Please wait ${seconds} seconds before using this command again.`,
 		},
 	},
@@ -997,4 +950,4 @@ export default {
 			no_tracks: "No tracks found",
 		},
 	},
-};
+} satisfies typeof English;
