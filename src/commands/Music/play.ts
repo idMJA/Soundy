@@ -148,6 +148,7 @@ export default class PlayCommand extends Command {
 			voiceChannelId: voiceState.channelId,
 			textChannelId: ctx.channelId,
 			selfDeaf: true,
+			volume: client.config.defaultVolume,
 		});
 
 		player.set("me", {

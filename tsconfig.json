@@ -1,35 +1,45 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
+    /* Language and Environment */
     "target": "ES2024",
     "lib": ["ESNext", "WebWorker"],
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "declaration": true,
-    "sourceMap": false,
-    "strict": true,
-    "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "preserveConstEnums": true,
-    "noEmit": false,
+    
+    /* Modules */
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
     "allowImportingTsExtensions": false,
+    "esModuleInterop": true,
+    
+    /* Emit */
+    "declaration": true,
+    "sourceMap": false,
+    "outDir": "./dist",
+    "noEmit": false,
+    "downlevelIteration": false,
+    "stripInternal": true,
+    "preserveConstEnums": true,
+    
     /* Type Checking */
+    "strict": true,
     "noImplicitAny": true,
-    "noUncheckedIndexedAccess": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUncheckedIndexedAccess": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    
+    /* Completeness */
     "skipLibCheck": true,
     "noErrorTruncation": true,
-    "outDir": "./dist",
-    "plugins": [],
-    "downlevelIteration": false,
-    "stripInternal": true,
+    
+    /* Path Mapping */
+    "baseUrl": ".",
     "paths": {
       "#soundy/client": ["./src/client/Soundy.ts"],
       "#soundy/config": ["./src/config/config.ts"],
@@ -37,9 +47,26 @@
       "#soundy/utils": ["./src/utils/index.ts"],
       "#soundy/api": ["./src/api/server.ts"],
       "#soundy/db": ["./src/db/index.ts"],
-      "#soundy/middlewares": ["./src/middlewares/index.ts"],
-    },
+      "#soundy/middlewares": ["./src/middlewares/index.ts"]
+    }
   },
-  "exclude": ["**/dist", "**/__test__"],
-  "include": ["src"]
+  
+  /* Project Structure */
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/__test__/**/*",
+    "**/__tests__/**/*"
+  ],
+  
+  /* Additional Options */
+  "ts-node": {
+    "esm": true
+  },
+  "compileOnSave": false
 }
