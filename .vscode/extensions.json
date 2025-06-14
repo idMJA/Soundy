@@ -1,0 +1,18 @@
+{
+	// Taken from https://github.com/Ganyu-Studios/stelle-music/tree/main/.vscode/extensions.json
+    // See https://code.visualstudio.com/docs/editor/extension-marketplace#_workspace-recommended-extensions
+
+	// List of extensions which should be recommended for users of this workspace.
+	"recommendations": [
+		"usernamehw.errorlens",
+		"yoavbls.pretty-ts-errors",
+		"biomejs.biome",
+        "oven.bun-vscode",
+        "aaron-bond.better-comments",
+        "fill-labs.dependi"
+	],
+	// List of extensions recommended by VS Code that should not be recommended for users of this workspace.
+	"unwantedRecommendations": [
+		
+	]
+}

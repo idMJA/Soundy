@@ -1,0 +1,4 @@
+{
+    // Taken from https://github.com/Ganyu-Studios/stelle-music/tree/main/.vscode/settings.json
+    "typescript.tsdk": "node_modules\\typescript\\lib"
+}

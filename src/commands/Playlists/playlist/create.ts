@@ -1,0 +1,81 @@
+import {
+	type CommandContext,
+	Declare,
+	LocalesT,
+	Middlewares,
+	Options,
+	SubCommand,
+	createStringOption,
+} from "seyfert";
+import { MessageFlags } from "seyfert/lib/types";
+
+const option = {
+	name: createStringOption({
+		description: "The name of the playlist",
+		required: true,
+		locales: {
+			name: "cmd.playlist.sub.create.options.name.name",
+			description: "cmd.playlist.sub.create.options.name.description",
+		},
+	}),
+};
+
+@Declare({
+	name: "create",
+	description: "Create a new playlist",
+})
+@LocalesT("cmd.playlist.sub.create.name", "cmd.playlist.sub.create.description")
+@Options(option)
+@Middlewares(["checkNodes"])
+export default class CreatePlaylistCommand extends SubCommand {
+	async run(ctx: CommandContext<typeof option>) {
+		const { client, options } = ctx;
+		const userId = ctx.author.id;
+		const guildId = await ctx.guild();
+		if (!guildId) return;
+
+		const { cmd } = await ctx.getLocale();
+
+		try {
+			// Check if playlist already exists
+			const existingPlaylist = await client.database.getPlaylist(
+				userId,
+				options.name,
+			);
+
+			if (existingPlaylist) {
+				return ctx.editOrReply({
+					embeds: [
+						{
+							color: client.config.color.no,
+							description: `${client.config.emoji.no} ${cmd.playlist.sub.create.run.already_exists}`,
+						},
+					],
+					flags: MessageFlags.Ephemeral,
+				});
+			}
+
+			// Create new playlist
+			await client.database.createPlaylist(userId, options.name, guildId.id);
+
+			return ctx.editOrReply({
+				embeds: [
+					{
+						color: client.config.color.primary,
+						description: `${client.config.emoji.yes} ${cmd.playlist.sub.create.run.success({ playlist: options.name })}`,
+					},
+				],
+			});
+		} catch {
+			return ctx.editOrReply({
+				embeds: [
+					{
+						color: client.config.color.no,
+						description: `${client.config.emoji.no} ${cmd.playlist.sub.create.run.error}`,
+					},
+				],
+				flags: MessageFlags.Ephemeral,
+			});
+		}
+	}
+}

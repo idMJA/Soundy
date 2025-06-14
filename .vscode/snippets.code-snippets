@@ -1,0 +1,59 @@
+{
+	// Taken from https://github.com/Ganyu-Studios/stelle-music/tree/main/.vscode/snippets.code-snippets
+	// This file contains snippets for the Soundy, which is used in the Stelle Music project.
+	// The snippets are designed to help developers quickly create commands, components, and subcommands.
+
+	"Create a new Soundy command.": {
+		"prefix": "@soundy:command",
+		"scope": "typescript",
+		"body": [
+			"import { Declare, Command } from \"seyfert\";",
+			"import { SoundyOptions } from \"#soundy/decorators\";",
+			"",
+			"@Declare({",
+			"    name: \"${1:example}\",",
+			"    description: \"${2:example}\",",
+			"    integrationTypes: [\"GuildInstall\"],",
+			"    contexts: [\"Guild\"],",
+			"})",
+			"@SoundyOptions({ ... })",
+			"export default class ${3:Example}Command extends Command {}",
+			""
+		],
+		"description": "Create a new Soundy command."
+	},
+	"Create a new Soundy component.": {
+		"prefix": "@soundy:component",
+		"scope": "typescript",
+		"body": [
+			"import { ComponentCommand, type ComponentContext } from \"seyfert\";",
+			"",
+			"export default class ${1:Example}Component extends ComponentCommand {",
+			"    componentType = \"${2:Example}\" as const;",
+			"",
+			"    filter(ctx: ComponentContext<typeof this.componentType>): boolean {",
+			"        return ctx.customId === \"${3:example}\";   ",
+			"    }",
+			"",
+			"    async run(ctx: ComponentContext<typeof this.componentType>): Promise<void> {}",
+			"}"
+		],
+		"description": "Create a new Soundy component."
+	},
+	"Create a new Soundy subcommand.": {
+		"prefix": "@soundy:subcommand",
+		"scope": "typescript",
+		"body": [
+			"import { Declare, type CommandContext, SubCommand } from \"seyfert\";",
+			"",
+			"@Declare({",
+			"    name: \"${1:example}\",",
+			"    description: \"${2:example}\",",
+			"})",
+			"export default class ${3:Example}Subcommand extends SubCommand {",
+			"    async run(ctx: CommandContext): Promise<void> {}",
+			"}"
+		],
+		"description": "Create a new Soundy subcommand."
+	}
+}

@@ -1,21 +1,16 @@
 # Security Policy
 
-## Supported Versions
-
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
-
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+If you discover a security vulnerability in Soundy, please report it responsibly. Do not disclose it publicly until it has been reviewed and resolved.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+- **Contact:** Please report security issues by contacting Tronix Development via Discord: https://discord.gg/pTbFUFdppU
+- Provide as much detail as possible to help us reproduce and address the issue quickly.
+
+## Supported Versions
+
+Only the latest version of Soundy is supported with security updates. Please update to the latest release before reporting issues.
+
+## Responsible Disclosure
+
+We appreciate responsible disclosure and will make every effort to resolve valid security issues as quickly as possible. Thank you for helping keep Soundy and its users safe.
