@@ -12,7 +12,8 @@
 <body>
     <h2>Soundy Native WebSocket Test (Elysia)</h2>
     <div>
-        <input id="guildId" placeholder="Guild ID" />
+        <input id="guildId" placeholder="Guild ID (optional)" />
+        <input id="userId" placeholder="User ID (for user-centric)" />
         <button onclick="connectWS()">Connect</button>
         <button onclick="disconnectWS()">Disconnect</button>
     </div>
@@ -23,28 +24,90 @@
     <div>
         <button onclick="pausePlayer()">Pause</button>
         <button onclick="resumePlayer()">Resume</button>
+        <button onclick="skipTrack()">Skip</button>
+        <button onclick="stopPlayer()">Stop</button>
+    </div>
+    <div>
+        <input id="query" placeholder="Link atau keyword" />
+        <input id="voiceChannelId" placeholder="Voice Channel ID (optional)" />
+        <button onclick="playTrack()">Play</button>
+        <button onclick="getQueue()">Queue</button>
+    </div>
+    <div>
+        <label for="volume">Volume:</label>
+        <input id="volume" type="range" min="0" max="100" value="50" style="width:200px;" oninput="updateVolumeLabel(this.value)" />
+        <span id="volumeLabel">50</span>
+        <button onclick="setVolume()">Set Volume</button>
+        <button onclick="getVolume()">Get Volume</button>
     </div>
     <div class="log" id="log">Log:<br></div>
     <script>
         let ws = null;
+        let userContext = {};
         function log(msg) {
             document.getElementById('log').innerHTML += msg + '<br>';
         }
         function connectWS() {
             const guildId = document.getElementById('guildId').value;
+            const userId = document.getElementById('userId').value;
             ws = new WebSocket('ws://localhost:3000/ws');
             ws.onopen = () => {
                 log('Connected!');
-                if (guildId) ws.send(JSON.stringify({ type: 'join', guildId }));
+                userContext = {};
+                if (userId) {
+                    ws.send(JSON.stringify({ type: 'user-connect', userId }));
+                    log('Sent user-connect for userId: ' + userId);
+                } else if (guildId) {
+                    ws.send(JSON.stringify({ type: 'join', guildId }));
+                }
             };
             ws.onmessage = (e) => {
-                log('Received: ' + e.data);
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === 'user-connect' && data.success) {
+                        userContext.guildId = data.guildId;
+                        userContext.voiceChannelId = data.voiceChannelId;
+                        userContext.userId = data.userId;
+                        log('User context set: ' + JSON.stringify(userContext));
+                    } else if (data.type === 'user-connect' && !data.success) {
+                        log('User not found in any voice channel with active player.');
+                    } else if (data.type === 'queue') {
+                        log('Queue:');
+                        if (data.queue && data.queue.length) {
+                            data.queue.forEach((track, i) => {
+                                log(`${i + 1}. ${track.title} (${track.author}) [${track.duration}ms]`);
+                            });
+                        } else {
+                            log('Queue kosong');
+                        }
+                    } else if (data.type === 'user-status') {
+                        if (data.found === false) {
+                            log('User tidak ditemukan di voice channel manapun.');
+                        } else {
+                            log(`User ditemukan di guild: ${data.guildId}, channel: ${data.voiceChannelId}`);
+                            log('Player state: ' + JSON.stringify(data.player, null, 2));
+                        }
+                    } else if (data.type === 'status' && typeof data.volume === 'number') {
+                        document.getElementById('volume').value = data.volume;
+                        updateVolumeLabel(data.volume);
+                        log('Current volume: ' + data.volume);
+                    } else if (data.type === 'volume' && typeof data.volume === 'number') {
+                        document.getElementById('volume').value = data.volume;
+                        updateVolumeLabel(data.volume);
+                        log('Volume set to: ' + data.volume);
+                    } else {
+                        log('Received: ' + e.data);
+                    }
+                } catch {
+                    log('Received: ' + e.data);
+                }
             };
             ws.onclose = () => log('Disconnected!');
             ws.onerror = (e) => log('WebSocket error!');
         }
         function disconnectWS() {
             if (ws) ws.close();
+            userContext = {};
         }
         function sendMsg() {
             if (ws && ws.readyState === 1) {
@@ -52,17 +115,72 @@
             }
         }
         function pausePlayer() {
-            const guildId = document.getElementById('guildId').value;
+            const guildId = userContext.guildId || document.getElementById('guildId').value;
+            const userId = userContext.userId || document.getElementById('userId').value;
             if (ws && ws.readyState === 1 && guildId) {
-                ws.send(JSON.stringify({ type: 'pause', guildId }));
+                ws.send(JSON.stringify({ type: 'pause', guildId, userId }));
                 log('Sent pause request');
             }
         }
         function resumePlayer() {
-            const guildId = document.getElementById('guildId').value;
+            const guildId = userContext.guildId || document.getElementById('guildId').value;
+            const userId = userContext.userId || document.getElementById('userId').value;
             if (ws && ws.readyState === 1 && guildId) {
-                ws.send(JSON.stringify({ type: 'resume', guildId }));
+                ws.send(JSON.stringify({ type: 'resume', guildId, userId }));
                 log('Sent resume request');
+            }
+        }
+        function playTrack() {
+            const query = document.getElementById('query').value;
+            const guildId = userContext.guildId || document.getElementById('guildId').value;
+            const voiceChannelId = userContext.voiceChannelId || document.getElementById('voiceChannelId').value;
+            const userId = userContext.userId || document.getElementById('userId').value;
+            if (ws && ws.readyState === 1 && guildId && query && voiceChannelId) {
+                ws.send(JSON.stringify({ type: 'play', guildId, query, voiceChannelId, userId }));
+                log('Sent play request: ' + query);
+            }
+        }
+        function getQueue() {
+            const guildId = userContext.guildId || document.getElementById('guildId').value;
+            const userId = userContext.userId || document.getElementById('userId').value;
+            if (ws && ws.readyState === 1 && guildId) {
+                ws.send(JSON.stringify({ type: 'queue', guildId, userId }));
+                log('Requested queue');
+            }
+        }
+        function skipTrack() {
+            const guildId = userContext.guildId || document.getElementById('guildId').value;
+            const userId = userContext.userId || document.getElementById('userId').value;
+            if (ws && ws.readyState === 1 && guildId) {
+                ws.send(JSON.stringify({ type: 'skip', guildId, userId }));
+                log('Sent skip request');
+            }
+        }
+        function stopPlayer() {
+            const guildId = userContext.guildId || document.getElementById('guildId').value;
+            const userId = userContext.userId || document.getElementById('userId').value;
+            if (ws && ws.readyState === 1 && guildId) {
+                ws.send(JSON.stringify({ type: 'stop', guildId, userId }));
+                log('Sent stop request');
+            }
+        }
+        function updateVolumeLabel(val) {
+            document.getElementById('volumeLabel').textContent = val;
+        }
+        function setVolume() {
+            const guildId = userContext.guildId || document.getElementById('guildId').value;
+            const userId = userContext.userId || document.getElementById('userId').value;
+            const volume = parseInt(document.getElementById('volume').value, 10);
+            if (ws && ws.readyState === 1 && guildId && !isNaN(volume)) {
+                ws.send(JSON.stringify({ type: 'volume', guildId, volume, userId }));
+                log('Sent volume request: ' + volume);
+            }
+        }
+        function getVolume() {
+            const guildId = userContext.guildId || document.getElementById('guildId').value;
+            if (ws && ws.readyState === 1 && guildId) {
+                ws.send(JSON.stringify({ type: 'status', guildId }));
+                log('Requested current volume');
             }
         }
     </script>

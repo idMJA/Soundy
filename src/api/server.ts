@@ -2,10 +2,18 @@ import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { jwt } from "@elysiajs/jwt";
 import type { UsingClient } from "seyfert";
-import { sendVoteWebhook } from "#soundy/utils";
+import { sendVoteWebhook, PlayerSaver } from "#soundy/utils";
 
-// Remove Socket.io import and websocket init
-// import { initWebSocketServer } from "./websocket";
+// Extend Elysia WebSocket connection type to include per-connection context
+export interface SoundyWS {
+	send: (data: string) => void;
+	store?: {
+		guildId?: string;
+		voiceChannelId?: string;
+		userId?: string;
+	};
+	// Add any other properties/methods from the Elysia WS type as needed
+}
 
 interface VoteWebhookPayload {
 	user: string;
@@ -199,9 +207,9 @@ function createMusicAPI(client: UsingClient) {
 						let player = client.manager.getPlayer(guildId);
 						if (!player) {
 							player = client.manager.createPlayer({
-								guildId,
-								voiceChannelId,
-								// textChannelId: null, // Web request doesn't need text channel
+								guildId: String(guildId),
+								voiceChannelId: String(voiceChannelId),
+								textChannelId: String(voiceChannelId), // set textChannelId ke id voice
 								selfDeaf: true,
 								volume: client.config.defaultVolume || 50,
 							});
@@ -226,7 +234,7 @@ function createMusicAPI(client: UsingClient) {
 									return { error: "No tracks found" };
 								}
 
-								track.requester = { id: "web-user" };
+								track.requester = { id: getRequesterId(body, headers) };
 								await player.queue.add(track);
 
 								if (!player.playing && !player.paused) {
@@ -247,7 +255,7 @@ function createMusicAPI(client: UsingClient) {
 							}
 							case "playlist": {
 								for (const track of result.tracks) {
-									track.requester = { id: "web-user" };
+									track.requester = { id: getRequesterId(body, headers) };
 								}
 								await player.queue.add(result.tracks);
 
@@ -528,6 +536,54 @@ function createMusicAPI(client: UsingClient) {
 	);
 }
 
+// Message type for WebSocket
+interface WSMessage {
+	type: string;
+	guildId?: string;
+	[key: string]: unknown;
+}
+
+// Helper to serialize player state (copied from websocket.ts)
+type LavalinkPlayer = {
+	connected?: boolean;
+	playing: boolean;
+	paused: boolean;
+	volume: number;
+	position: number;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	queue: { current?: { info: any } | null; tracks: any[] };
+	repeatMode: string;
+	get: (key: string) => boolean | undefined;
+};
+
+function serializePlayerState(player: LavalinkPlayer) {
+	const current = player.queue.current;
+	return {
+		connected: player.connected ?? false,
+		playing: player.playing,
+		paused: player.paused,
+		volume: player.volume,
+		position: player.position,
+		current: current
+			? {
+					title: current.info.title,
+					author: current.info.author,
+					duration: current.info.duration,
+					uri: current.info.uri,
+					artwork: current.info.artworkUrl || undefined,
+					isStream: current.info.isStream,
+					position: player.position,
+				}
+			: null,
+		repeatMode:
+			player.repeatMode === "off" ? 0 : player.repeatMode === "track" ? 1 : 2,
+		autoplay: player.get("enabledAutoplay") || false,
+	};
+}
+
+// PlayerSaver instance
+let playerSaver: PlayerSaver | undefined;
+
 /**
  * Start and start the Elysia server for API
  * @param client - The Soundy client instance
@@ -620,12 +676,15 @@ export function APIServer(client: UsingClient): void {
 			}
 		});
 
+	// Initialize playerSaver with the logger from the client
+	playerSaver = new PlayerSaver(client.logger);
+
 	// Add music API endpoints
 	app.use(createMusicAPI(client));
 
 	// Native WebSocket endpoint for real-time control
 	app.ws("/ws", {
-		open(ws) {
+		open(ws: SoundyWS) {
 			ws.send(
 				JSON.stringify({
 					type: "hello",
@@ -633,7 +692,7 @@ export function APIServer(client: UsingClient): void {
 				}),
 			);
 		},
-		message: async (ws, data) => {
+		message: async (ws: SoundyWS, data) => {
 			// Parse incoming message
 			let msg: WSMessage;
 			try {
@@ -693,8 +752,385 @@ export function APIServer(client: UsingClient): void {
 				}
 				return;
 			}
+			// Play track (query bisa link atau keyword)
+			if (
+				msg.type === "play" &&
+				msg.guildId &&
+				msg.query &&
+				msg.voiceChannelId
+			) {
+				if (
+					typeof msg.voiceChannelId !== "string" ||
+					!msg.voiceChannelId.trim()
+				) {
+					ws.send(
+						JSON.stringify({
+							type: "play",
+							success: false,
+							message: "voiceChannelId harus string",
+						}),
+					);
+					return;
+				}
+				const player =
+					client.manager.getPlayer(msg.guildId) ??
+					client.manager.createPlayer({
+						guildId: msg.guildId,
+						voiceChannelId: msg.voiceChannelId,
+						textChannelId: msg.voiceChannelId, // set textChannelId ke id voice
+						selfDeaf: true,
+						volume: client.config.defaultVolume || 50,
+					});
+				if (!player.connected) {
+					await player.connect();
+				}
+				try {
+					const result = await player.search(msg.query, {
+						requester: { id: getRequesterId(msg, ws) },
+					});
+					if (
+						["track", "search"].includes(result.loadType) &&
+						result.tracks.length
+					) {
+						const track = result.tracks[0];
+						if (track) {
+							track.requester = { id: getRequesterId(msg, ws) };
+							await player.queue.add(track);
+							if (!player.playing && !player.paused) await player.play();
+							ws.send(
+								JSON.stringify({
+									type: "play",
+									success: true,
+									track: {
+										title: track.info.title,
+										author: track.info.author,
+										duration: track.info.duration,
+										uri: track.info.uri,
+										artwork: track.info.artworkUrl,
+									},
+								}),
+							);
+						} else {
+							ws.send(
+								JSON.stringify({
+									type: "play",
+									success: false,
+									message: "No track found",
+								}),
+							);
+						}
+					} else if (result.loadType === "playlist") {
+						for (const track of result.tracks) {
+							track.requester = { id: getRequesterId(msg, ws) };
+						}
+						await player.queue.add(result.tracks);
+						if (!player.playing && !player.paused) await player.play();
+						ws.send(
+							JSON.stringify({
+								type: "play",
+								success: true,
+								playlist: {
+									name: result.playlist?.name,
+									tracks: result.tracks.length,
+								},
+							}),
+						);
+					} else {
+						ws.send(
+							JSON.stringify({
+								type: "play",
+								success: false,
+								message: "No results found",
+							}),
+						);
+					}
+				} catch (error) {
+					ws.send(
+						JSON.stringify({
+							type: "play",
+							success: false,
+							message: `Error: ${String(error)}`,
+						}),
+					);
+				}
+				return;
+			}
+			// Get queue
+			if (msg.type === "queue" && msg.guildId) {
+				const player = client.manager.getPlayer(msg.guildId);
+				if (player) {
+					const queue = player.queue.tracks.map(
+						(track: any, index: number) => ({
+							index,
+							title: track.info.title || "Unknown",
+							author: track.info.author || "Unknown",
+							duration: track.info.duration || 0,
+							uri: track.info.uri || "",
+							artwork: track.info.artworkUrl || undefined,
+							requester:
+								track.requester &&
+								typeof track.requester === "object" &&
+								"id" in track.requester
+									? String(track.requester.id)
+									: undefined,
+						}),
+					);
+					ws.send(
+						JSON.stringify({ type: "queue", queue, length: queue.length }),
+					);
+				} else {
+					ws.send(JSON.stringify({ type: "queue", queue: [], length: 0 }));
+				}
+				return;
+			}
+			// Skip track
+			if (msg.type === "skip" && msg.guildId) {
+				const player = client.manager.getPlayer(msg.guildId);
+				if (player) {
+					await player.skip();
+					ws.send(JSON.stringify({ type: "skip", success: true }));
+				} else {
+					ws.send(
+						JSON.stringify({
+							type: "skip",
+							success: false,
+							message: "No active player",
+						}),
+					);
+				}
+				return;
+			}
+			// Stop player
+			if (msg.type === "stop" && msg.guildId) {
+				const player = client.manager.getPlayer(msg.guildId);
+				if (player) {
+					await player.destroy();
+					ws.send(JSON.stringify({ type: "stop", success: true }));
+				} else {
+					ws.send(
+						JSON.stringify({
+							type: "stop",
+							success: false,
+							message: "No active player",
+						}),
+					);
+				}
+				return;
+			}
+			// Check user voice state and player
+			if (msg.type === "user-status" && msg.userId) {
+				// Cari user di semua guild yang ada player aktif
+				let found = null;
+				for (const player of client.manager.players.values()) {
+					const guildId = player.guildId;
+					// Ensure both arguments are strings
+					const userId = String(msg.userId);
+					const gId = String(guildId);
+					const voiceState = client.cache.voiceStates?.get(userId, gId);
+					if (voiceState?.channelId) {
+						found = {
+							guildId,
+							voiceChannelId: voiceState.channelId,
+							player: serializePlayerState(player),
+						};
+						break;
+					}
+				}
+				if (found) {
+					ws.send(JSON.stringify({ type: "user-status", ...found }));
+				} else {
+					ws.send(JSON.stringify({ type: "user-status", found: false }));
+				}
+				return;
+			}
+			// User connect: find guild/channel for user and set context
+			if (msg.type === "user-connect" && msg.userId) {
+				let found = null;
+				const userId = String(msg.userId);
+				const allGuilds = Array.from(client.cache.guilds?.values() ?? []);
+				// 1. Check in-memory cache and live members (existing logic)
+				for (const guild of allGuilds) {
+					const guildId = guild.id;
+					const voiceState = client.cache.voiceStates?.get(userId, guildId);
+					if (voiceState?.channelId) {
+						// DO NOT create/connect player here!
+						found = {
+							guildId,
+							voiceChannelId: voiceState.channelId,
+							player: null, // No player state, just context
+						};
+						break;
+					}
+				}
+				// 2. Check persistent player data and fetch voice state for each
+				if (!found && typeof playerSaver?.getPlayer === "function") {
+					for (const guild of allGuilds) {
+						const guildId = guild.id;
+						const playerData = await playerSaver.getPlayer(guildId);
+						if (playerData?.voiceChannelId) {
+							// Fetch user's voice state for this guild
+							const voiceState = client.cache.voiceStates?.get(userId, guildId);
+							if (
+								voiceState?.channelId &&
+								voiceState.channelId === playerData.voiceChannelId
+							) {
+								found = {
+									guildId,
+									voiceChannelId: playerData.voiceChannelId,
+									player: null, // No player state, just context
+								};
+								break;
+							}
+						}
+					}
+				}
+				if (found) {
+					ws.store = ws.store || {};
+					ws.store.guildId = found.guildId;
+					ws.store.voiceChannelId = found.voiceChannelId;
+					ws.store.userId = userId; // Always set userId in ws.store
+					ws.send(
+						JSON.stringify({ type: "user-connect", ...found, success: true }),
+					);
+				} else {
+					ws.send(
+						JSON.stringify({
+							type: "user-connect",
+							success: false,
+							message:
+								"User not found in any voice channel with active player.",
+						}),
+					);
+				}
+				return;
+			}
+			// Contoh modifikasi play, pause, dst:
+			if (msg.type === "play" && msg.query) {
+				const { guildId, voiceChannelId } = getContext(msg, ws);
+				if (!guildId || !voiceChannelId) {
+					ws.send(
+						JSON.stringify({
+							type: "play",
+							success: false,
+							message: "guildId/voiceChannelId not set",
+						}),
+					);
+					return;
+				}
+				const requesterId = ws.store?.userId || msg.userId || "websocket-user";
+				const player =
+					client.manager.getPlayer(guildId) ??
+					client.manager.createPlayer({
+						guildId: guildId,
+						voiceChannelId: String(voiceChannelId),
+						textChannelId: String(voiceChannelId), // set textChannelId ke id voice
+						selfDeaf: true,
+						volume: client.config.defaultVolume || 50,
+					});
+				if (!player.connected) {
+					await player.connect();
+				}
+				try {
+					const result = await player.search(String(msg.query), {
+						requester: { id: requesterId },
+					});
+					if (
+						["track", "search"].includes(result.loadType) &&
+						result.tracks.length
+					) {
+						const track = result.tracks[0];
+						if (track) {
+							track.requester = { id: requesterId };
+							await player.queue.add(track);
+							if (!player.playing && !player.paused) await player.play();
+							ws.send(
+								JSON.stringify({
+									type: "play",
+									success: true,
+									track: {
+										title: track.info.title,
+										author: track.info.author,
+										duration: track.info.duration,
+										uri: track.info.uri,
+										artwork: track.info.artworkUrl,
+									},
+								}),
+							);
+						} else {
+							ws.send(
+								JSON.stringify({
+									type: "play",
+									success: false,
+									message: "No track found",
+								}),
+							);
+						}
+					} else if (result.loadType === "playlist") {
+						for (const track of result.tracks) {
+							track.requester = { id: requesterId };
+						}
+						await player.queue.add(result.tracks);
+						if (!player.playing && !player.paused) await player.play();
+						ws.send(
+							JSON.stringify({
+								type: "play",
+								success: true,
+								playlist: {
+									name: result.playlist?.name,
+									tracks: result.tracks.length,
+								},
+							}),
+						);
+					} else {
+						ws.send(
+							JSON.stringify({
+								type: "play",
+								success: false,
+								message: "No results found",
+							}),
+						);
+					}
+				} catch (error) {
+					ws.send(
+						JSON.stringify({
+							type: "play",
+							success: false,
+							message: `Error: ${String(error)}`,
+						}),
+					);
+				}
+				return;
+			}
+			// Modifikasi serupa untuk pause, resume, skip, stop, queue, dst...
+			// Set volume
+			if (
+				msg.type === "volume" &&
+				msg.guildId &&
+				typeof msg.volume === "number"
+			) {
+				const player = client.manager.getPlayer(msg.guildId);
+				if (player) {
+					await player.setVolume(msg.volume);
+					ws.send(
+						JSON.stringify({
+							type: "volume",
+							success: true,
+							volume: player.volume,
+						}),
+					);
+				} else {
+					ws.send(
+						JSON.stringify({
+							type: "volume",
+							success: false,
+							message: "No active player",
+						}),
+					);
+				}
+				return;
+			}
 		},
-		close(ws) {
+		close(ws: SoundyWS) {
 			// Optionally handle disconnect
 		},
 	});
@@ -707,47 +1143,15 @@ export function APIServer(client: UsingClient): void {
 	);
 }
 
-// Message type for WebSocket
-interface WSMessage {
-	type: string;
-	guildId?: string;
-	[key: string]: unknown;
+// Helper to get context from message or ws.store
+function getContext(msg: WSMessage, ws: SoundyWS) {
+	return {
+		guildId: msg.guildId || ws.store?.guildId,
+		voiceChannelId: msg.voiceChannelId || ws.store?.voiceChannelId,
+	};
 }
 
-// Helper to serialize player state (copied from websocket.ts)
-type LavalinkPlayer = {
-	connected?: boolean;
-	playing: boolean;
-	paused: boolean;
-	volume: number;
-	position: number;
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	queue: { current?: { info: any } | null; tracks: any[] };
-	repeatMode: string;
-	get: (key: string) => boolean | undefined;
-};
-
-function serializePlayerState(player: LavalinkPlayer) {
-	const current = player.queue.current;
-	return {
-		connected: player.connected ?? false,
-		playing: player.playing,
-		paused: player.paused,
-		volume: player.volume,
-		position: player.position,
-		current: current
-			? {
-					title: current.info.title,
-					author: current.info.author,
-					duration: current.info.duration,
-					uri: current.info.uri,
-					artwork: current.info.artworkUrl || undefined,
-					isStream: current.info.isStream,
-					position: player.position,
-				}
-			: null,
-		repeatMode:
-			player.repeatMode === "off" ? 0 : player.repeatMode === "track" ? 1 : 2,
-		autoplay: player.get("enabledAutoplay") || false,
-	};
+// Helper to get the requester userId for this connection/message
+function getRequesterId(msg: WSMessage, ws: SoundyWS) {
+	return String(msg.userId || ws.store?.userId || "websocket-user");
 }

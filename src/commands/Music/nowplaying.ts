@@ -41,7 +41,7 @@ export default class NowPlayingCommand extends Command {
 			embeds: [
 				{
 					author: {
-						name: `${client.config.emoji.play} ${cmd.nowplaying.run.now_playing}`,
+						name: `${cmd.nowplaying.run.now_playing}`,
 						icon_url: getSourceIcon(track.info.sourceName),
 					},
 					thumbnail: { url: track.info.artworkUrl ?? "" },
