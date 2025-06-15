@@ -9,6 +9,8 @@ Logger.customize(SoundyLogger);
 validateEnv();
 
 const client = new Soundy();
-APIServer(client);
+(async () => {
+	await APIServer(client);
+})();
 
 export default client;
