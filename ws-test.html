@@ -40,6 +40,12 @@
         <button onclick="setVolume()">Set Volume</button>
         <button onclick="getVolume()">Get Volume</button>
     </div>
+    <div style="margin-top:24px;">
+        <b>Now Playing</b>
+        <div id="nowPlaying">-</div>
+        <b style="margin-top:12px;display:block;">Queue</b>
+        <div id="queue">-</div>
+    </div>
     <div class="log" id="log">Log:<br></div>
     <script>
         let ws = null;
@@ -47,10 +53,62 @@
         function log(msg) {
             document.getElementById('log').innerHTML += msg + '<br>';
         }
+        let lastNowPlaying = null;
+        let nowPlayingInterval = null;
+        function updateNowPlaying(track) {
+            const el = document.getElementById('nowPlaying');
+            if (!track) {
+                el.innerHTML = '-';
+                lastNowPlaying = null;
+                clearInterval(nowPlayingInterval);
+                nowPlayingInterval = null;
+                return;
+            }
+            lastNowPlaying = track;
+            renderNowPlaying(track);
+            if (!nowPlayingInterval) {
+                nowPlayingInterval = setInterval(() => {
+                    if (lastNowPlaying && typeof lastNowPlaying.position === 'number' && !lastNowPlaying.paused && lastNowPlaying.duration) {
+                        lastNowPlaying.position += 1000;
+                        renderNowPlaying(lastNowPlaying);
+                    }
+                }, 1000);
+            }
+        }
+        function renderNowPlaying(track) {
+            const el = document.getElementById('nowPlaying');
+            let html = `<b>${track.title}</b> by ${track.author} <span style='color:#888;'>[${msToTime(track.duration)}]</span>`;
+            if (typeof track.position === 'number' && track.duration) {
+                html += `<br><progress value="${track.position}" max="${track.duration}" style="width:200px;"></progress> <span style='color:#888;'>${msToTime(track.position)} / ${msToTime(track.duration)}</span>`;
+            }
+            if (track.uri) {
+                html += `<br><a href="${track.uri}" target="_blank">Link</a>`;
+            }
+            html += `<pre style='background:#eee;color:#222;padding:4px;border-radius:4px;margin-top:8px;font-size:12px;'>${JSON.stringify(track, null, 2)}</pre>`;
+            el.innerHTML = html;
+        }
+        function updateQueue(queue) {
+            const el = document.getElementById('queue');
+            if (!queue || !queue.length) {
+                el.innerHTML = '-';
+                return;
+            }
+            el.innerHTML = queue.map((track, i) =>
+                `${i + 1}. <b>${track.title}</b> by ${track.author} <span style='color:#888;'>[${msToTime(track.duration)}]</span>`
+            ).join('<br>');
+        }
+        function msToTime(ms) {
+            let s = Math.floor(ms / 1000);
+            let m = Math.floor(s / 60);
+            s = s % 60;
+            let h = Math.floor(m / 60);
+            m = m % 60;
+            return (h > 0 ? h + ':' : '') + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+        }
         function connectWS() {
             const guildId = document.getElementById('guildId').value;
             const userId = document.getElementById('userId').value;
-            ws = new WebSocket('ws://localhost:3000/ws');
+            ws = new WebSocket('ws://localhost:4000/ws');
             ws.onopen = () => {
                 log('Connected!');
                 userContext = {};
@@ -73,6 +131,7 @@
                         log('User not found in any voice channel with active player.');
                     } else if (data.type === 'queue') {
                         log('Queue:');
+                        updateQueue(data.queue);
                         if (data.queue && data.queue.length) {
                             data.queue.forEach((track, i) => {
                                 log(`${i + 1}. ${track.title} (${track.author}) [${track.duration}ms]`);
@@ -83,18 +142,40 @@
                     } else if (data.type === 'user-status') {
                         if (data.found === false) {
                             log('User tidak ditemukan di voice channel manapun.');
+                            updateNowPlaying(null);
+                            updateQueue([]);
                         } else {
                             log(`User ditemukan di guild: ${data.guildId}, channel: ${data.voiceChannelId}`);
                             log('Player state: ' + JSON.stringify(data.player, null, 2));
+                            if (data.player) {
+                                updateNowPlaying(data.player.current);
+                                updateQueue(data.player.queue);
+                            }
                         }
                     } else if (data.type === 'status' && typeof data.volume === 'number') {
+                        log('Status data: ' + JSON.stringify(data));
                         document.getElementById('volume').value = data.volume;
                         updateVolumeLabel(data.volume);
                         log('Current volume: ' + data.volume);
+                        updateNowPlaying(data.current);
+                        updateQueue(data.queue);
                     } else if (data.type === 'volume' && typeof data.volume === 'number') {
                         document.getElementById('volume').value = data.volume;
                         updateVolumeLabel(data.volume);
                         log('Volume set to: ' + data.volume);
+                    } else if (data.type === 'trackStart' && data.current) {
+                        updateNowPlaying(data.current);
+                    } else if (data.type === 'trackEnd') {
+                        updateNowPlaying(null);
+                    } else if (data.type === 'queueEnd') {
+                        updateQueue([]);
+                    } else if (data.type === 'play' && data.success) {
+                        // Jika ada track/playlist yang berhasil ditambahkan, update queue
+                        if (data.track) {
+                            log('Track ditambahkan: ' + data.track.title);
+                        }
+                        // Request queue terbaru
+                        getQueue();
                     } else {
                         log('Received: ' + e.data);
                     }

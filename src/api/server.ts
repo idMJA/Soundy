@@ -1,4 +1,5 @@
 import { Elysia, t } from "elysia";
+import { swagger } from "@elysiajs/swagger";
 import { cors } from "@elysiajs/cors";
 import { jwt } from "@elysiajs/jwt";
 import type { UsingClient } from "seyfert";
@@ -590,6 +591,7 @@ let playerSaver: PlayerSaver | undefined;
  */
 export function APIServer(client: UsingClient): void {
 	const app = new Elysia()
+	    .use(swagger())
 		.post("/vote", async ({ body, set }) => {
 			const vote = body as VoteWebhookPayload;
 			try {
@@ -681,6 +683,8 @@ export function APIServer(client: UsingClient): void {
 
 	// Add music API endpoints
 	app.use(createMusicAPI(client));
+	app.use(createTopAPI(client));
+	app.use(createPlaylistAPI(client));
 
 	// Native WebSocket endpoint for real-time control
 	app.ws("/ws", {
@@ -1138,10 +1142,87 @@ export function APIServer(client: UsingClient): void {
 	// Listen Elysia
 	app.listen({ port: client.config.serverPort });
 
+	// Set global app instance for WS broadcast
+	setApiAppInstance(app);
+
 	client.logger.info(
 		`[API] REST and WebSocket servers listening on port ${client.config.serverPort}`,
 	);
 }
+
+// Helper: get global app instance for WS broadcast
+let globalApiApp: any = null;
+
+export function setApiAppInstance(app: any) {
+    globalApiApp = app;
+}
+
+export function getApiAppInstance() {
+    return globalApiApp;
+}
+
+// --- WebSocket broadcast helper ---
+function broadcastPlayerStatus(guildId: string, player: any, app?: any) {
+    const wsApp = app || globalApiApp;
+    if (!wsApp || !wsApp.server || !wsApp.server.clients) return;
+    // Kirim semua data player, now playing, queue, volume, posisi, repeat, autoplay, dsb
+    const statusMsg = JSON.stringify({
+        type: "status",
+        guildId,
+        ...serializePlayerState(player),
+        queue: player.queue.tracks.map((track: any, index: number) => ({
+            index,
+            title: track.info.title || "Unknown",
+            author: track.info.author || "Unknown",
+            duration: track.info.duration || 0,
+            uri: track.info.uri || "",
+            artwork: track.info.artworkUrl || undefined,
+            requester:
+                track.requester &&
+                typeof track.requester === "object" &&
+                "id" in track.requester
+                    ? String(track.requester.id)
+                    : undefined,
+        })),
+        current: player.queue.current
+            ? {
+                  title: player.queue.current.info.title,
+                  author: player.queue.current.info.author,
+                  duration: player.queue.current.info.duration,
+                  uri: player.queue.current.info.uri,
+                  artwork: player.queue.current.info.artworkUrl || undefined,
+                  isStream: player.queue.current.info.isStream,
+                  position: player.position,
+                  requester: player.queue.current.requester && typeof player.queue.current.requester === "object" && "id" in player.queue.current.requester ? String(player.queue.current.requester.id) : undefined,
+                  // Tambahkan info lain jika perlu
+              }
+            : null,
+        position: player.position,
+        volume: player.volume,
+        paused: player.paused,
+        playing: player.playing,
+        repeatMode: player.repeatMode,
+        autoplay: player.get("enabledAutoplay") || false,
+        connected: player.connected ?? false,
+    });
+    for (const client of wsApp.server.clients) {
+        if (client.readyState === 1) {
+            client.send(statusMsg);
+        }
+    }
+}
+
+// --- Interval broadcast for all active players ---
+setInterval(() => {
+    if (!globalApiApp || !globalApiApp.server || !globalApiApp.server.clients) return;
+    const client = globalApiApp.client || globalApiApp._client || undefined;
+    if (!client || !client.manager) return;
+    for (const player of client.manager.players.values()) {
+        if (player.queue.current) {
+            broadcastPlayerStatus(player.guildId, player);
+        }
+    }
+}, 1000); // broadcast every 1s
 
 // Helper to get context from message or ws.store
 function getContext(msg: WSMessage, ws: SoundyWS) {
@@ -1154,4 +1235,60 @@ function getContext(msg: WSMessage, ws: SoundyWS) {
 // Helper to get the requester userId for this connection/message
 function getRequesterId(msg: WSMessage, ws: SoundyWS) {
 	return String(msg.userId || ws.store?.userId || "websocket-user");
+}
+
+// Top API routes
+function createTopAPI(client: UsingClient) {
+    return new Elysia({ prefix: "/api/top" })
+        .get("/tracks", async ({ query }) => {
+            const guildId = query.guildId || "";
+            const limit = Number(query.limit) || 10;
+            const tracks = await client.database.getTopTracks(guildId, limit);
+            return { tracks };
+        })
+        .get("/users", async ({ query }) => {
+            const guildId = query.guildId || "";
+            const limit = Number(query.limit) || 10;
+            const users = await client.database.getTopUsers(guildId, limit);
+            return { users };
+        })
+        .get("/guilds", async ({ query }) => {
+            const limit = Number(query.limit) || 10;
+            const guilds = await client.database.getTopGuilds(limit);
+            return { guilds };
+        });
+}
+
+// Playlist API routes
+function createPlaylistAPI(client: UsingClient) {
+    return new Elysia({ prefix: "/api/playlist" })
+        .get("/list/:userId", async ({ params }) => {
+            const playlists = await client.database.getPlaylists(params.userId);
+            return { playlists };
+        })
+        .get("/view/:userId/:name", async ({ params }) => {
+            const playlist = await client.database.getPlaylist(params.userId, params.name);
+            if (!playlist) return { error: "Playlist not found" };
+            return { playlist };
+        })
+        .post("/create", async ({ body }) => {
+            const { userId, name, guildId } = body;
+            await client.database.createPlaylist(userId, name, guildId);
+            return { success: true };
+        })
+        .post("/add", async ({ body }) => {
+            const { userId, playlist, tracks } = body;
+            await client.database.addTracksToPlaylist(userId, playlist, tracks);
+            return { success: true };
+        })
+        .post("/remove", async ({ body }) => {
+            const { userId, playlist, trackUri } = body;
+            await client.database.removeSong(userId, playlist, trackUri);
+            return { success: true };
+        })
+        .post("/delete", async ({ body }) => {
+            const { userId, name } = body;
+            await client.database.deletePlaylist(userId, name);
+            return { success: true };
+        });
 }
