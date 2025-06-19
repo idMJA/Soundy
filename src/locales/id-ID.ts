@@ -183,8 +183,10 @@ export default {
 				footer: ({
 					guildCount,
 					userCount,
-				}: { guildCount: number; userCount: number }) =>
-					`Melayani ${guildCount} server dengan ${userCount} pengguna`,
+				}: {
+					guildCount: number;
+					userCount: number;
+				}) => `Melayani ${guildCount} server dengan ${userCount} pengguna`,
 				about_me: {
 					button: "Tentang",
 					title: "Tentang Saya",
@@ -245,8 +247,10 @@ export default {
 						fields: ({
 							totalPlays,
 							uniqueTracks,
-						}: { totalPlays: number; uniqueTracks: number }) =>
-							`Memutar ${totalPlays} trek (${uniqueTracks} unik)`,
+						}: {
+							totalPlays: number;
+							uniqueTracks: number;
+						}) => `Memutar ${totalPlays} trek (${uniqueTracks} unik)`,
 						footer: ({ length }) => `Menampilkan ${length} server teratas`,
 						unknown: "Server Tidak Dikenal",
 						no_data:
@@ -305,7 +309,11 @@ export default {
 						invite,
 						support,
 						vote,
-					}: { invite: string; support: string; vote: string }) =>
+					}: {
+						invite: string;
+						support: string;
+						vote: string;
+					}) =>
 						`**[Invite](${invite}) • [Server Support](${support}) • [Vote](${vote})**`,
 				},
 				footer: ({ bot }) => `**Terima kasih telah memilih ${bot}!**`,

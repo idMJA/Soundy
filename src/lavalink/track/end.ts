@@ -15,7 +15,7 @@ export default createLavalinkEvent({
 		let channelId = "";
 		const rawChannel = player.textChannelId;
 		if (
-				typeof rawChannel === "object" &&
+			typeof rawChannel === "object" &&
 			rawChannel !== null &&
 			Object.prototype.hasOwnProperty.call(rawChannel, "id") &&
 			typeof (rawChannel as { id: unknown }).id === "string"
