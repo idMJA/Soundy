@@ -18,6 +18,12 @@ export function createPlaylistAPI(client: UsingClient) {
 				if (!playlist) return { error: "Playlist not found" };
 				return { playlist };
 			})
+			// View a playlist by its ID
+			.get("/viewById/:playlistId", async ({ params }) => {
+				const playlist = await client.database.getPlaylistById(params.playlistId);
+				if (!playlist) return { error: "Playlist not found" };
+				return { playlist };
+			})
 			.post("/create", async ({ body }) => {
 				const { userId, name, guildId } = body as {
 					userId: string;

@@ -349,7 +349,7 @@ export function setupSoundyWebSocket(
 				if (found) {
 					ws.store = ws.store || {};
 					ws.store.guildId = found.guildId;
-					ws.store.voiceChannelId = found.voiceChannelId;
+					ws.store.voiceChannelId = found.voiceChannelId; // Selalu update ke VC terbaru
 					ws.store.userId = userId; // Always set userId in ws.store
 					ws.send(
 						JSON.stringify({ type: "user-connect", ...found, success: true }),
@@ -380,6 +380,10 @@ export function setupSoundyWebSocket(
 					return;
 				}
 				const requesterId = ws.store?.userId || msg.userId || "websocket-user";
+				// Update VC di ws.store jika play di VC lain
+				if (!ws.store) ws.store = {};
+				ws.store.guildId = guildId;
+				ws.store.voiceChannelId = String(voiceChannelId);
 				const player =
 					client.manager.getPlayer(guildId) ??
 					client.manager.createPlayer({

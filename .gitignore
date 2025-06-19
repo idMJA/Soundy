@@ -1,5 +1,6 @@
 dist
 drizzle
+.drizzle
 node_modules
 commands.json
 pnpm-lock.yaml

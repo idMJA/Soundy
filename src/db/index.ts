@@ -515,6 +515,28 @@ export class SoundyDatabase {
 	}
 
 	/**
+	 * Get a playlist by playlist ID
+	 * @param playlistId The playlist ID
+	 */
+	public async getPlaylistById(playlistId: string) {
+		const playlist = await this.db
+			.select()
+			.from(schema.playlist)
+			.where(eq(schema.playlist.id, playlistId))
+			.get();
+
+		if (!playlist) return null;
+
+		const tracks = await this.db
+			.select()
+			.from(schema.playlistTrack)
+			.where(eq(schema.playlistTrack.playlistId, playlist.id))
+			.all();
+
+		return { ...playlist, tracks };
+	}
+
+	/**
 	 * Get all playlists for a user
 	 * @param userId The user ID
 	 */
