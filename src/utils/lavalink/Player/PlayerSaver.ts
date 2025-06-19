@@ -5,7 +5,7 @@ import type { Logger } from "seyfert";
 
 // Define player data interface for what we expect from the player object
 // Tambahkan properti opsional messageId pada PlayerData agar type-safe
-interface PlayerData {
+export interface PlayerData {
 	guildId: string;
 	voiceChannelId?: string;
 	textChannelId?: string;
