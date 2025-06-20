@@ -182,8 +182,10 @@ export default {
 				footer: ({
 					guildCount,
 					userCount,
-				}: { guildCount: number; userCount: number }) =>
-					`Serving ${guildCount} servers with ${userCount} users`,
+				}: {
+					guildCount: number;
+					userCount: number;
+				}) => `Serving ${guildCount} servers with ${userCount} users`,
 				about_me: {
 					button: "About",
 					title: "About Me",
@@ -245,8 +247,10 @@ export default {
 						fields: ({
 							totalPlays,
 							uniqueTracks,
-						}: { totalPlays: number; uniqueTracks: number }) =>
-							`Played ${totalPlays} tracks (${uniqueTracks} unique)`,
+						}: {
+							totalPlays: number;
+							uniqueTracks: number;
+						}) => `Played ${totalPlays} tracks (${uniqueTracks} unique)`,
 						footer: ({ length }: { length: number }) =>
 							`Showing top ${length} servers`,
 						unknown: "Unknown Server",
@@ -263,7 +267,11 @@ export default {
 							author,
 							playCount,
 							trackId,
-						}: { author: string; playCount: number; trackId: string }) =>
+						}: {
+							author: string;
+							playCount: number;
+							trackId: string;
+						}) =>
 							`By ${author} • Played ${playCount} times\n[Link](${trackId})`,
 						footer: ({ length }: { length: number }) =>
 							`Showing top ${length} tracks`,
@@ -308,7 +316,11 @@ export default {
 						invite,
 						support,
 						vote,
-					}: { invite: string; support: string; vote: string }) =>
+					}: {
+						invite: string;
+						support: string;
+						vote: string;
+					}) =>
 						`**[Invite Me](${invite}) • [Support Server](${support}) • [Vote](${vote})**`,
 				},
 				footer: ({ bot }: { bot: string }) => `Thanks for choosing ${bot}!`,
@@ -374,8 +386,10 @@ export default {
 				description: ({
 					forwardPosition,
 					currentTrack,
-				}: { forwardPosition: number; currentTrack: string }) =>
-					`Forwarded to ${forwardPosition} / ${currentTrack}`,
+				}: {
+					forwardPosition: number;
+					currentTrack: string;
+				}) => `Forwarded to ${forwardPosition} / ${currentTrack}`,
 				no_song: "No song is currently playing",
 				stream: "Cannot forward on a live stream",
 			},
@@ -464,7 +478,10 @@ export default {
 				description: ({
 					voiceChannel,
 					textChannel,
-				}: { voiceChannel: string; textChannel: string }) =>
+				}: {
+					voiceChannel: string;
+					textChannel: string;
+				}) =>
 					`Moved player to voice channel ${voiceChannel}${textChannel ? ` and text channel ${textChannel}` : ""}.`,
 			},
 		},
@@ -531,8 +548,10 @@ export default {
 				description: ({
 					rewindPosition,
 					currentTrack,
-				}: { rewindPosition: string; currentTrack: string }) =>
-					`Rewinded to ${rewindPosition} / ${currentTrack}`,
+				}: {
+					rewindPosition: string;
+					currentTrack: string;
+				}) => `Rewinded to ${rewindPosition} / ${currentTrack}`,
 				no_song: "No song is currently playing",
 				no_stream: "Cannot rewind on a live stream",
 			},
@@ -659,8 +678,10 @@ export default {
 						list: ({
 							playlist,
 							tracks,
-						}: { playlist: string; tracks: number }) =>
-							`${playlist} - ${tracks} tracks`,
+						}: {
+							playlist: string;
+							tracks: number;
+						}) => `${playlist} - ${tracks} tracks`,
 						no_playlists: "You don't have any playlists",
 						error: "An error occurred while fetching your playlists",
 					},
@@ -678,8 +699,10 @@ export default {
 						loaded: ({
 							tracks,
 							playlist,
-						}: { tracks: number; playlist: string }) =>
-							`Loaded **${tracks} tracks** from playlist ${playlist}`,
+						}: {
+							tracks: number;
+							playlist: string;
+						}) => `Loaded **${tracks} tracks** from playlist ${playlist}`,
 						error: "An error occurred while loading the playlist",
 					},
 				},

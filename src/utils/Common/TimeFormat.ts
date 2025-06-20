@@ -115,8 +115,8 @@ const TimeUnitsAliases = createAliases(TimeUnitsOrder, {
 	w: ["weeks", "week"],
 });
 
-const stringToMsRegex = /([0-9][_,\.0-9]*)\s*([a-zA-Z]+)/g;
-const undescoreAndLastCommaRegex = /\_|[,.]+$/g;
+const stringToMsRegex = /([0-9][_,.0-9]*)\s*([a-zA-Z]+)/g;
+const undescoreAndLastCommaRegex = /_|[,.]+$/g;
 
 const sanitizeNumber = (value: string) =>
 	Number(value.replaceAll(undescoreAndLastCommaRegex, "").replaceAll(",", "."));

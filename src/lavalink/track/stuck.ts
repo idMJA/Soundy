@@ -24,7 +24,7 @@ export default createLavalinkEvent({
 				track,
 				exception,
 				guildId: player.guildId,
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				// biome-ignore lint/suspicious/noExplicitAny: Lavalink event payload types are dynamic and may not match strict typings, so 'any' is used for compatibility.
 			} as any);
 
 			// If the track has a text channel, send a message

@@ -34,7 +34,7 @@ export class LavalinkHandler {
 			}
 			// Use a stable run function for each event
 			const run = (...args: unknown[]) =>
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				// biome-ignore lint/suspicious/noExplicitAny: Lavalink event arguments are dynamic and may not match strict typings, so 'any' is used for compatibility.
 				event.run(this.client, ...(args as any));
 			if (event.isNode()) {
 				if ("once" in event && typeof event.once === "function" && event.once())
@@ -84,7 +84,7 @@ export class LavalinkHandler {
 		const newEvent: Lavalink | undefined = imported?.default;
 		if (!newEvent) return;
 		const run = (...args: unknown[]) =>
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			// biome-ignore lint/suspicious/noExplicitAny: Lavalink event arguments are dynamic and may not match strict typings, so 'any' is used for compatibility.
 			newEvent.run(this.client, ...(args as any));
 		if (newEvent.isNode()) {
 			if (
@@ -143,7 +143,7 @@ export class LavalinkHandler {
 		return results;
 	}
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	// biome-ignore lint/suspicious/noExplicitAny: This dynamic import utility must support any module type for flexibility.
 	private async dynamicImport<T = any>(path: string): Promise<T> {
 		return import(`${pathToFileURL(path)}?update=${Date.now()}`).then((x) =>
 			x.default ? x : { default: x },

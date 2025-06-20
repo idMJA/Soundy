@@ -251,7 +251,11 @@ export default {
 							author,
 							playCount,
 							trackId,
-						}: { author: string; playCount: number; trackId: string }) =>
+						}: {
+							author: string;
+							playCount: number;
+							trackId: string;
+						}) =>
 							`By ${author} • Played ${playCount} times\n[Link](${trackId})`,
 						footer: ({ length }) => `Showing top ${length} tracks`,
 						no_data: "No tracks have been played in the last 2 weeks!",

@@ -40,7 +40,7 @@ const option = {
 })
 @SoundyOptions({ cooldown: 10, category: SoundyCategory.Configurations })
 @Options(option)
-export default class SetlangCommand extends Command {
+export default class SetLocaleCommand extends Command {
 	public override async run(ctx: CommandContext<typeof option>) {
 		const { client, options, guildId } = ctx;
 		const { locale } = options;

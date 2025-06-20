@@ -17,7 +17,7 @@ export default createLavalinkEvent({
 		if (
 			typeof rawChannel === "object" &&
 			rawChannel !== null &&
-			Object.prototype.hasOwnProperty.call(rawChannel, "id") &&
+			Object.hasOwn(rawChannel, "id") &&
 			typeof (rawChannel as { id: unknown }).id === "string"
 		) {
 			channelId = (rawChannel as { id: string }).id;

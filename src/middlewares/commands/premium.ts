@@ -25,7 +25,7 @@ export const checkPremium = createMiddleware<void>(async (middle) => {
 	const { client, command } = context;
 
 	// Robust category detection
-	let category: SoundyCategory | undefined = undefined;
+	let category: SoundyCategory | undefined;
 	if ("category" in command && typeof command.category !== "undefined") {
 		category = command.category as SoundyCategory;
 	} else if (
