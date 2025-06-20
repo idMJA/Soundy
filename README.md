@@ -2,10 +2,11 @@
 
 # 🎵 Soundy
 
-<img src="https://img.shields.io/badge/Discord-Bot-7289DA?style=for-the-badge&logo=discord&logoColor=white" alt="Discord Bot">
-<img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js">
-<img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
-<img src="https://img.shields.io/badge/License-AGPL--3.0-blue?style=for-the-badge" alt="License">
+[![Discord Bot](https://img.shields.io/badge/Discord-Bot-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.dev/)
+[![Bun](https://img.shields.io/badge/Bun-F472B6?style=for-the-badge&logo=bun&logoColor=white)](https://bun.sh/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Turso](https://img.shields.io/badge/Turso-4FF8D2?style=for-the-badge&logo=turso&logoColor=black)](https://turso.tech/)
+[![License](https://img.shields.io/badge/License-AGPL--3.0-blue?style=for-the-badge)](LICENSE)
 
 **A powerful, feature-rich Discord music bot built with [Seyfert](https://github.com/tiramisulabs/Seyfert) and [lavalink-client](https://github.com/Tomato6966/lavalink-client)**
 
@@ -58,7 +59,6 @@
 
 | Requirement | Version | Download |
 |:---:|:---:|:---:|
-| **Node.js** | 18+ | [Download](https://nodejs.org/) |
 | **Bun** | Latest | [Download](https://bun.sh/) |
 | **Discord Bot** | - | [Create Bot](https://discord.com/developers/applications) |
 | **Turso Database** | - | [Get Database](https://turso.tech/) |
