@@ -3,7 +3,7 @@ import { readdirSync, statSync } from "node:fs";
 import { join, extname } from "node:path";
 import type { Lavalink } from "#soundy/utils";
 import type { LavalinkManagerEvents, NodeManagerEvents } from "lavalink-client";
-import type Soundy from "../../../client/Soundy";
+import type Soundy from "#soundy/client";
 
 export class LavalinkHandler {
 	// Map event name ke { event, filepath, run }
@@ -17,7 +17,7 @@ export class LavalinkHandler {
 		this.client = client;
 	}
 
-	async load(directory = join(__dirname, "../../../lavalink")): Promise<void> {
+	async load(directory = join(process.cwd(), "src/lavalink")): Promise<void> {
 		const files = this.getFiles(directory);
 		for (const file of files) {
 			const imported = await this.dynamicImport(file);

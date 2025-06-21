@@ -40,6 +40,7 @@
     
     /* Path Mapping */
     "baseUrl": ".",
+    "rootDir": "./src",
     "paths": {
       "#soundy/client": ["./src/client/Soundy.ts"],
       "#soundy/config": ["./src/config/config.ts"],
@@ -58,10 +59,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "**/__test__/**/*",
-    "**/__tests__/**/*"
+    "drizzle.config.ts",
   ],
   
   /* Additional Options */
