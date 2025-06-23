@@ -26,7 +26,7 @@ export default createLavalinkEvent({
 			await sendNodeLog(client, "track-error", player.node, {
 				exception: payload.exception,
 				track: track,
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				// biome-ignore lint/suspicious/noExplicitAny: Lavalink event payload types are dynamic and may not match strict typings, so 'any' is used for compatibility.
 			} as any);
 
 			// If the track has a text channel, send an error message

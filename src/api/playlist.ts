@@ -20,7 +20,9 @@ export function createPlaylistAPI(client: UsingClient) {
 			})
 			// View a playlist by its ID
 			.get("/viewById/:playlistId", async ({ params }) => {
-				const playlist = await client.database.getPlaylistById(params.playlistId);
+				const playlist = await client.database.getPlaylistById(
+					params.playlistId,
+				);
 				if (!playlist) return { error: "Playlist not found" };
 				return { playlist };
 			})

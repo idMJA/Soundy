@@ -7,7 +7,7 @@ import type { AnyContext } from "seyfert";
  * @param {number} depth The depth to inspect.
  * @returns {string} The inspected object.
  */
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+// biome-ignore lint/suspicious/noExplicitAny: This utility is meant to inspect any value, so 'any' is required for flexibility.
 export const getInspect = (object: any, depth: number): string =>
 	inspect(object, { depth });
 
@@ -34,7 +34,7 @@ export const getCollectionKey = (ctx: AnyContext): string => {
  * @returns
  */
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+// biome-ignore lint/suspicious/noExplicitAny: This utility is meant to inspect any error or value, so 'any' is required for flexibility.
 export const getDepth = (error: any, depth = 0): string =>
 	inspect(error, { depth });
 

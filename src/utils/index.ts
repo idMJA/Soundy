@@ -23,11 +23,11 @@ export * from "./Errors/DiscordLog";
 export * from "./Handler/Validate";
 
 // Lavalink
-export * from "./lavalink/Events/LavalinkEvents";
-export * from "./lavalink/Events/LavalinkHandler";
-export * from "./lavalink/Events/NodeLog";
-export * from "./lavalink/Player/PlayerSaver";
-export * from "./lavalink/Player/Autoplay";
+export * from "./Lavalink/Events/LavalinkEvents";
+export * from "./Lavalink/Events/LavalinkHandler";
+export * from "./Lavalink/Events/NodeLog";
+export * from "./Lavalink/Player/PlayerSaver";
+export * from "./Lavalink/Player/Autoplay";
 
 // UI utilities
 export * from "./UI/Paginator";

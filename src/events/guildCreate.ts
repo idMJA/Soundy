@@ -1,5 +1,5 @@
 import { ActionRow, Button, Embed, createEvent } from "seyfert";
-import { ButtonStyle } from "seyfert/lib/types/index.js";
+import { ButtonStyle } from "seyfert/lib/types";
 
 export default createEvent({
 	data: { name: "guildCreate" },

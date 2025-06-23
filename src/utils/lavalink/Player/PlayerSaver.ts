@@ -208,7 +208,7 @@ export class PlayerSaver {
 		try {
 			const options = (playerData.options as Record<string, unknown>) || {};
 
-			let queueData: PlayerData["queue"] = undefined;
+			let queueData: PlayerData["queue"];
 			try {
 				const queueObject = playerData.queue as Record<string, unknown>;
 				if (queueObject && Array.isArray(queueObject.tracks)) {

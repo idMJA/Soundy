@@ -31,7 +31,7 @@ const option = {
 @LocalesT("cmd.prefix.name", "cmd.prefix.description")
 @SoundyOptions({ cooldown: 10, category: SoundyCategory.Configurations })
 @Options(option)
-export default class SetlangCommand extends Command {
+export default class PrefixCommand extends Command {
 	public override async run(ctx: CommandContext<typeof option>) {
 		const { client, options, guildId } = ctx;
 		if (!guildId) return;

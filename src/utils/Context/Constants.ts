@@ -1,11 +1,11 @@
-import { readFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 
 import {
 	ActivityType,
 	type GatewayActivityUpdateData,
 } from "seyfert/lib/types";
 
-const packageJSON = JSON.parse(await readFile("./package.json", "utf-8"));
+const packageJSON = JSON.parse(readFileSync("./package.json", "utf-8"));
 
 /**
  * Soundy version.

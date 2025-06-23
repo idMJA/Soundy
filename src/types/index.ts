@@ -12,7 +12,7 @@ export * from "./core/Configuration";
 export * from "./core/Keys";
 
 // Lavalink types
-export * from "./lavalink/Lavalink";
+export * from "./Lavalink/Lavalink";
 
 // API/Options types
 export * from "./api/Options";

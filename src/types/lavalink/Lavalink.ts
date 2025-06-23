@@ -1,5 +1,5 @@
 import type { LavalinkManagerEvents, NodeManagerEvents } from "lavalink-client";
-import type Soundy from "../../client/Soundy";
+import type Soundy from "#soundy/client";
 
 /**
  * All lavalink events.

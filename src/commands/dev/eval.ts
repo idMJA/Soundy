@@ -76,7 +76,7 @@ export default class EvalCommand extends Command {
 	})
 	async run(
 		ctx: CommandContext<typeof option>,
-		// biome-ignore lint/suspicious/noConfusingVoidType: <explanation>
+		// biome-ignore lint/suspicious/noConfusingVoidType: This command can return void, Message, or WebhookMessage depending on the context and result.
 	): Promise<Message | WebhookMessage | void> {
 		const { client, options, author, channelId } = ctx;
 
@@ -85,7 +85,7 @@ export default class EvalCommand extends Command {
 
 		let code: string | null = options.code ?? null;
 		let output: string | null = null;
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		// biome-ignore lint/suspicious/noExplicitAny: The type of evaluated code is dynamic and cannot be strictly typed.
 		let typecode: any;
 
 		await client.channels.typing(channelId);
@@ -113,7 +113,7 @@ export default class EvalCommand extends Command {
 				if (/^(?:\(?)\s*await\b/.test(code.toLowerCase()))
 					code = `(async () => ${code})()`;
 
-				// biome-ignore lint/security/noGlobalEval: <explanation>
+				// biome-ignore lint/security/noGlobalEval: This eval is intentionally used for developer command evaluation in a controlled environment.
 				output = await eval(code ?? "");
 				typecode = typeof output;
 				output = getDepth(output, depth)
