@@ -142,7 +142,7 @@ export function setupSoundyWebSocket(
 						voiceChannelId: msg.voiceChannelId,
 						textChannelId: msg.voiceChannelId, // set textChannelId ke id voice
 						selfDeaf: true,
-						volume: client.config.defaultVolume || 50,
+						volume: client.config.defaultVolume,
 					});
 				if (!player.connected) {
 					await player.connect();
@@ -250,6 +250,16 @@ export function setupSoundyWebSocket(
 			if (msg.type === "skip" && msg.guildId) {
 				const player = client.manager.getPlayer(msg.guildId);
 				if (player) {
+					if (player.queue.tracks.length === 0) {
+						ws.send(
+							JSON.stringify({
+								type: "skip",
+								success: false,
+								message: "No tracks in the queue to skip",
+							}),
+						);
+						return;
+					}
 					await player.skip();
 					ws.send(JSON.stringify({ type: "skip", success: true }));
 				} else {
@@ -391,7 +401,7 @@ export function setupSoundyWebSocket(
 						voiceChannelId: String(voiceChannelId),
 						textChannelId: String(voiceChannelId), // set textChannelId ke id voice
 						selfDeaf: true,
-						volume: client.config.defaultVolume || 50,
+						volume: client.config.defaultVolume,
 					});
 				if (!player.connected) {
 					await player.connect();
@@ -467,6 +477,25 @@ export function setupSoundyWebSocket(
 				}
 				return;
 			}
+			// Set volume
+			if (msg.type === "set-volume" && msg.guildId && typeof msg.volume === "number") {
+				const player = client.manager.getPlayer(msg.guildId);
+				if (player) {
+					await player.setVolume(msg.volume);
+					ws.send(JSON.stringify({
+						type: "set-volume",
+						success: true,
+						volume: player.volume,
+					}));
+				} else {
+					ws.send(JSON.stringify({
+						type: "set-volume",
+						success: false,
+						message: "No active player",
+					}));
+				}
+				return;
+			}
 		},
 	});
 }
@@ -483,7 +512,11 @@ interface WebSocketServerWithClients {
 
 // Helper agar akses clients type-safe tanpa any di seluruh kode
 function getWsClients(app: Elysia | ElysiaApp) {
-	return (app.server as WebSocketServerWithClients).clients;
+    const server = app.server as WebSocketServerWithClients;
+    if (!server || !server.clients) {
+        return null; // Return null if no clients
+    }
+    return server.clients;
 }
 
 // --- WebSocket broadcast helper ---
@@ -493,7 +526,7 @@ function broadcastPlayerStatus(
 	app: ElysiaApp | Elysia,
 ) {
 	const clients = getWsClients(app);
-	if (!clients) return;
+	if (!clients) return; // Ensure clients is not null
 	const statusMsg = JSON.stringify({
 		type: "status",
 		guildId,

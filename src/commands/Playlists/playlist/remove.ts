@@ -76,13 +76,19 @@ export default class RemovePlaylistCommand extends SubCommand {
 			}
 
 			const trackToRemove = tracks[trackIndex];
-			// When calling the remove function, filter out undefined values
-			const tracksToRemove = [trackToRemove].filter(
-				(uri): uri is string => typeof uri === "string",
-			);
-			for (const uri of tracksToRemove) {
-				await client.database.removeSong(userId, options.name, uri);
+			if (!trackToRemove || !trackToRemove.url) {
+				return ctx.editOrReply({
+					embeds: [
+						{
+							color: client.config.color.no,
+							description: `${client.config.emoji.no} ${cmd.playlist.sub.remove.run.invalid}`,
+						},
+					],
+					flags: MessageFlags.Ephemeral,
+				});
 			}
+
+			await client.database.removeSong(userId, options.name, trackToRemove.url);
 
 			return ctx.editOrReply({
 				embeds: [

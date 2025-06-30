@@ -565,15 +565,27 @@ export class SoundyDatabase {
 	 * Create a new playlist
 	 * @param userId The user ID
 	 * @param name The playlist name
-	 * @param guildId The guild ID
 	 */
-	public async createPlaylist(userId: string, name: string, guildId: string) {
-		return await this.db.insert(schema.playlist).values({
-			id: randomUUID(),
-			userId,
-			name,
-			guildId,
-		});
+	public async createPlaylist(userId: string, name: string): Promise<boolean> {
+		try {
+			await this.db.insert(schema.playlist).values({
+				id: crypto.randomUUID(),
+				userId,
+				name,
+			});
+			return true;
+		} catch (error) {
+			if (
+				typeof error === "object" &&
+				error !== null &&
+				"code" in error &&
+				(error as { code?: string }).code === "SQLITE_CONSTRAINT"
+			) {
+				console.error("SQLite constraint error while creating playlist:", error);
+				return false;
+			}
+			throw error;
+		}
 	}
 
 	/**
@@ -593,20 +605,21 @@ export class SoundyDatabase {
 	 * Add tracks to a playlist
 	 * @param userId The user ID
 	 * @param name The playlist name
-	 * @param tracks Array of track URLs
+	 * @param tracks Array of track objects with URL and info
 	 */
 	public async addTracksToPlaylist(
 		userId: string,
 		name: string,
-		tracks: string[],
+		tracks: Array<{ url: string; info?: object }>,
 	) {
 		const playlist = await this.getPlaylist(userId, name);
 		if (!playlist) return;
 
-		const trackValues = tracks.map((url) => ({
+		const trackValues = tracks.map((track) => ({
 			id: randomUUID(),
 			playlistId: playlist.id,
-			url,
+			url: track.url,
+			info: track.info ? JSON.stringify(track.info) : null,
 		}));
 
 		await this.db.insert(schema.playlistTrack).values(trackValues);
@@ -641,7 +654,10 @@ export class SoundyDatabase {
 		const playlist = await this.getPlaylist(userId, name);
 		if (!playlist) return null;
 
-		return playlist.tracks.map((track: { url: string }) => track.url);
+		return playlist.tracks.map((track) => ({
+			url: track.url,
+			info: track.info ? JSON.parse(track.info) : null,
+		}));
 	}
 
 	/**

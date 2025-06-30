@@ -31,8 +31,6 @@ export default class CreatePlaylistCommand extends SubCommand {
 	async run(ctx: CommandContext<typeof option>) {
 		const { client, options } = ctx;
 		const userId = ctx.author.id;
-		const guildId = await ctx.guild();
-		if (!guildId) return;
 
 		const { cmd } = await ctx.getLocale();
 
@@ -56,7 +54,11 @@ export default class CreatePlaylistCommand extends SubCommand {
 			}
 
 			// Create new playlist
-			await client.database.createPlaylist(userId, options.name, guildId.id);
+			const createdPlaylist = await client.database.createPlaylist(userId, options.name);
+
+			if (!createdPlaylist) {
+				throw new Error("Failed to create playlist");
+			}
 
 			return ctx.editOrReply({
 				embeds: [
@@ -66,7 +68,8 @@ export default class CreatePlaylistCommand extends SubCommand {
 					},
 				],
 			});
-		} catch {
+		} catch (error) {
+			console.error("Error creating playlist:", error);
 			return ctx.editOrReply({
 				embeds: [
 					{

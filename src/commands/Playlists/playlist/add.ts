@@ -169,15 +169,24 @@ export default class AddPlaylistCommand extends SubCommand {
 				});
 			}
 
-			const tracksToAdd =
-				result.tracks.length > 1
-					? result.tracks.map((t) => t.info.uri)
-					: [result.tracks[0]?.info.uri];
+			const tracksToAdd = result.tracks.map((track) => ({
+				url: track.info.uri,
+				info: {
+					identifier: track.info.identifier,
+					author: track.info.author,
+					length: track.info.duration,
+					isStream: track.info.isStream,
+					title: track.info.title,
+					uri: track.info.uri,
+					artworkUrl: track.info.artworkUrl,
+					isrc: track.info.isrc,
+				},
+			}));
 
 			await client.database.addTracksToPlaylist(
 				userId,
 				options.playlist,
-				tracksToAdd.filter((uri): uri is string => typeof uri === "string"),
+				tracksToAdd,
 			);
 
 			const responseMessage =

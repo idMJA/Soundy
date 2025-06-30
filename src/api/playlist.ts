@@ -27,19 +27,18 @@ export function createPlaylistAPI(client: UsingClient) {
 				return { playlist };
 			})
 			.post("/create", async ({ body }) => {
-				const { userId, name, guildId } = body as {
+				const { userId, name } = body as {
 					userId: string;
 					name: string;
-					guildId?: string;
 				};
-				await client.database.createPlaylist(userId, name, guildId ?? "");
+				await client.database.createPlaylist(userId, name);
 				return { success: true };
 			})
 			.post("/add", async ({ body }) => {
 				const { userId, playlist, tracks } = body as {
 					userId: string;
 					playlist: string;
-					tracks: string[];
+					tracks: Array<{ url: string; info?: object }>;
 				};
 				await client.database.addTracksToPlaylist(userId, playlist, tracks);
 				return { success: true };

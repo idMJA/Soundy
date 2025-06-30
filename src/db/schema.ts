@@ -38,9 +38,8 @@ export const guild = sqliteTable("guild", {
 
 export const playlist = sqliteTable("playlist", {
 	id: text("id").primaryKey(),
-	userId: text("user_id").notNull().unique("playlist_user_id_idx"),
+	userId: text("user_id").notNull(),
 	name: text("name").notNull(),
-	guildId: text("guild_id").notNull(),
 	createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -50,6 +49,7 @@ export const playlistTrack = sqliteTable("playlist_track", {
 	playlistId: text("playlist_id")
 		.notNull()
 		.references(() => playlist.id, { onDelete: "cascade" }),
+	info: text("info"), // menyimpan info lagu dalam bentuk JSON
 });
 
 // =========================================

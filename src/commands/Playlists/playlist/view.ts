@@ -71,13 +71,18 @@ export default class ViewPlaylistCommand extends SubCommand {
 		const pages = Math.ceil(tracks.length / tracksPerPage);
 		const paginator = new EmbedPaginator(ctx);
 
-		// Load track details for each URL
-		const trackDetails = await Promise.all(
-			tracks.map(async (trackUrl) => {
-				const result = await client.manager.search(trackUrl);
-				return result.tracks[0];
-			}),
-		);
+		// Get tracks with stored info
+		const trackDetails = tracks.map((track) => {
+			if (track.info) {
+				// Use stored info
+				return {
+					info: track.info,
+				};
+			} else {
+				// Fallback: search for track info
+				return null;
+			}
+		}).filter(Boolean);
 
 		for (let page = 0; page < pages; page++) {
 			const start = page * tracksPerPage;
@@ -93,11 +98,11 @@ export default class ViewPlaylistCommand extends SubCommand {
 				.setDescription(
 					currentTracks
 						.map((track, i) => {
-							if (!track)
+							if (!track || !track.info)
 								return `${start + i + 1}. ${cmd.playlist.sub.view.run.failed}`;
 							const duration = track.info.isStream
 								? "LIVE"
-								: TimeFormat.toDotted(track.info.duration);
+								: TimeFormat.toDotted(track.info.length);
 							const title =
 								track.info.title.length > 45
 									? `${track.info.title.slice(0, 42)}...`
