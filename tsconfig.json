@@ -1,70 +1,64 @@
 {
-  "compilerOptions": {
-    /* Language and Environment */
-    "target": "ES2024",
-    "lib": ["ESNext", "WebWorker"],
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    
-    /* Modules */
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "allowImportingTsExtensions": false,
-    "esModuleInterop": true,
-    
-    /* Emit */
-    "declaration": true,
-    "sourceMap": false,
-    "outDir": "./dist",
-    "noEmit": false,
-    "downlevelIteration": false,
-    "stripInternal": true,
-    "preserveConstEnums": true,
-    
-    /* Type Checking */
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "noImplicitThis": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    
-    /* Completeness */
-    "skipLibCheck": true,
-    "noErrorTruncation": true,
-    
-    /* Path Mapping */
-    "baseUrl": ".",
-    "rootDir": "./src",
-    "paths": {
-      "#soundy/client": ["./src/client/Soundy.ts"],
-      "#soundy/config": ["./src/config/config.ts"],
-      "#soundy/types": ["./src/types/index.ts"],
-      "#soundy/utils": ["./src/utils/index.ts"],
-      "#soundy/api": ["./src/api/server.ts"],
-      "#soundy/db": ["./src/db/index.ts"],
-      "#soundy/middlewares": ["./src/middlewares/index.ts"]
-    }
-  },
-  
-  /* Project Structure */
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "drizzle.config.ts",
-  ],
-  
-  /* Additional Options */
-  "ts-node": {
-    "esm": true
-  },
-  "compileOnSave": false
+	"compilerOptions": {
+		/* Language and Environment */
+		"target": "ES2024",
+		"lib": ["ESNext", "WebWorker"],
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+
+		/* Modules */
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"resolveJsonModule": true,
+		"allowImportingTsExtensions": false,
+		"esModuleInterop": true,
+
+		/* Emit */
+		"declaration": true,
+		"sourceMap": false,
+		"outDir": "./dist",
+		"noEmit": false,
+		"downlevelIteration": false,
+		"stripInternal": true,
+		"preserveConstEnums": true,
+
+		/* Type Checking */
+		"strict": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"noImplicitThis": true,
+		"noUncheckedIndexedAccess": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+
+		/* Completeness */
+		"skipLibCheck": true,
+		"noErrorTruncation": true,
+
+		/* Path Mapping */
+		"baseUrl": ".",
+		"rootDir": "./src",
+		"paths": {
+			"#soundy/client": ["./src/client/Soundy.ts"],
+			"#soundy/config": ["./src/config/config.ts"],
+			"#soundy/types": ["./src/types/index.ts"],
+			"#soundy/utils": ["./src/utils/index.ts"],
+			"#soundy/api": ["./src/api/server.ts"],
+			"#soundy/db": ["./src/db/index.ts"],
+			"#soundy/middlewares": ["./src/middlewares/index.ts"]
+		}
+	},
+
+	/* Project Structure */
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist", "drizzle.config.ts"],
+
+	/* Additional Options */
+	"ts-node": {
+		"esm": true
+	},
+	"compileOnSave": false
 }

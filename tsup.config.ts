@@ -4,6 +4,6 @@ export default defineConfig((options: Options) => ({
 	entryPoints: ["src/**/*.ts"],
 	clean: true,
 	format: "cjs",
-    legacyOutput: true,
+	legacyOutput: true,
 	...options,
 }));
