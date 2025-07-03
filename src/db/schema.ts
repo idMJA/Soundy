@@ -33,6 +33,23 @@ export const guild = sqliteTable("guild", {
 });
 
 // =========================================
+// Liked Songs Table
+// =========================================
+
+export const likedSongs = sqliteTable("liked_songs", {
+	id: text("id").primaryKey(),
+	userId: text("user_id").notNull(),
+	trackId: text("track_id").notNull(),
+	title: text("title").notNull(),
+	author: text("author").notNull(),
+	uri: text("uri").notNull(),
+	artwork: text("artwork"),
+	length: integer("length"),
+	isStream: integer("is_stream", { mode: "boolean" }).default(false),
+	likedAt: text("liked_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+// =========================================
 // Playlist Related Tables
 // =========================================
 
@@ -61,6 +78,11 @@ export const trackStats = sqliteTable("track_stats", {
 	trackId: text("track_id").notNull(),
 	title: text("title").notNull(),
 	author: text("author").notNull(),
+	uri: text("uri").notNull(),
+	artwork: text("artwork"),
+	length: integer("length"),
+	isStream: integer("is_stream", { mode: "boolean" }).default(false),
+	userId: text("user_id").notNull(), // Tambahkan userId untuk recently played
 	playCount: integer("play_count").notNull().default(1),
 	guildId: text("guild_id").notNull(),
 	lastPlayed: text("last_played").default(sql`CURRENT_TIMESTAMP`),

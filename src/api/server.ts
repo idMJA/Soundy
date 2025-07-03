@@ -2,8 +2,7 @@ import { Elysia } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import type { UsingClient } from "seyfert";
 import { sendVoteWebhook, PlayerSaver } from "#soundy/utils";
-import { createTopAPI, createMusicAPI, createPlaylistAPI } from "./index";
-import { setupSoundyWebSocket, setupPlayerStatusInterval } from "./ws";
+import { createTopAPI, createMusicAPI, createPlaylistAPI, setupSoundyWebSocket, setupPlayerStatusInterval } from "./index";
 
 interface VoteWebhookPayload {
 	user: string;
@@ -41,7 +40,9 @@ interface StatsResponse {
 
 export function APIServer(client: UsingClient): void {
 	const app = new Elysia()
-		.use(swagger())
+		.use(swagger({
+			path: "/docs"
+		}))
 		.post("/vote", async ({ body, set }) => {
 			const vote = body as VoteWebhookPayload;
 			try {

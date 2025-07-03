@@ -306,12 +306,22 @@ export class SoundyDatabase {
 	 * @param title The track title
 	 * @param author The track author
 	 * @param guildId The guild ID
+	 * @param userId The user ID who played the track
+	 * @param uri The track URI
+	 * @param artwork The track artwork URL
+	 * @param length The track length in milliseconds
+	 * @param isStream Whether the track is a stream
 	 */
 	public async updateTrackStats(
 		trackId: string,
 		title: string,
 		author: string,
 		guildId: string,
+		userId: string,
+		uri?: string,
+		artwork?: string,
+		length?: number,
+		isStream?: boolean,
 	): Promise<void> {
 		const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
 
@@ -322,7 +332,7 @@ export class SoundyDatabase {
 
 		const now = new Date().toISOString();
 
-		// Check if track exists for this guild
+		// Check if track exists for this guild and user combination
 		const existingTrack = await this.db
 			.select()
 			.from(schema.trackStats)
@@ -330,6 +340,7 @@ export class SoundyDatabase {
 				and(
 					eq(schema.trackStats.trackId, trackId),
 					eq(schema.trackStats.guildId, guildId),
+					eq(schema.trackStats.userId, userId),
 				),
 			)
 			.get();
@@ -341,6 +352,11 @@ export class SoundyDatabase {
 				.set({
 					playCount: existingTrack.playCount + 1,
 					lastPlayed: now,
+					// Update additional fields if provided
+					...(uri && { uri }),
+					...(artwork && { artwork }),
+					...(length && { length }),
+					...(isStream !== undefined && { isStream }),
 				})
 				.where(eq(schema.trackStats.id, existingTrack.id));
 		} else {
@@ -348,9 +364,14 @@ export class SoundyDatabase {
 			await this.db.insert(schema.trackStats).values({
 				id: randomUUID(),
 				guildId,
+				userId,
 				title,
 				author,
 				trackId,
+				uri: uri || '',
+				artwork: artwork || null,
+				length: length || null,
+				isStream: isStream || false,
 				playCount: 1,
 				lastPlayed: now,
 				createdAt: now,
@@ -1047,6 +1068,260 @@ export class SoundyDatabase {
 				target: schema.guild.id,
 				set: { prefix: null },
 			});
+	}
+
+	/**
+	 * Get recently played tracks for a user, optionally filtered by guild
+	 * @param userId The user ID
+	 * @param guildId Optional guild ID filter
+	 * @param limit Number of tracks to return (default 10)
+	 */
+	public async getRecentlyPlayed(
+		userId: string,
+		guildId?: string,
+		limit = 10
+	): Promise<Array<{
+		id: string;
+		title: string;
+		author: string;
+		uri: string;
+		artwork?: string;
+		length?: number;
+		isStream: boolean;
+		playedAt: string;
+		guildId: string;
+	}>> {
+		let query = this.db
+			.select()
+			.from(schema.trackStats)
+			.where(eq(schema.trackStats.userId, userId))
+			.orderBy(desc(schema.trackStats.lastPlayed))
+			.limit(limit);
+
+		if (guildId) {
+			query = this.db
+				.select()
+				.from(schema.trackStats)
+				.where(
+					and(
+						eq(schema.trackStats.userId, userId),
+						eq(schema.trackStats.guildId, guildId)
+					)
+				)
+				.orderBy(desc(schema.trackStats.lastPlayed))
+				.limit(limit);
+		}
+
+		const results = await query;
+		
+		return results.map(track => ({
+			id: track.trackId,
+			title: track.title,
+			author: track.author,
+			uri: track.uri || '',
+			artwork: track.artwork || undefined,
+			length: track.length || undefined,
+			isStream: !!track.isStream,
+			playedAt: track.lastPlayed || new Date().toISOString(),
+			guildId: track.guildId,
+		}));
+	}
+
+	/**
+	 * Clear recently played tracks for a user
+	 * @param userId The user ID
+	 * @param guildId Optional guild ID to only clear tracks from that guild
+	 */
+	public async clearRecentlyPlayed(userId: string, guildId?: string): Promise<void> {
+		if (guildId) {
+			await this.db
+				.delete(schema.trackStats)
+				.where(
+					and(
+						eq(schema.trackStats.userId, userId),
+						eq(schema.trackStats.guildId, guildId)
+					)
+				);
+		} else {
+			await this.db
+				.delete(schema.trackStats)
+				.where(eq(schema.trackStats.userId, userId));
+		}
+	}
+
+	/**
+	 * Add a track to user's liked songs
+	 * @param userId The user ID
+	 * @param trackId The track ID
+	 * @param title The track title
+	 * @param author The track author
+	 * @param uri The track URI
+	 * @param artwork The track artwork URL
+	 * @param length The track length in milliseconds
+	 * @param isStream Whether the track is a stream
+	 */
+	public async addToLikedSongs(
+		userId: string,
+		trackId: string,
+		title: string,
+		author: string,
+		uri: string,
+		artwork?: string,
+		length?: number,
+		isStream?: boolean,
+	): Promise<boolean> {
+		try {
+			// Check if already liked
+			const existing = await this.db
+				.select()
+				.from(schema.likedSongs)
+				.where(
+					and(
+						eq(schema.likedSongs.userId, userId),
+						eq(schema.likedSongs.trackId, trackId),
+					),
+				)
+				.get();
+
+			if (existing) {
+				return false; // Already liked
+			}
+
+			await this.db.insert(schema.likedSongs).values({
+				id: randomUUID(),
+				userId,
+				trackId,
+				title,
+				author,
+				uri,
+				artwork: artwork || null,
+				length: length || null,
+				isStream: isStream || false,
+				likedAt: new Date().toISOString(),
+			});
+
+			return true; // Successfully added
+		} catch (error) {
+			console.error("Error adding to liked songs:", error);
+			return false;
+		}
+	}
+
+	/**
+	 * Remove a track from user's liked songs
+	 * @param userId The user ID
+	 * @param trackId The track ID
+	 */
+	public async removeFromLikedSongs(
+		userId: string,
+		trackId: string,
+	): Promise<boolean> {
+		try {
+			await this.db
+				.delete(schema.likedSongs)
+				.where(
+					and(
+						eq(schema.likedSongs.userId, userId),
+						eq(schema.likedSongs.trackId, trackId),
+					),
+				);
+
+			return true; // Successfully removed
+		} catch (error) {
+			console.error("Error removing from liked songs:", error);
+			return false;
+		}
+	}
+
+	/**
+	 * Check if a track is liked by user
+	 * @param userId The user ID
+	 * @param trackId The track ID
+	 */
+	public async isTrackLiked(
+		userId: string,
+		trackId: string,
+	): Promise<boolean> {
+		try {
+			const existing = await this.db
+				.select()
+				.from(schema.likedSongs)
+				.where(
+					and(
+						eq(schema.likedSongs.userId, userId),
+						eq(schema.likedSongs.trackId, trackId),
+					),
+				)
+				.get();
+
+			return !!existing;
+		} catch (error) {
+			console.error("Error checking liked status:", error);
+			return false;
+		}
+	}
+
+	/**
+	 * Get user's liked songs
+	 * @param userId The user ID
+	 * @param limit The maximum number of results to return
+	 */
+	public async getLikedSongs(
+		userId: string,
+		limit: number = 50,
+	): Promise<Array<{
+		id: string;
+		trackId: string;
+		title: string;
+		author: string;
+		uri: string;
+		artwork: string | null;
+		length: number | null;
+		isStream: boolean;
+		likedAt: string;
+	}>> {
+		try {
+			const likedSongs = await this.db
+				.select()
+				.from(schema.likedSongs)
+				.where(eq(schema.likedSongs.userId, userId))
+				.orderBy(desc(schema.likedSongs.likedAt))
+				.limit(limit);
+
+			return likedSongs.map(track => ({
+				id: track.id,
+				trackId: track.trackId,
+				title: track.title,
+				author: track.author,
+				uri: track.uri,
+				artwork: track.artwork,
+				length: track.length,
+				isStream: !!track.isStream,
+				likedAt: track.likedAt ?? new Date().toISOString(),
+			}));
+		} catch (error) {
+			console.error("Error fetching liked songs:", error);
+			return [];
+		}
+	}
+
+	/**
+	 * Get count of user's liked songs
+	 * @param userId The user ID
+	 */
+	public async getLikedSongsCount(userId: string): Promise<number> {
+		try {
+			const result = await this.db
+				.select({ count: sql<number>`count(*)` })
+				.from(schema.likedSongs)
+				.where(eq(schema.likedSongs.userId, userId))
+				.get();
+
+			return result?.count || 0;
+		} catch (error) {
+			console.error("Error getting liked songs count:", error);
+			return 0;
+		}
 	}
 }
 

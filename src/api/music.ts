@@ -148,5 +148,79 @@ export function createMusicAPI(client: UsingClient) {
 					return { error: "Internal Server Error" };
 				}
 			})
+
+			// Get liked songs for a user
+			.get("/liked/:userId", async ({ params: { userId }, set }) => {
+				try {
+					const likedSongs = await client.database.getLikedSongs(userId);
+					return { likedSongs };
+				} catch (error) {
+					client.logger.error("Error fetching liked songs:", error);
+					set.status = 500;
+					return { error: "Internal Server Error" };
+				}
+			})
+
+			// Like or unlike a track for a user
+			.post("/like", async ({ body, set }) => {
+				interface LikeRequestBody {
+					userId: string;
+					trackId: string;
+					title?: string;
+					author?: string;
+					uri?: string;
+					artwork?: string;
+					length?: number;
+					isStream?: boolean;
+					action: "like" | "unlike";
+				}
+				const { userId, trackId, title, author, uri, artwork, length, isStream, action } = body as LikeRequestBody;
+				if (!userId || !trackId || !action) {
+					set.status = 400;
+					return { error: 'Missing required fields: userId, trackId, action' };
+				}
+				try {
+					if (action === "like") {
+						const success = await client.database.addToLikedSongs(
+							userId,
+							trackId,
+							title ?? "Unknown Title",
+							author ?? "Unknown Author",
+							uri ?? "",
+							artwork,
+							length,
+							isStream
+						);
+						return { success };
+					} else if (action === "unlike") {
+						const success = await client.database.removeFromLikedSongs(userId, trackId);
+						return { success };
+					} else {
+						set.status = 400;
+						return { error: 'Invalid action. Use "like" or "unlike".' };
+					}
+				} catch (error) {
+					client.logger.error("Error updating liked songs:", error);
+					set.status = 500;
+					return { error: "Internal Server Error" };
+				}
+			})
+
+			// Get recently played tracks for a user
+			.get("/recent/:userId", async ({ params, query }) => {
+				const limit = query.limit ? parseInt(query.limit as string) : 10;
+				const guildId = query.guildId as string | undefined;
+				try {
+					const recentTracks = await client.database.getRecentlyPlayed(
+						params.userId,
+						guildId,
+						Math.min(limit, 50)
+					);
+					return { tracks: recentTracks };
+				} catch (error) {
+					client.logger.error("Error fetching recently played:", error);
+					return { tracks: [] };
+				}
+			})
 	);
 }

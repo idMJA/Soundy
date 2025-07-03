@@ -33,6 +33,11 @@ export default createLavalinkEvent({
 				track.info.title,
 				track.info.author,
 				player.guildId,
+				(track.requester as User).id,
+				track.info.uri,
+				track.info.artworkUrl ?? undefined,
+				track.info.duration,
+				track.info.isStream,
 			);
 			await client.database.updateUserStats(
 				(track.requester as User).id,

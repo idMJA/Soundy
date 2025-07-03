@@ -30,6 +30,7 @@ export const emoji = {
 	question: "<:question:1305038160962785352>",
 	pencil: "<:pencil:1286420448174669915>",
 	think: "<a:think:1383156714404188260>",
+	heart: "<:heart:1390394352416723045>",
 
 	// NODE EMOJIS //
 	nodeOn: "<:g_:1286428522084306955>",
