@@ -17,7 +17,7 @@ export class LavalinkHandler {
 		this.client = client;
 	}
 
-	async load(directory = join(__dirname, "../../../lavalink")): Promise<void> {
+	async load(directory = join(process.cwd(), "src/lavalink")): Promise<void> {
 		const files = this.getFiles(directory);
 		for (const file of files) {
 			const imported = await this.dynamicImport(file);

@@ -7,7 +7,6 @@ import {
 	createStringOption,
 } from "seyfert";
 import { SoundyOptions } from "#soundy/utils";
-
 import { MessageFlags } from "seyfert/lib/types";
 import { SoundyCategory } from "#soundy/types";
 
