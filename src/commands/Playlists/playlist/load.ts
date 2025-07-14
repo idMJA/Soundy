@@ -73,7 +73,7 @@ export default class LoadPlaylistCommand extends SubCommand {
 
 		// Load and add tracks
 		for (const trackUrl of tracks) {
-			const result = await client.manager.search(trackUrl);
+			const result = await client.manager.search(trackUrl.url);
 			if (result.tracks[0]) {
 				player.queue.add(result.tracks[0]);
 			}
