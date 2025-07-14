@@ -174,10 +174,20 @@ export function createMusicAPI(client: UsingClient) {
 					isStream?: boolean;
 					action: "like" | "unlike";
 				}
-				const { userId, trackId, title, author, uri, artwork, length, isStream, action } = body as LikeRequestBody;
+				const {
+					userId,
+					trackId,
+					title,
+					author,
+					uri,
+					artwork,
+					length,
+					isStream,
+					action,
+				} = body as LikeRequestBody;
 				if (!userId || !trackId || !action) {
 					set.status = 400;
-					return { error: 'Missing required fields: userId, trackId, action' };
+					return { error: "Missing required fields: userId, trackId, action" };
 				}
 				try {
 					if (action === "like") {
@@ -189,11 +199,14 @@ export function createMusicAPI(client: UsingClient) {
 							uri ?? "",
 							artwork,
 							length,
-							isStream
+							isStream,
 						);
 						return { success };
 					} else if (action === "unlike") {
-						const success = await client.database.removeFromLikedSongs(userId, trackId);
+						const success = await client.database.removeFromLikedSongs(
+							userId,
+							trackId,
+						);
 						return { success };
 					} else {
 						set.status = 400;
@@ -214,7 +227,7 @@ export function createMusicAPI(client: UsingClient) {
 					const recentTracks = await client.database.getRecentlyPlayed(
 						params.userId,
 						guildId,
-						Math.min(limit, 50)
+						Math.min(limit, 50),
 					);
 					return { tracks: recentTracks };
 				} catch (error) {

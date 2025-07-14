@@ -54,7 +54,10 @@ export default class CreatePlaylistCommand extends SubCommand {
 			}
 
 			// Create new playlist
-			const createdPlaylist = await client.database.createPlaylist(userId, options.name);
+			const createdPlaylist = await client.database.createPlaylist(
+				userId,
+				options.name,
+			);
 
 			if (!createdPlaylist) {
 				throw new Error("Failed to create playlist");

@@ -8,4 +8,6 @@ bun.lock
 bun.lockb
 package-lock.json
 .env
+.env.keys
+.env.production
 sessions.json

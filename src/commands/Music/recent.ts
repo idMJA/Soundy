@@ -24,7 +24,7 @@ export default class RecentlyPlayedCommand extends Command {
 			const recentTracks = await client.database.getRecentlyPlayed(
 				userId,
 				guildId?.id,
-				10
+				10,
 			);
 
 			if (!recentTracks || recentTracks.length === 0) {
@@ -43,17 +43,15 @@ export default class RecentlyPlayedCommand extends Command {
 
 			const embed = new Embed()
 				.setColor(client.config.color.primary)
-				.setTitle(
-					`${client.config.emoji.clock} Recently Played Tracks`
-				)
+				.setTitle(`${client.config.emoji.clock} Recently Played Tracks`)
 				.setDescription(
 					recentTracks
 						.map((track, i) => {
 							const duration = track.isStream
 								? "LIVE"
 								: track.length
-								? TimeFormat.toDotted(track.length)
-								: "Unknown";
+									? TimeFormat.toDotted(track.length)
+									: "Unknown";
 							const title =
 								track.title.length > 45
 									? `${track.title.slice(0, 42)}...`
@@ -64,7 +62,7 @@ export default class RecentlyPlayedCommand extends Command {
 									: track.author;
 							return `${i + 1}. **[${title}](${track.uri})** by \`${author}\`\n┗ \`${duration}\` • <t:${Math.floor(new Date(track.playedAt).getTime() / 1000)}:R>`;
 						})
-						.join("\n\n")
+						.join("\n\n"),
 				)
 				.setFooter({
 					text: `Requested by ${user.username}`,

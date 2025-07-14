@@ -13,11 +13,7 @@ import { MessageFlags } from "seyfert/lib/types";
 	integrationTypes: ["GuildInstall"],
 	contexts: ["Guild"],
 })
-@Middlewares([
-	"checkNodes",
-	"checkVoiceChannel",
-	"checkBotVoiceChannel",
-])
+@Middlewares(["checkNodes", "checkVoiceChannel", "checkBotVoiceChannel"])
 export default class LikeCommand extends Command {
 	async run(ctx: CommandContext): Promise<void> {
 		const { client, guildId } = ctx;
@@ -66,12 +62,17 @@ export default class LikeCommand extends Command {
 
 			if (isLiked) {
 				// Unlike the track
-				const success = await client.database.removeFromLikedSongs(userId, trackId);
+				const success = await client.database.removeFromLikedSongs(
+					userId,
+					trackId,
+				);
 				if (success) {
 					const embed = new Embed()
 						.setColor(client.config.color.primary)
 						.setTitle(`${client.config.emoji.heart} Removed from Liked Songs`)
-						.setDescription(`**Removed from your liked songs**\n\n${client.config.emoji.music} **[${title}](${uri})**\n${client.config.emoji.artist} \`${author}\``)
+						.setDescription(
+							`**Removed from your liked songs**\n\n${client.config.emoji.music} **[${title}](${uri})**\n${client.config.emoji.artist} \`${author}\``,
+						)
 						.setTimestamp();
 					if (artwork) {
 						embed.setThumbnail(artwork);
@@ -98,13 +99,15 @@ export default class LikeCommand extends Command {
 					uri,
 					artwork,
 					length,
-					isStream
+					isStream,
 				);
 				if (success) {
 					const embed = new Embed()
 						.setColor(client.config.color.primary)
 						.setTitle(`${client.config.emoji.heart} Added to Liked Songs`)
-						.setDescription(`${client.config.emoji.music} **[${title}](${uri})**\n${client.config.emoji.artist} \`${author}\``)
+						.setDescription(
+							`${client.config.emoji.music} **[${title}](${uri})**\n${client.config.emoji.artist} \`${author}\``,
+						)
 						.setTimestamp();
 					if (artwork) {
 						embed.setThumbnail(artwork);

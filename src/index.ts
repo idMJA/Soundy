@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "@dotenvx/dotenvx/config";
 import Soundy from "#soundy/client";
 import { Logger } from "seyfert";
 import { SoundyLogger, validateEnv } from "#soundy/utils";

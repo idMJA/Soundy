@@ -59,7 +59,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "drizzle,config.ts",
+    "drizzle.config.ts",
   ],
   
   /* Additional Options */

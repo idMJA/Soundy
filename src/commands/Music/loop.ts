@@ -5,8 +5,6 @@ import {
 	LocalesT,
 	Middlewares,
 } from "seyfert";
-import { ActionRow, Button } from "seyfert";
-import { ButtonStyle } from "seyfert/lib/types";
 import { SoundyOptions } from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
 
@@ -35,41 +33,16 @@ export default class LoopCommand extends Command {
 		const player = client.manager.getPlayer(guildId);
 		if (!player) return;
 
-		const loopRow = new ActionRow<Button>().addComponents(
-			new Button()
-				.setCustomId("loop-off")
-				.setLabel(component.loop.off)
-				.setEmoji("🔁")
-				.setStyle(
-					player.repeatMode === "off"
-						? ButtonStyle.Primary
-						: ButtonStyle.Secondary,
-				)
-				.setDisabled(player.repeatMode === "off"),
-			new Button()
-				.setCustomId("loop-track")
-				.setLabel(component.loop.track)
-				.setEmoji("🔂")
-				.setStyle(
-					player.repeatMode === "track"
-						? ButtonStyle.Primary
-						: ButtonStyle.Secondary,
-				)
-				.setDisabled(player.repeatMode === "track"),
-			new Button()
-				.setCustomId("loop-queue")
-				.setLabel(component.loop.queue)
-				.setEmoji("📑")
-				.setStyle(
-					player.repeatMode === "queue"
-						? ButtonStyle.Primary
-						: ButtonStyle.Secondary,
-				)
-				.setDisabled(player.repeatMode === "queue"),
-		);
+		// Toggle loop mode: off -> track -> queue -> off
+		let newMode: "off" | "track" | "queue";
+		if (player.repeatMode === "off") newMode = "track";
+		else if (player.repeatMode === "track") newMode = "queue";
+		else newMode = "off";
+		await player.setRepeatMode(newMode);
 
+		// Respond with the current loop mode
 		let currentMode = "";
-		switch (player.repeatMode) {
+		switch (newMode) {
 			case "off":
 				currentMode = component.loop.loop_off;
 				break;
@@ -89,7 +62,7 @@ export default class LoopCommand extends Command {
 					color: client.config.color.primary,
 				},
 			],
-			components: [loopRow],
+			components: [],
 		});
 	}
 }

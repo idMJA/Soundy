@@ -72,17 +72,19 @@ export default class ViewPlaylistCommand extends SubCommand {
 		const paginator = new EmbedPaginator(ctx);
 
 		// Get tracks with stored info
-		const trackDetails = tracks.map((track) => {
-			if (track.info) {
-				// Use stored info
-				return {
-					info: track.info,
-				};
-			} else {
-				// Fallback: search for track info
-				return null;
-			}
-		}).filter(Boolean);
+		const trackDetails = tracks
+			.map((track) => {
+				if (track.info) {
+					// Use stored info
+					return {
+						info: track.info,
+					};
+				} else {
+					// Fallback: search for track info
+					return null;
+				}
+			})
+			.filter(Boolean);
 
 		for (let page = 0; page < pages; page++) {
 			const start = page * tracksPerPage;

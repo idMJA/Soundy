@@ -368,7 +368,7 @@ export class SoundyDatabase {
 				title,
 				author,
 				trackId,
-				uri: uri || '',
+				uri: uri || "",
 				artwork: artwork || null,
 				length: length || null,
 				isStream: isStream || false,
@@ -602,7 +602,10 @@ export class SoundyDatabase {
 				"code" in error &&
 				(error as { code?: string }).code === "SQLITE_CONSTRAINT"
 			) {
-				console.error("SQLite constraint error while creating playlist:", error);
+				console.error(
+					"SQLite constraint error while creating playlist:",
+					error,
+				);
 				return false;
 			}
 			throw error;
@@ -1079,18 +1082,20 @@ export class SoundyDatabase {
 	public async getRecentlyPlayed(
 		userId: string,
 		guildId?: string,
-		limit = 10
-	): Promise<Array<{
-		id: string;
-		title: string;
-		author: string;
-		uri: string;
-		artwork?: string;
-		length?: number;
-		isStream: boolean;
-		playedAt: string;
-		guildId: string;
-	}>> {
+		limit = 10,
+	): Promise<
+		Array<{
+			id: string;
+			title: string;
+			author: string;
+			uri: string;
+			artwork?: string;
+			length?: number;
+			isStream: boolean;
+			playedAt: string;
+			guildId: string;
+		}>
+	> {
 		let query = this.db
 			.select()
 			.from(schema.trackStats)
@@ -1105,20 +1110,20 @@ export class SoundyDatabase {
 				.where(
 					and(
 						eq(schema.trackStats.userId, userId),
-						eq(schema.trackStats.guildId, guildId)
-					)
+						eq(schema.trackStats.guildId, guildId),
+					),
 				)
 				.orderBy(desc(schema.trackStats.lastPlayed))
 				.limit(limit);
 		}
 
 		const results = await query;
-		
-		return results.map(track => ({
+
+		return results.map((track) => ({
 			id: track.trackId,
 			title: track.title,
 			author: track.author,
-			uri: track.uri || '',
+			uri: track.uri || "",
 			artwork: track.artwork || undefined,
 			length: track.length || undefined,
 			isStream: !!track.isStream,
@@ -1132,15 +1137,18 @@ export class SoundyDatabase {
 	 * @param userId The user ID
 	 * @param guildId Optional guild ID to only clear tracks from that guild
 	 */
-	public async clearRecentlyPlayed(userId: string, guildId?: string): Promise<void> {
+	public async clearRecentlyPlayed(
+		userId: string,
+		guildId?: string,
+	): Promise<void> {
 		if (guildId) {
 			await this.db
 				.delete(schema.trackStats)
 				.where(
 					and(
 						eq(schema.trackStats.userId, userId),
-						eq(schema.trackStats.guildId, guildId)
-					)
+						eq(schema.trackStats.guildId, guildId),
+					),
 				);
 		} else {
 			await this.db
@@ -1238,10 +1246,7 @@ export class SoundyDatabase {
 	 * @param userId The user ID
 	 * @param trackId The track ID
 	 */
-	public async isTrackLiked(
-		userId: string,
-		trackId: string,
-	): Promise<boolean> {
+	public async isTrackLiked(userId: string, trackId: string): Promise<boolean> {
 		try {
 			const existing = await this.db
 				.select()
@@ -1269,17 +1274,19 @@ export class SoundyDatabase {
 	public async getLikedSongs(
 		userId: string,
 		limit: number = 50,
-	): Promise<Array<{
-		id: string;
-		trackId: string;
-		title: string;
-		author: string;
-		uri: string;
-		artwork: string | null;
-		length: number | null;
-		isStream: boolean;
-		likedAt: string;
-	}>> {
+	): Promise<
+		Array<{
+			id: string;
+			trackId: string;
+			title: string;
+			author: string;
+			uri: string;
+			artwork: string | null;
+			length: number | null;
+			isStream: boolean;
+			likedAt: string;
+		}>
+	> {
 		try {
 			const likedSongs = await this.db
 				.select()
@@ -1288,7 +1295,7 @@ export class SoundyDatabase {
 				.orderBy(desc(schema.likedSongs.likedAt))
 				.limit(limit);
 
-			return likedSongs.map(track => ({
+			return likedSongs.map((track) => ({
 				id: track.id,
 				trackId: track.trackId,
 				title: track.title,

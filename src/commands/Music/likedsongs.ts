@@ -55,8 +55,8 @@ export default class LikedSongsCommand extends Command {
 								const duration = track.isStream
 									? "LIVE"
 									: track.length
-									? TimeFormat.toDotted(track.length)
-									: "Unknown";
+										? TimeFormat.toDotted(track.length)
+										: "Unknown";
 								const title =
 									track.title.length > 45
 										? `${track.title.slice(0, 42)}...`
@@ -67,12 +67,12 @@ export default class LikedSongsCommand extends Command {
 										: track.author;
 								return `${i + idx + 1}. **[${title}](${track.uri})** by \`${author}\`\n┗ \`${duration}\` • <t:${Math.floor(new Date(track.likedAt).getTime() / 1000)}:R>`;
 							})
-							.join("\n\n")
+							.join("\n\n"),
 					)
 					.setFooter({
 						text: `Page ${Math.floor(i / tracksPerPage) + 1} • Showing ${i + 1}-${Math.min(
 							i + tracksPerPage,
-							likedSongs.length
+							likedSongs.length,
 						)} of ${totalCount} liked songs`,
 					})
 					.setTimestamp();
