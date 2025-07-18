@@ -12,7 +12,8 @@ export * from "./core/Configuration";
 export * from "./core/Keys";
 
 // Lavalink types
-export * from "./Lavalink/Lavalink";
+export * from "./lavalink/Lavalink";
+export * from "./lavalink/PlayerSaver";
 
 // API/Options types
 export * from "./api/Options";

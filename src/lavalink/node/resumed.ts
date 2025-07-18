@@ -50,6 +50,19 @@ export default createLavalinkEvent({
 					continue;
 				}
 
+				// Save current locale for this guild
+				try {
+					const currentLocale = await client.database.getLocale(data.guildId);
+					await playerSaver.saveLyricsData(data.guildId, {
+						localeString: currentLocale,
+					});
+				} catch (error) {
+					client.logger.error(
+						`[Music] Failed to save locale for guild ${data.guildId}:`,
+						error,
+					);
+				}
+
 				if (!data.state.connected) {
 					client.logger.info(
 						`[Music] Skipping resuming player ${data.guildId}, because it already disconnected`,
@@ -84,6 +97,11 @@ export default createLavalinkEvent({
 					...client.me,
 					tag: client.me.username,
 				});
+
+				// Set locale string from saved session
+				if (dataOfSaving.localeString) {
+					player.set("localeString", dataOfSaving.localeString);
+				}
 
 				// Restore repeatMode (loop mode) if available
 				if (dataOfSaving.repeatMode) {
@@ -192,6 +210,32 @@ export default createLavalinkEvent({
 				setTimeout(() => {
 					resumingPlayers.delete(data.guildId);
 				}, 1000);
+
+				// Re-subscribe to lyrics if it was enabled
+				try {
+					const savedLyricsData = await playerSaver.getLyricsData(data.guildId);
+					if (savedLyricsData?.lyricsEnabled && player.queue.current) {
+						await player.subscribeLyrics();
+						player.set("lyricsEnabled", true);
+						if (savedLyricsData.lyricsId) {
+							player.set("lyricsId", savedLyricsData.lyricsId);
+						}
+						if (savedLyricsData.lyricsRequester) {
+							player.set("lyricsRequester", savedLyricsData.lyricsRequester);
+						}
+						if (savedLyricsData.lyrics) {
+							player.set("lyrics", savedLyricsData.lyrics);
+						}
+						client.logger.info(
+							`[Music] Re-subscribed lyrics for guild ${data.guildId}`,
+						);
+					}
+				} catch (error) {
+					client.logger.error(
+						`[Music] Failed to re-subscribe lyrics for guild ${data.guildId}:`,
+						error,
+					);
+				}
 
 				if (player.textChannelId) {
 					try {

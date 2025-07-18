@@ -9,7 +9,6 @@ export default createLavalinkEvent({
 	async run(client, player) {
 		if (!player.textChannelId) return;
 
-		// Only try to delete nowplaying message if it exists
 		const playerSaver = new PlayerSaver(client.logger);
 		let messageId = player.get("messageId");
 		let channelId = "";
@@ -24,7 +23,7 @@ export default createLavalinkEvent({
 		} else if (typeof rawChannel === "string") {
 			channelId = rawChannel;
 		}
-		// Ambil dari database jika tidak ada di player
+
 		if (!messageId || !channelId) {
 			const lastMsg = await playerSaver.getLastNowPlayingMessage(
 				player.guildId,
@@ -34,7 +33,7 @@ export default createLavalinkEvent({
 				channelId = lastMsg.channelId || channelId;
 			}
 		}
-		// Cek jika messageId adalah setup message, jangan hapus
+
 		const setupData = await client.database.getSetup(player.guildId);
 		if (
 			setupData?.messageId &&
@@ -53,26 +52,48 @@ export default createLavalinkEvent({
 			}
 		}
 
-		// Save player state using PlayerSaver
 		const playerData = player.toJSON();
 		const safeData = playerSaver.extractSafePlayerData(
 			playerData as unknown as Record<string, unknown>,
 		);
 		await playerSaver.savePlayer(player.guildId, safeData);
 
-		// Clear lyrics data when track ends
 		const lyricsId = player.get<string | undefined>("lyricsId");
-		if (lyricsId && channelId) {
+		const lyricsEnabled = player.get<boolean | undefined>("lyricsEnabled");
+
+		if (lyricsEnabled) {
 			try {
-				await client.messages.delete(lyricsId, channelId);
-			} catch {
-				// Silently fail if lyrics message deletion fails
+				await player.unsubscribeLyrics();
+				client.logger.info(
+					`[Music] Unsubscribed from lyrics for guild ${player.guildId}`,
+				);
+			} catch (error) {
+				client.logger.error(
+					`[Music] Failed to unsubscribe from lyrics for guild ${player.guildId}:`,
+					error,
+				);
 			}
 		}
-		await player.unsubscribeLyrics();
+
+		if (lyricsId && player.textChannelId) {
+			try {
+				await client.messages.delete(lyricsId, player.textChannelId);
+				client.logger.info(
+					`[Music] Deleted lyrics message for guild ${player.guildId}`,
+				);
+			} catch (error) {
+				client.logger.error(
+					`[Music] Failed to delete lyrics message for guild ${player.guildId}:`,
+					error,
+				);
+			}
+		}
+
 		player.set("lyricsEnabled", false);
 		player.set("lyrics", undefined);
 		player.set("lyricsId", undefined);
+		player.set("lyricsRequester", undefined);
+
 		await playerSaver.clearLyricsData(player.guildId);
 	},
 });

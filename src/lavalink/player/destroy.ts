@@ -20,7 +20,6 @@ export default createLavalinkEvent({
 			}
 		}
 
-		// Hapus nowPlaying message jika ada
 		const playerSaver = new PlayerSaver(client.logger);
 		let messageId = player.get("messageId");
 		let channelId = "";
@@ -35,7 +34,7 @@ export default createLavalinkEvent({
 		} else if (typeof rawChannel === "string") {
 			channelId = rawChannel;
 		}
-		// Ambil dari database jika tidak ada di player
+
 		if (!messageId || !channelId) {
 			const lastMsg = await playerSaver.getLastNowPlayingMessage(
 				player.guildId,
@@ -55,7 +54,6 @@ export default createLavalinkEvent({
 			}
 		}
 
-		// Hapus data player
 		try {
 			await playerSaver.delPlayer(player.guildId);
 			client.logger.info(`[Music] Deleted player for guild ${player.guildId}`);
@@ -66,11 +64,42 @@ export default createLavalinkEvent({
 			);
 		}
 
-		// Clear lyrics data when player is destroyed
+		const lyricsId = player.get<string | undefined>("lyricsId");
 		const lyricsEnabled = player.get<boolean | undefined>("lyricsEnabled");
+
 		if (lyricsEnabled) {
-			await player.unsubscribeLyrics();
+			try {
+				await player.unsubscribeLyrics();
+				client.logger.info(
+					`[Music] Unsubscribed from lyrics for guild ${player.guildId}`,
+				);
+			} catch (error) {
+				client.logger.error(
+					`[Music] Failed to unsubscribe from lyrics for guild ${player.guildId}:`,
+					error,
+				);
+			}
 		}
+
+		if (lyricsId && player.textChannelId) {
+			try {
+				await client.messages.delete(lyricsId, player.textChannelId);
+				client.logger.info(
+					`[Music] Deleted lyrics message for guild ${player.guildId}`,
+				);
+			} catch (error) {
+				client.logger.error(
+					`[Music] Failed to delete lyrics message for guild ${player.guildId}:`,
+					error,
+				);
+			}
+		}
+
+		player.set("lyricsEnabled", false);
+		player.set("lyrics", undefined);
+		player.set("lyricsId", undefined);
+		player.set("lyricsRequester", undefined);
+
 		await playerSaver.clearLyricsData(player.guildId);
 	},
 });

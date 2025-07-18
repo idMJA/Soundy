@@ -156,6 +156,9 @@ export default class PlayCommand extends Command {
 			tag: client.me.username,
 		});
 
+		if (!player.get("localeString"))
+			player.set("localeString", await ctx.getLocaleString());
+
 		if (!player.connected) {
 			await player.connect();
 		}

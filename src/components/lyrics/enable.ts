@@ -1,16 +1,19 @@
 import type { LyricsResult } from "lavalink-client";
 import {
-	ActionRow,
 	Button,
 	ComponentCommand,
-	Embed,
+	Container,
 	type GuildComponentContext,
 	Middlewares,
+	Section,
+	Separator,
+	TextDisplay,
+	Thumbnail,
 	type WebhookMessage,
 } from "seyfert";
 import { EmbedColors } from "seyfert/lib/common";
 import { ButtonStyle, MessageFlags } from "seyfert/lib/types";
-import { EmbedPaginator, PlayerSaver } from "#soundy/utils";
+import { PlayerSaver } from "#soundy/utils";
 
 @Middlewares([
 	"checkNodes",
@@ -64,44 +67,6 @@ export default class LyricsEnableComponent extends ComponentCommand {
 				],
 			});
 
-		if (!Array.isArray(lyrics.lines)) {
-			if (!lyrics.text)
-				return ctx.editOrReply({
-					flags: MessageFlags.Ephemeral,
-					embeds: [
-						{
-							color: EmbedColors.Red,
-							description: `${client.config.emoji.no} ${component.lyrics.no_lyrics}`,
-						},
-					],
-				});
-
-			const paginator = new EmbedPaginator(ctx);
-			const lines = lyrics.text.split("\n");
-
-			for (let i = 0; i < lines.length; i += client.config.lyricsLines) {
-				paginator.addEmbed(
-					new Embed()
-						.setThumbnail(track.info.artworkUrl ?? undefined)
-						.setColor(client.config.color.primary)
-						.setTitle(
-							`${client.config.emoji.list} ${component.lyrics.title({ song: track.info.title })}`,
-						)
-						.setFooter({
-							iconUrl: ctx.author.avatarURL(),
-							text: cmd.requested_by({ user: ctx.author.username }),
-						})
-						.setDescription(
-							`**${track.info.author}**\n\n${lines.slice(i, i + client.config.lyricsLines).join("\n")}\n\n${cmd.powered_by({ provider: lyrics.provider })}`,
-						),
-				);
-			}
-
-			await paginator.reply();
-
-			return;
-		}
-
 		const lines: string = lyrics.lines
 			.slice(0, client.config.lyricsLines)
 			.map((l): string => {
@@ -110,29 +75,38 @@ export default class LyricsEnableComponent extends ComponentCommand {
 			})
 			.join("\n");
 
-		const embed = new Embed()
-			.setThumbnail(track.info.artworkUrl ?? undefined)
-			.setColor(client.config.color.primary)
-			.setTitle(
-				`${client.config.emoji.list} ${component.lyrics.title({ song: track.info.title })}`,
-			)
-			.setFooter({
-				iconUrl: ctx.author.avatarURL(),
-				text: cmd.requested_by({ user: ctx.author.username }),
-			})
-			.setDescription(
-				`**${track.info.author}**\n\n${lines}\n\n${cmd.powered_by({ provider: lyrics.provider })}`,
-			);
-
-		const row: ActionRow<Button> = new ActionRow<Button>().addComponents(
-			new Button()
-				.setCustomId("player-lyricsDisable")
-				.setLabel("Close")
-				.setStyle(ButtonStyle.Danger),
+		const components = new Container().addComponents(
+			new Section()
+				.setAccessory(
+					new Thumbnail()
+						.setMedia(track.info.artworkUrl ?? "")
+						.setDescription(`${track.info.title} - ${track.info.author}`),
+				)
+				.addComponents(
+					new TextDisplay().setContent(
+						`# ${String(component.lyrics.title({ song: track.info.title }))}\n\n${lines}\n\n-# ${String(cmd.powered_by({ provider: lyrics.provider }))}`,
+					),
+				),
+			new Separator(),
+			new Section()
+				.addComponents(
+					new TextDisplay().setContent(
+						`-# ${String(cmd.requested_by({ user: ctx.author.username }))}`,
+					),
+				)
+				.setAccessory(
+					new Button()
+						.setCustomId("player-lyricsDisable")
+						.setLabel("Close")
+						.setStyle(ButtonStyle.Danger),
+				),
 		);
 
 		const message: WebhookMessage = await ctx.editOrReply(
-			{ embeds: [embed], components: [row] },
+			{
+				components: [components],
+				flags: MessageFlags.IsComponentsV2,
+			},
 			true,
 		);
 
@@ -148,11 +122,13 @@ export default class LyricsEnableComponent extends ComponentCommand {
 
 		player.set("lyrics", lyrics);
 		player.set("lyricsId", message.id);
+		player.set("lyricsRequester", ctx.author);
 
 		const playerSaver = new PlayerSaver(client.logger);
 		await playerSaver.saveLyricsData(ctx.guildId, {
 			lyricsEnabled: true,
 			lyricsId: message.id,
+			lyricsRequester: ctx.author.username,
 			lyrics: {
 				provider: lyrics.provider,
 				text: lyrics.text || undefined,

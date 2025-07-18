@@ -1,6 +1,6 @@
 // Type definitions for Soundy API
 import type { UsingClient } from "seyfert";
-import type { PlayerData } from "#soundy/utils";
+import type { PlayerData } from "#soundy/types";
 
 export interface SoundyWS {
 	send: (data: string) => void;

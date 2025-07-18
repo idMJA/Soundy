@@ -9,7 +9,8 @@ export default createEvent({
 		const guild = await message.guild();
 		if (!guild) return;
 
-		const { cmd, event } = client.t(await client.database.getLocale(guild.id));
+		const locale = await client.database.getLocale(guild.id);
+		const { cmd, event } = client.t(locale);
 
 		// Check if message is in setup channel
 		const setupData = await client.database.getSetup(guild.id);
@@ -85,6 +86,8 @@ export default createEvent({
 					...client.me,
 					tag: client.me.username,
 				});
+
+				if (!player.get("localeString")) player.set("localeString", locale);
 
 				// Handle stage channel
 				const bot = client.cache.voiceStates?.get(

@@ -1,6 +1,6 @@
 import { PlayerSaver } from "#soundy/utils";
 import { LavalinkEventTypes } from "#soundy/types";
-import { createLavalinkEvent } from "#soundy/utils";
+import { createLavalinkEvent, createNullEmbed } from "#soundy/utils";
 
 export default createLavalinkEvent({
 	name: "queueEnd",
@@ -22,7 +22,6 @@ export default createLavalinkEvent({
 			}
 		}
 
-		// Only try to delete nowplaying message if it exists
 		const playerSaver = new PlayerSaver(client.logger);
 		let messageId = player.get("messageId");
 		let channelId = "";
@@ -37,7 +36,7 @@ export default createLavalinkEvent({
 		} else if (typeof rawChannel === "string") {
 			channelId = rawChannel;
 		}
-		// Ambil dari database jika tidak ada di player
+
 		if (!messageId || !channelId) {
 			const lastMsg = await playerSaver.getLastNowPlayingMessage(
 				player.guildId,
@@ -47,7 +46,7 @@ export default createLavalinkEvent({
 				channelId = lastMsg.channelId || channelId;
 			}
 		}
-		// Try to update setup message to null first
+
 		const setupData = await client.database.getSetup(player.guildId);
 		if (setupData?.messageId && setupData.channelId) {
 			try {
@@ -56,7 +55,6 @@ export default createLavalinkEvent({
 					setupData.channelId,
 				);
 				if (setupMessage) {
-					const { createNullEmbed } = await import("#soundy/utils");
 					await client.messages.edit(
 						setupMessage.id,
 						setupData.channelId,
@@ -67,7 +65,7 @@ export default createLavalinkEvent({
 				client.logger.debug(`[Music] Failed to update setup message: ${error}`);
 			}
 		}
-		// Cek jika messageId adalah setup message, jangan hapus
+
 		if (
 			setupData?.messageId &&
 			setupData?.channelId &&
@@ -85,14 +83,50 @@ export default createLavalinkEvent({
 			}
 		}
 
-		// Save player state using PlayerSaver
 		const playerData = player.toJSON();
 		const safeData = playerSaver.extractSafePlayerData(
 			playerData as unknown as Record<string, unknown>,
 		);
 		await playerSaver.savePlayer(player.guildId, safeData);
 
-		// Tambahkan timeout disconnect jika bukan 24/7 mode
+		const lyricsId = player.get<string | undefined>("lyricsId");
+		const lyricsEnabled = player.get<boolean | undefined>("lyricsEnabled");
+
+		if (lyricsEnabled) {
+			try {
+				await player.unsubscribeLyrics();
+				client.logger.info(
+					`[Music] Unsubscribed from lyrics for guild ${player.guildId}`,
+				);
+			} catch (error) {
+				client.logger.error(
+					`[Music] Failed to unsubscribe from lyrics for guild ${player.guildId}:`,
+					error,
+				);
+			}
+		}
+
+		if (lyricsId && player.textChannelId) {
+			try {
+				await client.messages.delete(lyricsId, player.textChannelId);
+				client.logger.info(
+					`[Music] Deleted lyrics message for guild ${player.guildId}`,
+				);
+			} catch (error) {
+				client.logger.error(
+					`[Music] Failed to delete lyrics message for guild ${player.guildId}:`,
+					error,
+				);
+			}
+		}
+
+		player.set("lyricsEnabled", false);
+		player.set("lyrics", undefined);
+		player.set("lyricsId", undefined);
+		player.set("lyricsRequester", undefined);
+
+		await playerSaver.clearLyricsData(player.guildId);
+
 		const mode247 = await client.database.get247Mode(player.guildId);
 		if (!mode247?.enabled) {
 			const disconnectTimeout = setTimeout(async () => {

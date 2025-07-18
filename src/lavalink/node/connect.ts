@@ -1,6 +1,5 @@
-import { PlayerSaver } from "#soundy/utils";
 import { LavalinkEventTypes } from "#soundy/types";
-import { createLavalinkEvent, sendNodeLog } from "#soundy/utils";
+import { createLavalinkEvent, sendNodeLog, PlayerSaver } from "#soundy/utils";
 
 export default createLavalinkEvent({
 	name: "connect",
