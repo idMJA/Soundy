@@ -132,7 +132,7 @@ export default class LyricsCommand extends Command {
 		const { guildId, client } = ctx;
 		if (!guildId) return;
 
-		const { cmd } = await ctx.getLocale();
+		const { cmd, component } = await ctx.getLocale();
 
 		let searchQuery: string;
 		const player = client.manager.players.get(guildId);
@@ -192,7 +192,7 @@ export default class LyricsCommand extends Command {
 					new Embed()
 						.setColor(client.config.color.no)
 						.setDescription(
-							`${client.config.emoji.no} ${cmd.lyrics.run.no_lyrics}`,
+							`${client.config.emoji.no} ${component.lyrics.no_lyrics}`,
 						),
 				],
 			});
@@ -209,15 +209,14 @@ export default class LyricsCommand extends Command {
 		// Send first chunk
 		const firstEmbed = new Embed()
 			.setColor(client.config.color.primary)
-			.setTitle(`📜 ${cmd.lyrics.run.title({ song: song.title })}`)
+			.setTitle(
+				`${client.config.emoji.list} ${component.lyrics.title({ song: song.title })}`,
+			)
 			.setURL(song.url)
 			.setThumbnail(song.thumbnail)
 			.setDescription(lyricsChunks[0])
 			.setFooter({
-				text: cmd.lyrics.run.footer({
-					user: ctx.author.username,
-					provider: "Genius",
-				}),
+				text: `${cmd.requested_by({ user: ctx.author.username })} • ${cmd.powered_by({ provider: "Genius" })}`,
 				iconUrl: ctx.author.avatarURL(),
 			});
 

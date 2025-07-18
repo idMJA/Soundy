@@ -17,7 +17,7 @@ export async function createNowPlayingEmbed(
 	track: Track,
 ) {
 	const duration = track.info.isStream
-		? " LIVE"
+		? "LIVE"
 		: (TimeFormat.toDotted(track.info.duration) ?? "Undetermined");
 
 	const { event } = client.t(await client.database.getLocale(player.guildId));
@@ -87,9 +87,9 @@ export async function createNowPlayingEmbed(
 
 	const row2 = new ActionRow<Button>().addComponents(
 		new Button()
-			.setCustomId("player-clear")
+			.setCustomId("player-lyricsEnable")
 			.setStyle(ButtonStyle.Secondary)
-			.setEmoji(client.config.emoji.trash),
+			.setEmoji(client.config.emoji.list),
 		new Button()
 			.setCustomId("player-voldown")
 			.setStyle(ButtonStyle.Secondary)
@@ -105,7 +105,7 @@ export async function createNowPlayingEmbed(
 		new Button()
 			.setCustomId("player-queue")
 			.setStyle(ButtonStyle.Secondary)
-			.setEmoji(client.config.emoji.list),
+			.setEmoji(client.config.emoji.folder),
 	);
 
 	return {
@@ -162,9 +162,9 @@ export async function createNullEmbed(client: UsingClient, guildId: string) {
 
 	const row2 = new ActionRow<Button>().addComponents(
 		new Button()
-			.setCustomId("player-clear")
+			.setCustomId("player-lyricsEnable")
 			.setStyle(ButtonStyle.Secondary)
-			.setEmoji(client.config.emoji.trash)
+			.setEmoji(client.config.emoji.list)
 			.setDisabled(true),
 		new Button()
 			.setCustomId("player-voldown")
@@ -184,7 +184,7 @@ export async function createNullEmbed(client: UsingClient, guildId: string) {
 		new Button()
 			.setCustomId("player-queue")
 			.setStyle(ButtonStyle.Secondary)
-			.setEmoji(client.config.emoji.list)
+			.setEmoji(client.config.emoji.folder)
 			.setDisabled(true),
 	);
 

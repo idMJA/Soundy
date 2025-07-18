@@ -10,6 +10,8 @@ export default {
 	cmd: {
 		// Requested By
 		requested_by: ({ user }) => `Requested by ${user}`,
+		// Powered By
+		powered_by: ({ provider }) => `Powered by ${provider}`,
 		// Error
 		error:
 			"An error occurred while processing the command. Please try again later.",
@@ -415,15 +417,10 @@ export default {
 				},
 			},
 			run: {
-				title: ({ song }) => `Lyrics for ${song}`,
-				description: "Lyrics for the current song or a specific song",
-				footer: ({ user, provider }) =>
-					`Requested by ${user} | Powered by ${provider}`,
 				no_tracks: "No tracks found",
 				invalid_url: "Invalid URL provided",
 				provide_song:
 					"Please provide a song name or URL, or play a song first.",
-				no_lyrics: "No lyrics found for this song.",
 				error: "An error occurred while fetching the lyrics.",
 			},
 		},
@@ -916,6 +913,12 @@ export default {
 		volume: {
 			title: "Volume Set",
 			description: ({ volume }) => `Volume has been set to ${volume}`,
+		},
+		// Lyrics
+		lyrics: {
+			title: ({ song }) => `Lyrics for ${song}`,
+			description: "Lyrics for the current song or a specific song",
+			no_lyrics: "No lyrics found for this song.",
 		},
 
 		// Node Select

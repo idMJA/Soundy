@@ -1,4 +1,3 @@
-// Entry point for all API routes and ws setup
 export * from "./music";
 export * from "./top";
 export * from "./playlist";

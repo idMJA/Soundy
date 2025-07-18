@@ -9,17 +9,8 @@ export function createPlaylistAPI(client: UsingClient) {
 				const playlists = await client.database.getPlaylists(params.userId);
 				return { playlists };
 			})
-			// View a specific playlist and its tracks
-			.get("/view/:userId/:name", async ({ params }) => {
-				const playlist = await client.database.getPlaylist(
-					params.userId,
-					params.name,
-				);
-				if (!playlist) return { error: "Playlist not found" };
-				return { playlist };
-			})
 			// View a playlist by its ID
-			.get("/viewById/:playlistId", async ({ params }) => {
+			.get("/view/:playlistId", async ({ params }) => {
 				const playlist = await client.database.getPlaylistById(
 					params.playlistId,
 				);
@@ -44,17 +35,22 @@ export function createPlaylistAPI(client: UsingClient) {
 				return { success: true };
 			})
 			.post("/remove", async ({ body }) => {
-				const { userId, playlist, trackUri } = body as {
+				const { userId, playlistId, trackId } = body as {
 					userId: string;
-					playlist: string;
-					trackUri: string;
+					playlistId: string;
+					trackId: string;
 				};
-				await client.database.removeSong(userId, playlist, trackUri);
+				const playlist = await client.database.getPlaylistById(playlistId);
+				if (!playlist) return { error: "Playlist not found" };
+				await client.database.removeSong(userId, playlist.name, trackId);
 				return { success: true };
 			})
 			.post("/delete", async ({ body }) => {
-				const { userId, name } = body as { userId: string; name: string };
-				await client.database.deletePlaylist(userId, name);
+				const { userId, playlistId } = body as {
+					userId: string;
+					playlistId: string;
+				};
+				await client.database.deletePlaylist(userId, playlistId);
 				return { success: true };
 			})
 	);

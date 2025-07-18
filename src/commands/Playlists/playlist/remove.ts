@@ -18,6 +18,22 @@ const option = {
 			name: "cmd.playlist.sub.remove.options.name.name",
 			description: "cmd.playlist.sub.remove.options.name.description",
 		},
+		autocomplete: async (interaction) => {
+			const { client, guildId, member } = interaction;
+			if (!guildId || !member) return;
+			const playlists = await client.database.getPlaylists(member.id);
+			if (!playlists.length) {
+				return interaction.respond([
+					{ name: "No playlists found", value: "noPlaylists" },
+				]);
+			}
+			return interaction.respond(
+				playlists.slice(0, 25).map((playlist) => ({
+					name: playlist.name,
+					value: playlist.id,
+				})),
+			);
+		},
 	}),
 	track: createIntegerOption({
 		description: "The track number to remove",
@@ -41,16 +57,13 @@ export default class RemovePlaylistCommand extends SubCommand {
 	async run(ctx: CommandContext<typeof option>) {
 		const { client, options } = ctx;
 		const userId = ctx.author.id;
-
 		const { cmd } = await ctx.getLocale();
 
 		try {
-			const tracks = await client.database.getTracksFromPlaylist(
-				userId,
-				options.name,
-			);
+			const playlists = await client.database.getPlaylists(userId);
+			const playlist = playlists.find((p) => p.id === options.name);
 
-			if (!tracks) {
+			if (!playlist) {
 				return ctx.editOrReply({
 					embeds: [
 						{
@@ -62,6 +75,7 @@ export default class RemovePlaylistCommand extends SubCommand {
 				});
 			}
 
+			const tracks = playlist.tracks;
 			const trackIndex = options.track - 1;
 			if (trackIndex < 0 || trackIndex >= tracks.length) {
 				return ctx.editOrReply({
@@ -76,7 +90,7 @@ export default class RemovePlaylistCommand extends SubCommand {
 			}
 
 			const trackToRemove = tracks[trackIndex];
-			if (!trackToRemove || !trackToRemove.url) {
+			if (!trackToRemove || !trackToRemove.id) {
 				return ctx.editOrReply({
 					embeds: [
 						{
@@ -88,13 +102,13 @@ export default class RemovePlaylistCommand extends SubCommand {
 				});
 			}
 
-			await client.database.removeSong(userId, options.name, trackToRemove.url);
+			await client.database.removeSong(userId, playlist.name, trackToRemove.id);
 
 			return ctx.editOrReply({
 				embeds: [
 					{
 						color: client.config.color.primary,
-						description: `${client.config.emoji.yes} ${cmd.playlist.sub.remove.run.removed({ name: `**${options.name}**` })}`,
+						description: `${client.config.emoji.yes} ${cmd.playlist.sub.remove.run.removed({ name: `**${playlist.name}**` })}`,
 					},
 				],
 			});

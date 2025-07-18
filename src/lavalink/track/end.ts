@@ -59,5 +59,20 @@ export default createLavalinkEvent({
 			playerData as unknown as Record<string, unknown>,
 		);
 		await playerSaver.savePlayer(player.guildId, safeData);
+
+		// Clear lyrics data when track ends
+		const lyricsId = player.get<string | undefined>("lyricsId");
+		if (lyricsId && channelId) {
+			try {
+				await client.messages.delete(lyricsId, channelId);
+			} catch {
+				// Silently fail if lyrics message deletion fails
+			}
+		}
+		await player.unsubscribeLyrics();
+		player.set("lyricsEnabled", false);
+		player.set("lyrics", undefined);
+		player.set("lyricsId", undefined);
+		await playerSaver.clearLyricsData(player.guildId);
 	},
 });

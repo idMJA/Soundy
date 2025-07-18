@@ -20,6 +20,8 @@ export default class LikeCommand extends Command {
 		const user = ctx.author;
 		const userId = user.id;
 
+		const { event } = await ctx.getLocale();
+
 		if (!guildId) {
 			await ctx.editOrReply({
 				embeds: [
@@ -106,7 +108,7 @@ export default class LikeCommand extends Command {
 						.setColor(client.config.color.primary)
 						.setTitle(`${client.config.emoji.heart} Added to Liked Songs`)
 						.setDescription(
-							`${client.config.emoji.music} **[${title}](${uri})**\n${client.config.emoji.artist} \`${author}\``,
+							`${client.config.emoji.music} **[${title}](${uri})**\n${client.config.emoji.artist} ${event.music.artist} \`${author}\``,
 						)
 						.setTimestamp();
 					if (artwork) {

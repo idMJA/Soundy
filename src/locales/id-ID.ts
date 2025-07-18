@@ -10,6 +10,8 @@ export default {
 	cmd: {
 		// Requested By
 		requested_by: ({ user }) => `Direquest oleh ${user}`,
+		// Powered By
+		powered_by: ({ provider }) => `Didukung oleh ${provider}`,
 		// Error
 		error:
 			"Terjadi kesalahan saat memproses perintah. Silakan coba lagi nanti.",
@@ -436,15 +438,10 @@ export default {
 				},
 			},
 			run: {
-				title: ({ song }) => `Lirik untuk ${song}`,
-				description: "Lirik untuk lagu saat ini atau lagu tertentu",
-				footer: ({ user, provider }) =>
-					`Diminta oleh ${user} | Didukung oleh ${provider}`,
 				no_tracks: "Tidak ada trek yang ditemukan",
 				invalid_url: "URL yang diberikan tidak valid",
 				provide_song:
 					"Harap berikan nama lagu atau URL, atau putar lagu terlebih dahulu.",
-				no_lyrics: "Tidak ada lirik yang ditemukan untuk lagu ini.",
 				error: "Terjadi kesalahan saat mengambil lirik.",
 			},
 		},
@@ -940,6 +937,12 @@ export default {
 		volume: {
 			title: "Volume Diatur",
 			description: ({ volume }) => `Volume telah diatur ke ${volume}%`,
+		},
+		// Lyrics
+		lyrics: {
+			title: ({ song }) => `Lirik untuk ${song}`,
+			description: "Lirik untuk lagu saat ini atau lagu tertentu",
+			no_lyrics: "Tidak ada lirik yang ditemukan untuk lagu ini.",
 		},
 
 		// Node Select

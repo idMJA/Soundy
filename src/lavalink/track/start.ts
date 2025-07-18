@@ -19,6 +19,25 @@ export default createLavalinkEvent({
 				tag: client.me.username,
 			});
 
+			const playerSaver = new PlayerSaver(client.logger);
+
+			// Store locale string for lyrics
+			const localeString = await client.database.getLocale(player.guildId);
+			player.set("localeString", localeString);
+
+			const lyricsData = await playerSaver.getLyricsData(player.guildId);
+			if (lyricsData) {
+				if (lyricsData.lyricsEnabled) {
+					player.set("lyricsEnabled", lyricsData.lyricsEnabled);
+				}
+				if (lyricsData.lyricsId) {
+					player.set("lyricsId", lyricsData.lyricsId);
+				}
+				if (lyricsData.lyrics) {
+					player.set("lyrics", lyricsData.lyrics);
+				}
+			}
+
 			// Clear disconnect timeout jika ada
 			const disconnectTimeout = player.get<NodeJS.Timeout | undefined>(
 				"disconnectTimeout",
@@ -107,7 +126,6 @@ export default createLavalinkEvent({
 			player.set("messageId", sentMessage.id);
 
 			// Simpan messageId dan channelId ke database
-			const playerSaver = new PlayerSaver(client.logger);
 			await playerSaver.setLastNowPlayingMessage(
 				player.guildId,
 				sentMessage.id,

@@ -613,15 +613,15 @@ export class SoundyDatabase {
 	}
 
 	/**
-	 * Delete a playlist
+	 * Delete a playlist by id
 	 * @param userId The user ID
-	 * @param name The playlist name
+	 * @param id The playlist id (primary key)
 	 */
-	public async deletePlaylist(userId: string, name: string) {
+	public async deletePlaylist(userId: string, id: string) {
 		await this.db
 			.delete(schema.playlist)
 			.where(
-				and(eq(schema.playlist.userId, userId), eq(schema.playlist.name, name)),
+				and(eq(schema.playlist.userId, userId), eq(schema.playlist.id, id)),
 			);
 	}
 
@@ -650,12 +650,12 @@ export class SoundyDatabase {
 	}
 
 	/**
-	 * Remove a track from a playlist
+	 * Remove a track from a playlist by id
 	 * @param userId The user ID
 	 * @param name The playlist name
-	 * @param url The track URL to remove
+	 * @param id The track id (primary key in playlistTrack)
 	 */
-	public async removeSong(userId: string, name: string, url: string) {
+	public async removeSong(userId: string, name: string, id: string) {
 		const playlist = await this.getPlaylist(userId, name);
 		if (!playlist) return;
 
@@ -664,7 +664,7 @@ export class SoundyDatabase {
 			.where(
 				and(
 					eq(schema.playlistTrack.playlistId, playlist.id),
-					eq(schema.playlistTrack.url, url),
+					eq(schema.playlistTrack.id, id),
 				),
 			);
 	}
@@ -1216,13 +1216,13 @@ export class SoundyDatabase {
 	}
 
 	/**
-	 * Remove a track from user's liked songs
+	 * Remove a track from user's liked songs by id
 	 * @param userId The user ID
-	 * @param trackId The track ID
+	 * @param id The liked song id (primary key)
 	 */
 	public async removeFromLikedSongs(
 		userId: string,
-		trackId: string,
+		id: string,
 	): Promise<boolean> {
 		try {
 			await this.db
@@ -1230,7 +1230,7 @@ export class SoundyDatabase {
 				.where(
 					and(
 						eq(schema.likedSongs.userId, userId),
-						eq(schema.likedSongs.trackId, trackId),
+						eq(schema.likedSongs.id, id),
 					),
 				);
 

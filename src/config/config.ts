@@ -8,6 +8,7 @@ export const Configuration: SoundyConfiguration = {
 	defaultSearchPlatform: "spotify", // Default search platform for music commands
 	defaultVolume: 100, // Default volume for music playback
 	defaultLocale: "en-US", // Default locale for the bot
+	lyricsLines: 10, // Number of lyrics lines to display
 	serverPort: 3000, // Port for the API server
 	info: {
 		banner: "https://i.ibb.co.com/z8c0SQK/bannersoundy-FHD.png", // Replace with actual banner URL

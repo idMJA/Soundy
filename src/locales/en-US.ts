@@ -8,6 +8,9 @@ export default {
 	cmd: {
 		// Requested By
 		requested_by: ({ user }: { user: string }) => `Requested by ${user}`,
+		// Powered By
+		powered_by: ({ provider }: { provider: string }) =>
+			`Powered by ${provider}`,
 		// Error
 		error:
 			"An error occurred while processing the command. Please try again later.",
@@ -211,12 +214,10 @@ export default {
 					button: "Contributors",
 					title: "Soundy Contributors",
 					1: "Special Thanks",
-					2: ({ author }: { author: string }) =>
-						`- ${author}: Creator of Soundy`,
+					2: ({ author }: { author: string }) => `${author}: Creator of Soundy`,
 					3: ({ user }: { user: string }) =>
-						`- ${user}: Bug Fixer, and more contributions`,
-					4: ({ user }: { user: string }) =>
-						`- ${user}: Part of the source code`,
+						`${user}: Bug Fixer, and more contributions`,
+					4: ({ user }: { user: string }) => `${user}: Part of the source code`,
 					5: "Links",
 					6: "Tronix Development Community",
 					7: "All contributors and supporters",
@@ -448,15 +449,10 @@ export default {
 				},
 			},
 			run: {
-				title: ({ song }: { song: string }) => `Lyrics for ${song}`,
-				description: "Lyrics for the current song or a specific song",
-				footer: ({ user, provider }: { user: string; provider: string }) =>
-					`Requested by ${user} | Powered by ${provider}`,
 				no_tracks: "No tracks found",
 				invalid_url: "Invalid URL provided",
 				provide_song:
 					"Please provide a song name or URL, or play a song first.",
-				no_lyrics: "No lyrics found for this song.",
 				error: "An error occurred while fetching the lyrics.",
 			},
 		},
@@ -979,6 +975,12 @@ export default {
 			title: "Volume Set",
 			description: ({ volume }: { volume: string }) =>
 				`Volume has been set to ${volume}`,
+		},
+		// Lyrics
+		lyrics: {
+			title: ({ song }: { song: string }) => `Lyrics for ${song}`,
+			description: "Lyrics for the current song or a specific song",
+			no_lyrics: "No lyrics found for this song.",
 		},
 
 		// Node Select

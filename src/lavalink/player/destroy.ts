@@ -65,5 +65,12 @@ export default createLavalinkEvent({
 				err,
 			);
 		}
+
+		// Clear lyrics data when player is destroyed
+		const lyricsEnabled = player.get<boolean | undefined>("lyricsEnabled");
+		if (lyricsEnabled) {
+			await player.unsubscribeLyrics();
+		}
+		await playerSaver.clearLyricsData(player.guildId);
 	},
 });

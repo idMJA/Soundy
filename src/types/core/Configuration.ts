@@ -59,6 +59,12 @@ export interface SoundyConfiguration {
 	 */
 	defaultLocale: string;
 	/**
+	 * The number of lyrics lines to display.
+	 * @type {number}
+	 * @default 10
+	 */
+	lyricsLines: number;
+	/**
 	 * The port for the API server.
 	 * @type {number}
 	 */

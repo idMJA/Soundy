@@ -76,7 +76,7 @@ export default class QueueComponent extends ComponentCommand {
 			});
 			if (trackListStrings.length > 0) {
 				firstEmbed.addFields({
-					name: `${client.config.emoji.list} ${component.queue.up_next}:`,
+					name: `${client.config.emoji.folder} ${component.queue.up_next}:`,
 					value: trackListStrings.join("\n\n"),
 				});
 			}
@@ -118,7 +118,7 @@ export default class QueueComponent extends ComponentCommand {
 			});
 			if (trackListStrings.length > 0) {
 				pageEmbed.addFields({
-					name: `${client.config.emoji.list} ${component.queue.name}:`,
+					name: `${client.config.emoji.folder} ${component.queue.name}:`,
 					value: trackListStrings.join("\n\n"),
 				});
 			}

@@ -165,47 +165,56 @@ export function createMusicAPI(client: UsingClient) {
 			.post("/like", async ({ body, set }) => {
 				interface LikeRequestBody {
 					userId: string;
-					trackId: string;
-					title?: string;
-					author?: string;
 					uri?: string;
-					artwork?: string;
-					length?: number;
-					isStream?: boolean;
 					action: "like" | "unlike";
+					id?: string; // id for unlike
 				}
-				const {
-					userId,
-					trackId,
-					title,
-					author,
-					uri,
-					artwork,
-					length,
-					isStream,
-					action,
-				} = body as LikeRequestBody;
-				if (!userId || !trackId || !action) {
+				const { userId, uri, action, id } = body as LikeRequestBody;
+
+				if (!userId || !uri || !action) {
 					set.status = 400;
-					return { error: "Missing required fields: userId, trackId, action" };
+					return { error: "Missing required fields: userId, uri, action" };
 				}
+
 				try {
 					if (action === "like") {
+						const result = await client.manager.search(
+							uri,
+							client.config.defaultSearchPlatform,
+						);
+						const found = result.tracks?.[0];
+						if (!found) {
+							set.status = 404;
+							return { error: "Track not found for the given uri" };
+						}
+
+						const trackId = found.encoded || found.info.identifier;
+						const title = found.info.title || "Unknown Title";
+						const author = found.info.author || "Unknown Author";
+						const artwork = found.info.artworkUrl ?? undefined;
+						const length = found.info.duration;
+						const isStream = found.info.isStream;
+						const resolvedUri = found.info.uri;
+
 						const success = await client.database.addToLikedSongs(
 							userId,
 							trackId,
-							title ?? "Unknown Title",
-							author ?? "Unknown Author",
-							uri ?? "",
+							title,
+							author,
+							resolvedUri,
 							artwork,
 							length,
 							isStream,
 						);
 						return { success };
 					} else if (action === "unlike") {
+						if (!id) {
+							set.status = 400;
+							return { error: "Missing required field: id for unlike" };
+						}
 						const success = await client.database.removeFromLikedSongs(
 							userId,
-							trackId,
+							id,
 						);
 						return { success };
 					} else {

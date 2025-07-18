@@ -65,7 +65,7 @@ export default class HelpCommand extends Command {
 				case SoundyCategory.Filters:
 					return client.config.emoji.list;
 				case SoundyCategory.Playlists:
-					return client.config.emoji.list;
+					return client.config.emoji.folder;
 				case SoundyCategory.Reports:
 					return client.config.emoji.warn;
 				default:
