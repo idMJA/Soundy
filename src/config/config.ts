@@ -42,12 +42,12 @@ export const Configuration: SoundyConfiguration = {
 		warn: 0xffff00, // Color for warning responses
 	},
 	webhooks: {
-		nodeLog: "xxx", // Node logs
-		guildLog: "xxx", // Guild logs
-		commandLog: "xxx", // Command logs
-		voteLog: "xxx", // Vote logs
-		errorLog: "xxx", // Error logs
-		report: "xxx", // Bug or suggestion reports
+		nodeLog: "1319946779847954443", // Node logs
+		guildLog: "1319946779847954443", // Guild logs
+		commandLog: "1319946779847954443", // Command logs
+		voteLog: "1319946779847954443", // Vote logs
+		errorLog: "1319946779847954443", // Error logs
+		report: "1319946779847954443", // Bug or suggestion reports
 	},
 
 	emoji,

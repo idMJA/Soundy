@@ -8,3 +8,5 @@ bun.lockb
 package-lock.json
 .env
 sessions.json
+biome.json
+drizzle.config.ts

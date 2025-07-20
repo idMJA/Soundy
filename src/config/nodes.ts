@@ -4,8 +4,8 @@ export const nodes: LavalinkNodeOptions[] = [
 	{
 		id: "Tsukasa",
 		host: "localhost",
-		port: 3465,
-		authorization: "TsukasaAlyaMahiru",
+		port: 2333,
+		authorization: "youshallnotpass",
 		secure: false,
 	},
 

@@ -9,8 +9,7 @@ export default {
 		// Requested By
 		requested_by: ({ user }: { user: string }) => `ส่งคำขอโดย ${user}`,
 		// Error
-		error:
-			"เกิดข้อผิดพลาดในการประมวลผลคำสั่ง โปรดลองใหม่อีกครั้ง",
+		error: "เกิดข้อผิดพลาดในการประมวลผลคำสั่ง โปรดลองใหม่อีกครั้ง",
 		// Default Commands
 		default: {
 			name: "default",
@@ -41,8 +40,7 @@ export default {
 					run: {
 						exists: "มีห้องสั่งเพลงอยู่แล้ว",
 						failed: "การสร้างห้องสั่งเพลงล้มเหลว",
-						topic:
-							"Soundy Music Player - พิมพ์ชื่อเพลงหรือใส่ URL เพลง",
+						topic: "Soundy Music Player - พิมพ์ชื่อเพลงหรือใส่ URL เพลง",
 						success: ({ channel }: { channel: string }) =>
 							`สร้างห้องสั่งเพลงสำเร็จ ${channel}`,
 					},
@@ -182,8 +180,10 @@ export default {
 				footer: ({
 					guildCount,
 					userCount,
-				}: { guildCount: number; userCount: number }) =>
-					`กำลังอยู่ใน ${guildCount} เซิฟเวอร์ และเชื่อมต่อกับผู้ใช้ ${userCount} บัญชี`,
+				}: {
+					guildCount: number;
+					userCount: number;
+				}) => `กำลังอยู่ใน ${guildCount} เซิฟเวอร์ และเชื่อมต่อกับผู้ใช้ ${userCount} บัญชี`,
 				about_me: {
 					button: "เกี่ยวกับ",
 					title: "เกี่ยวกับฉัน",
@@ -209,12 +209,10 @@ export default {
 					button: "ผู้มีส่วนร่วม",
 					title: "ผู้มีส่วนร่วม Soundy",
 					1: "ผู้มีส่วนร่วมเป็นพิเศษ",
-					2: ({ author }: { author: string }) =>
-						`- ${author}: ผู้สร้างบอท Soundy`,
+					2: ({ author }: { author: string }) => `- ${author}: ผู้สร้างบอท Soundy`,
 					3: ({ user }: { user: string }) =>
 						`- ${user}: ผู้แก้ไขข้อผิดพลาดและในส่วนอื่นๆ`,
-					4: ({ user }: { user: string }) =>
-						`- ${user}: ผู้มีส่วนร่วมในการทำโค้ด`,
+					4: ({ user }: { user: string }) => `- ${user}: ผู้มีส่วนร่วมในการทำโค้ด`,
 					5: "ลิงค์",
 					6: "Tronix Development Community",
 					7: "ผู้มีส่วนร่วมและผู้สนับสนุนทั้งหมด",
@@ -237,15 +235,17 @@ export default {
 			sub: {
 				guilds: {
 					name: "guilds",
-					description:
-						"โชว์เซิฟเวอร์ที่เล่นเพลงมากที่สุดใน 2 อาทิตย์ล่าสุด",
+					description: "โชว์เซิฟเวอร์ที่เล่นเพลงมากที่สุดใน 2 อาทิตย์ล่าสุด",
 					run: {
 						title: "เซิฟเวอร์เล่นเพลงที่ติดอันดับ",
 						description: "แสดงเซิฟเวอร์ที่เล่นเพลงมากที่สุดใน 2 อาทิตย์ล่าสุด",
 						fields: ({
 							totalPlays,
 							uniqueTracks,
-						}: { totalPlays: number; uniqueTracks: number }) =>
+						}: {
+							totalPlays: number;
+							uniqueTracks: number;
+						}) =>
 							`เล่นเพลงไปแล้วทั้งหมด ${totalPlays} เพลง (${uniqueTracks} เพลงพิเศษ)`,
 						footer: ({ length }: { length: number }) =>
 							`แสดงเซิฟเวอร์ติดอันดับ ${length} เซิฟเวอร์`,
@@ -263,7 +263,11 @@ export default {
 							author,
 							playCount,
 							trackId,
-						}: { author: string; playCount: number; trackId: string }) =>
+						}: {
+							author: string;
+							playCount: number;
+							trackId: string;
+						}) =>
 							`โดย ${author} • เล่นไปแล้ว ${playCount} ครั้ง\n[Link](${trackId})`,
 						footer: ({ length }: { length: number }) =>
 							`แสดงอันดับ ${length} แทร็ก`,
@@ -308,7 +312,11 @@ export default {
 						invite,
 						support,
 						vote,
-					}: { invite: string; support: string; vote: string }) =>
+					}: {
+						invite: string;
+						support: string;
+						vote: string;
+					}) =>
 						`**[Invite Me](${invite}) • [Support Server](${support}) • [Vote](${vote})**`,
 				},
 				footer: ({ bot }: { bot: string }) => `ขอบคุณที่คุณเลือกเรา ${bot}!`,
@@ -322,17 +330,17 @@ export default {
 		// Nodes Commands
 		nodes: {
 			name: "nodes",
-			description: "เช็คสถานะโหนดเพลง",
+			description: "เช็คสถานะ Nodeเพลง",
 			run: {
-				title: "ภาพรวมสถานะของโหนดเพลง",
-				description: "เลือกโหนดเพื่อดูข้อมูลและรายละเอียด",
+				title: "ภาพรวมสถานะของ Node เพลง",
+				description: "เลือก Node เพื่อดูข้อมูลและรายละเอียด",
 				fields: ({ players, uptime }: { players: number; uptime: string }) =>
 					`\`\`\`js\nตัวเล่นเพลง: ${players}\nเวลาที่ทำงานมาแล้ว: ${uptime}\`\`\``,
-				footer: "เลือกโหนดเพื่อดูข้อมูลและรายละเอียด",
+				footer: "เลือก Node เพื่อดูข้อมูลและรายละเอียด",
 				status: ({ status }: { status: string }) => `สถานะ: ${status}`,
 				connected: "เชื่อมต่อแล้ว",
 				disconnected: "ไม่ได้เชื่อมต่ออยู่",
-				no_nodes: "ไม่พบโหนด!",
+				no_nodes: "ไม่พบ Node!",
 			},
 		},
 		// Ping Commands
@@ -374,8 +382,10 @@ export default {
 				description: ({
 					forwardPosition,
 					currentTrack,
-				}: { forwardPosition: number; currentTrack: string }) =>
-					`เร่งไปที่: ${forwardPosition} / ${currentTrack}`,
+				}: {
+					forwardPosition: number;
+					currentTrack: string;
+				}) => `เร่งไปที่: ${forwardPosition} / ${currentTrack}`,
 				no_song: "ไม่มีเพลงปัจจุบันที่เล่นอยู่",
 				stream: "ไม่สามารถข้ามไลฟ์สตรีมได้",
 			},
@@ -429,8 +439,7 @@ export default {
 			options: {
 				query: {
 					name: "query",
-					description:
-						"เพลงที่จะค้นหาหรือ URL เพลง (ไม่ต้องใส่สำหรับเพลงปัจจุบัน)",
+					description: "เพลงที่จะค้นหาหรือ URL เพลง (ไม่ต้องใส่สำหรับเพลงปัจจุบัน)",
 				},
 			},
 			run: {
@@ -440,8 +449,7 @@ export default {
 					`ส่งคำขอมาโดย ${user} | ขับเคลื่อนโดย ${provider}`,
 				no_tracks: "ไม่พบเพลง",
 				invalid_url: "URL ที่ให้มาไม่ถูกต้อง",
-				provide_song:
-					"กรุณาระบุชื่อเพลงหรือ URL หรือเล่นเพลงก่อน",
+				provide_song: "กรุณาระบุชื่อเพลงหรือ URL หรือเล่นเพลงก่อน",
 				no_lyrics: "ไม่เจอเนื้อเพลงสำหรับเพลงนี้",
 				error: "เกิดข้อผิดพลาดในระหว่างการค้นหาเนื้อเพลง",
 			},
@@ -464,7 +472,10 @@ export default {
 				description: ({
 					voiceChannel,
 					textChannel,
-				}: { voiceChannel: string; textChannel: string }) =>
+				}: {
+					voiceChannel: string;
+					textChannel: string;
+				}) =>
 					`ขยับตัวเล่นเพลงไปที่ห้อง ${voiceChannel}${textChannel ? ` และห้องข้อความเป็น ${textChannel}` : ""}.`,
 			},
 		},
@@ -531,8 +542,10 @@ export default {
 				description: ({
 					rewindPosition,
 					currentTrack,
-				}: { rewindPosition: string; currentTrack: string }) =>
-					`ย้อนเพลงไปยัง ${rewindPosition} / ${currentTrack}`,
+				}: {
+					rewindPosition: string;
+					currentTrack: string;
+				}) => `ย้อนเพลงไปยัง ${rewindPosition} / ${currentTrack}`,
 				no_song: "ไม่มีเพลงที่เล่นอยู่ในปัจจุบัน",
 				no_stream: "ไม่สามารถย้อนไลฟ์สตรีมได้!",
 			},
@@ -584,8 +597,7 @@ export default {
 			},
 			run: {
 				paused: "พักชั่วคราว",
-				paused_description:
-					"พักหายใจแป๊บนึง! เพลงหยุดชั่วคราวก่อนนะ",
+				paused_description: "พักหายใจแป๊บนึง! เพลงหยุดชั่วคราวก่อนนะ",
 			},
 		},
 		// Playlist Commands
@@ -659,8 +671,10 @@ export default {
 						list: ({
 							playlist,
 							tracks,
-						}: { playlist: string; tracks: number }) =>
-							`${playlist} - ${tracks} เพลง`,
+						}: {
+							playlist: string;
+							tracks: number;
+						}) => `${playlist} - ${tracks} เพลง`,
 						no_playlists: "คุณไม่มีเพลย์ลิสต์",
 						error: "เกิดข้อผิดพลาดขณะดึงข้อมูลเพลย์ลิสต์",
 					},
@@ -678,8 +692,10 @@ export default {
 						loaded: ({
 							tracks,
 							playlist,
-						}: { tracks: number; playlist: string }) =>
-							`โหลด **${tracks} เพลง** จากเพลย์ลิสต์ ${playlist}`,
+						}: {
+							tracks: number;
+							playlist: string;
+						}) => `โหลด **${tracks} เพลง** จากเพลย์ลิสต์ ${playlist}`,
 						error: "เกิดข้อผิดพลาดขณะโหลดเพลย์ลิสต์",
 					},
 				},
@@ -700,8 +716,7 @@ export default {
 						removed: ({ name }: { name: string }) =>
 							`ลบเพลงออกจากเพลย์ลิสต์ ${name} สำเร็จ`,
 						invalid: "หมายเลขเพลงไม่ถูกต้อง",
-						error:
-							"เกิดข้อผิดพลาดขณะลบเพลงออกจากเพลย์ลิสต์",
+						error: "เกิดข้อผิดพลาดขณะลบเพลงออกจากเพลย์ลิสต์",
 					},
 				},
 				view: {
@@ -733,22 +748,19 @@ export default {
 					run: {
 						label: "รายงานข้อผิดพลาด",
 						init_title: "รายงานข้อผิดพลาด",
-						init_description:
-							"คลิกที่ปุ่มด้านล่างเพื่อรายงานข้อผิดพลาดที่คุณพบในบอท",
+						init_description: "คลิกที่ปุ่มด้านล่างเพื่อรายงานข้อผิดพลาดที่คุณพบในบอท",
 						description: "อธิบายข้อผิดพลาดที่คุณพบ",
 						description_placeholder:
 							"เกิดอะไรขึ้น? คุณคาดหวังว่าจะเกิดอะไรขึ้น?\n\n**ตัวอย่าง:**\n\nเกิดข้อผิดพลาดเมื่อฉันพยายามเล่นเพลงจาก YouTube",
 						steps: "ขั้นตอนในการทำซ้ำข้อผิดพลาด",
-						steps_placeholder:
-							"1. ขั้นตอนแรก\n2. ขั้นตอนที่สอง\n3. ขั้นตอนที่สาม...",
+						steps_placeholder: "1. ขั้นตอนแรก\n2. ขั้นตอนที่สอง\n3. ขั้นตอนที่สาม...",
 						success: "รายงานข้อผิดพลาดถูกส่งแล้ว",
 						error: "เกิดข้อผิดพลาดขณะส่งรายงานข้อผิดพลาด",
 						success_description: ({ reportId }: { reportId: string }) =>
 							`รายงานข้อผิดพลาดของคุณถูกส่งแล้ว\n\n**หมายเลขรายงาน:** ${reportId}`,
 						error_description:
 							"เกิดข้อผิดพลาดขณะส่งรายงานข้อผิดพลาดของคุณ กรุณาลองอีกครั้งในภายหลัง",
-						invalid_user:
-							"เฉพาะผู้ใช้ที่เริ่มคำสั่งนี้เท่านั้นที่สามารถรายงานข้อผิดพลาดได้",
+						invalid_user: "เฉพาะผู้ใช้ที่เริ่มคำสั่งนี้เท่านั้นที่สามารถรายงานข้อผิดพลาดได้",
 					},
 				},
 				suggestion: {
@@ -757,22 +769,18 @@ export default {
 					run: {
 						label: "ให้ข้อเสนอแนะแก่บอท",
 						init_title: "ข้อเสนอแนะ",
-						init_description:
-							"คลิกที่ปุ่มด้านล่างเพื่อให้ข้อเสนอแนวที่คุณต้องการเห็นในบอท",
+						init_description: "คลิกที่ปุ่มด้านล่างเพื่อให้ข้อเสนอแนวที่คุณต้องการเห็นในบอท",
 						description: "อธิบายข้อเสนอแนวที่คุณมี",
-						description_placeholder:
-							"คุณอยากเห็นอะไรเพิ่มเติมหรือปรับปรุงบ้าง?",
+						description_placeholder: "คุณอยากเห็นอะไรเพิ่มเติมหรือปรับปรุงบ้าง?",
 						steps: "ขั้นตอนในการทำซ้ำข้อผิดพลาด",
-						steps_placeholder:
-							"1. ขั้นตอนแรก\n2. ขั้นตอนที่สอง\n3. ขั้นตอนที่สาม...",
+						steps_placeholder: "1. ขั้นตอนแรก\n2. ขั้นตอนที่สอง\n3. ขั้นตอนที่สาม...",
 						success: "รายงานข้อเสนอแนถูกส่งแล้ว",
 						error: "เกิดข้อผิดพลาดขณะส่งรายงานข้อเสนอแน",
 						success_description: ({ reportId }: { reportId: string }) =>
 							`ข้อเสนอแนของคุณถูกส่งแล้ว\n\n**หมายเลขรายงาน:** ${reportId}`,
 						error_description:
 							"เกิดข้อผิดพลาดขณะส่งข้อเสนอแนของคุณ กรุณาลองอีกครั้งในภายหลัง",
-						invalid_user:
-							"เฉพาะผู้ใช้ที่เริ่มคำสั่งนี้เท่านั้นที่สามารถให้ข้อเสนอแนได้",
+						invalid_user: "เฉพาะผู้ใช้ที่เริ่มคำสั่งนี้เท่านั้นที่สามารถให้ข้อเสนอแนได้",
 					},
 				},
 			},
@@ -782,14 +790,11 @@ export default {
 	event: {
 		setup: {
 			title: "Soundy Music Player",
-			description:
-				"เข้าร่วมช่องเสียงและจัดคิวเพลงตามชื่อหรือ URL ในช่องนี้",
+			description: "เข้าร่วมช่องเสียงและจัดคิวเพลงตามชื่อหรือ URL ในช่องนี้",
 			no_voice: "คุณต้องอยู่ในช่องเสียงเพื่อใช้คำสั่งนี้!",
-			no_connect:
-				"ฉันต้องการสิทธิ์ `CONNECT` และ `SPEAK` ในช่องเสียงของคุณ!",
+			no_connect: "ฉันต้องการสิทธิ์ `CONNECT` และ `SPEAK` ในช่องเสียงของคุณ!",
 			failed: "ไม่สามารถเข้าร่วมช่องเสียงของคุณได้!",
-			no_results: ({ query }: { query: string }) =>
-				`ไม่พบผลลัพธ์สำหรับ ${query}`,
+			no_results: ({ query }: { query: string }) => `ไม่พบผลลัพธ์สำหรับ ${query}`,
 			error: "เกิดข้อผิดพลาดขณะประมวลผลคำขอของคุณ!",
 		},
 		// Music Events
@@ -799,7 +804,7 @@ export default {
 			duration: "ระยะเวลา",
 			requested_by: "ร้องขอโดย",
 			now_playing: "กำลังเล่นอยู่",
-			node: "โหนด",
+			node: "Node",
 			finish_time: "เวลาที่เสร็จสิ้น",
 			tracks: "เพลง",
 			added: "เพิ่มลงในคิว",
@@ -820,7 +825,7 @@ export default {
 			`กรุณารอ ${seconds} วินาทีก่อนใช้คำสั่งนี้อีกครั้ง.`,
 		// Manager
 		manager: {
-			no_nodes: "ไม่มีโหนดที่พร้อมใช้งานในขณะนี้ กรุณาลองอีกครั้งในภายหลัง.",
+			no_nodes: "ไม่มี Node ที่พร้อมใช้งานในขณะนี้ กรุณาลองอีกครั้งในภายหลัง.",
 			no_player: "ไม่มีผู้เล่นเพลงที่ใช้งานอยู่ในเซิร์ฟเวอร์นี้.",
 			no_tracks: "ไม่มีเพลงในคิว.",
 			not_enough: "ไม่มีเพลงในคิวเพียงพอที่จะดำเนินการตามคำสั่งนี้.",
@@ -881,10 +886,8 @@ export default {
 		overrides: {
 			error: "เกิดข้อผิดพลาดขณะประมวลผลคำสั่งนี้",
 			missing_perms: "ขาดสิทธิ์",
-			missing_user_perms:
-				"คุณไม่มีสิทธิ์ที่จำเป็นในการใช้คำสั่งนี้",
-			missing_bot_perms:
-				"ฉันไม่มีสิทธิ์ที่จำเป็นในการใช้คำสั่งนี้",
+			missing_user_perms: "คุณไม่มีสิทธิ์ที่จำเป็นในการใช้คำสั่งนี้",
+			missing_bot_perms: "ฉันไม่มีสิทธิ์ที่จำเป็นในการใช้คำสั่งนี้",
 			invalid_command: {
 				1: "การใช้งานคำสั่งไม่ถูกต้อง นี่คือวิธีการใช้งาน:",
 				2: "ตัวเลือก:",
@@ -904,8 +907,7 @@ export default {
 		// Loop
 		loop: {
 			title: "โหมดลูปถูกอัปเดต",
-			description: ({ mode }: { mode: string }) =>
-				`โหมดลูปถูกอัปเดตเป็น ${mode}`,
+			description: ({ mode }: { mode: string }) => `โหมดลูปถูกอัปเดตเป็น ${mode}`,
 			select_title: "การเลือกโหมดลูป",
 			select_description: "เลือกโหมดลูปเพื่อเปลี่ยน:",
 			off: "ปิด",
@@ -937,8 +939,7 @@ export default {
 		},
 		// Shuffle
 		shuffle: {
-			description:
-				"คิวถูกสุ่มใหม่แล้ว!\nมาสนุกกับการผสมเพลงใหม่กันเถอะ!",
+			description: "คิวถูกสุ่มใหม่แล้ว!\nมาสนุกกับการผสมเพลงใหม่กันเถอะ!",
 		},
 		skip: {
 			title: "ข้าม",
@@ -979,7 +980,7 @@ export default {
 			used: ({ used }: { used: string }) => `Used: ${used}`,
 			reservable: ({ reservable }: { reservable: string }) =>
 				`Reservable: ${reservable}`,
-			no_node: "โหนดนี้ไม่มีอีกต่อไป",
+			no_node: "Node นี้ไม่มีอีกต่อไป",
 		},
 	},
 	// Middleware
@@ -992,7 +993,7 @@ export default {
 	// Autocomplete
 	autocomplete: {
 		music: {
-			no_nodes: "ไม่มีโหนดที่พร้อมใช้งาน",
+			no_nodes: "ไม่มี Node ที่พร้อมใช้งาน",
 			no_voice: "ไม่มีช่องเสียง",
 			no_tracks: "ไม่พบเพลง",
 		},
