@@ -1,3 +1,5 @@
+import type English from "./en-US";
+
 export default {
 	metadata: {
 		name: "Thai",
@@ -7,7 +9,7 @@ export default {
 	// Commands
 	cmd: {
 		// Requested By
-		requested_by: ({ user }: { user: string }) => `ส่งคำขอโดย ${user}`,
+		requested_by: ({ user }) => `ส่งคำขอโดย ${user}`,
 		// Error
 		error: "เกิดข้อผิดพลาดในการประมวลผลคำสั่ง โปรดลองใหม่อีกครั้ง",
 		// Default Commands
@@ -24,8 +26,7 @@ export default {
 					},
 				},
 				run: {
-					description: ({ volume }: { volume: number }) =>
-						`ค่าเรอ่มต้นของเสียงถูกกำหนดเป็น ${volume}%`,
+					description: ({ volume }) => `ค่าเรอ่มต้นของเสียงถูกกำหนดเป็น ${volume}%`,
 				},
 			},
 		},
@@ -41,8 +42,7 @@ export default {
 						exists: "มีห้องสั่งเพลงอยู่แล้ว",
 						failed: "การสร้างห้องสั่งเพลงล้มเหลว",
 						topic: "Soundy Music Player - พิมพ์ชื่อเพลงหรือใส่ URL เพลง",
-						success: ({ channel }: { channel: string }) =>
-							`สร้างห้องสั่งเพลงสำเร็จ ${channel}`,
+						success: ({ channel }) => `สร้างห้องสั่งเพลงสำเร็จ ${channel}`,
 					},
 				},
 				delete: {
@@ -96,8 +96,7 @@ export default {
 				},
 			},
 			run: {
-				success: ({ prefix }: { prefix: string }) =>
-					`สำเร็จ! ในการตั้งคำนำหน้าเป็น: ${prefix}`,
+				success: ({ prefix }) => `สำเร็จ! ในการตั้งคำนำหน้าเป็น: ${prefix}`,
 				reset: "คำนำหน้าถูกรีเซ็ตสู่ค่าเริ่มต้นแล้ว",
 			},
 		},
@@ -107,8 +106,7 @@ export default {
 			description: "ใช้งานฟิลเตอร์เสียง",
 			sub: {
 				run: {
-					success: ({ filter }: { filter: string }) =>
-						`ใช้งานฟิลเตอร์ ${filter} แล้ว`,
+					success: ({ filter }) => `ใช้งานฟิลเตอร์ ${filter} แล้ว`,
 					error: "เกิดข้อผิดพลาดในการใช้งานฟิลเตอร์",
 				},
 				_8d: {
@@ -177,13 +175,8 @@ export default {
 			description: "โชว์เกี่ยวกับบอท Soundy",
 			run: {
 				title: "เกี่ยวกับ Soundy",
-				footer: ({
-					guildCount,
-					userCount,
-				}: {
-					guildCount: number;
-					userCount: number;
-				}) => `กำลังอยู่ใน ${guildCount} เซิฟเวอร์ และเชื่อมต่อกับผู้ใช้ ${userCount} บัญชี`,
+				footer: ({ guildCount, userCount }) =>
+					`กำลังอยู่ใน ${guildCount} เซิฟเวอร์ และเชื่อมต่อกับผู้ใช้ ${userCount} บัญชี`,
 				about_me: {
 					button: "เกี่ยวกับ",
 					title: "เกี่ยวกับฉัน",
@@ -200,25 +193,22 @@ export default {
 					11: "เซิฟเวอร์สนับสนุน",
 					12: "โหวตฉัน",
 					13: "เครดิต",
-					14: ({ author }: { author: string }) => `- ก่อตั้งโดย: ${author}`,
-					15: ({ developer }: { developer: string }) =>
-						`- พัฒนาโดย: ${developer}`,
-					16: ({ country }: { country: string }) => `- ประเทศ: ${country}`,
+					14: ({ author }) => `- ก่อตั้งโดย: ${author}`,
+					15: ({ developer }) => `- พัฒนาโดย: ${developer}`,
+					16: ({ country }) => `- ประเทศ: ${country}`,
 				},
 				contributors: {
 					button: "ผู้มีส่วนร่วม",
 					title: "ผู้มีส่วนร่วม Soundy",
 					1: "ผู้มีส่วนร่วมเป็นพิเศษ",
-					2: ({ author }: { author: string }) => `- ${author}: ผู้สร้างบอท Soundy`,
-					3: ({ user }: { user: string }) =>
-						`- ${user}: ผู้แก้ไขข้อผิดพลาดและในส่วนอื่นๆ`,
-					4: ({ user }: { user: string }) => `- ${user}: ผู้มีส่วนร่วมในการทำโค้ด`,
+					2: ({ author }) => `- ${author}: ผู้สร้างบอท Soundy`,
+					3: ({ user }) => `- ${user}: ผู้แก้ไขข้อผิดพลาดและในส่วนอื่นๆ`,
+					4: ({ user }) => `- ${user}: ผู้มีส่วนร่วมในการทำโค้ด`,
 					5: "ลิงค์",
 					6: "Tronix Development Community",
 					7: "ผู้มีส่วนร่วมและผู้สนับสนุนทั้งหมด",
 					8: "License",
-					9: ({ license }: { license: string }) =>
-						`โปรเจกต์นี้อยู่ภาบใต้ใบอนุญาต ${license}`,
+					9: ({ license }) => `โปรเจกต์นี้อยู่ภาบใต้ใบอนุญาต ${license}`,
 					10: "ดูใบอนุญาต",
 				},
 				packages: {
@@ -239,16 +229,9 @@ export default {
 					run: {
 						title: "เซิฟเวอร์เล่นเพลงที่ติดอันดับ",
 						description: "แสดงเซิฟเวอร์ที่เล่นเพลงมากที่สุดใน 2 อาทิตย์ล่าสุด",
-						fields: ({
-							totalPlays,
-							uniqueTracks,
-						}: {
-							totalPlays: number;
-							uniqueTracks: number;
-						}) =>
+						fields: ({ totalPlays, uniqueTracks }) =>
 							`เล่นเพลงไปแล้วทั้งหมด ${totalPlays} เพลง (${uniqueTracks} เพลงพิเศษ)`,
-						footer: ({ length }: { length: number }) =>
-							`แสดงเซิฟเวอร์ติดอันดับ ${length} เซิฟเวอร์`,
+						footer: ({ length }) => `แสดงเซิฟเวอร์ติดอันดับ ${length} เซิฟเวอร์`,
 						unknown: "ไม่รู้จักเซิฟเวอร์",
 						no_data: "ไม่มีการบันทึกการเล่นเพลงใดๆเลยใน 2 อาทิตย์ล่าสุด",
 					},
@@ -259,18 +242,9 @@ export default {
 					run: {
 						title: "เพลงที่ติดอันดับ",
 						description: "แสดงเพลงที่เล่นมากที่สุดใน 2 อาทิตย์ล่าสุด",
-						fields: ({
-							author,
-							playCount,
-							trackId,
-						}: {
-							author: string;
-							playCount: number;
-							trackId: string;
-						}) =>
+						fields: ({ author, playCount, trackId }) =>
 							`โดย ${author} • เล่นไปแล้ว ${playCount} ครั้ง\n[Link](${trackId})`,
-						footer: ({ length }: { length: number }) =>
-							`แสดงอันดับ ${length} แทร็ก`,
+						footer: ({ length }) => `แสดงอันดับ ${length} แทร็ก`,
 						no_data: "ไม่มีเพลงใดเลยที่เล่นมากที่สุดใน 2 อาทิตย์ล่าสุด",
 					},
 				},
@@ -280,10 +254,8 @@ export default {
 					run: {
 						title: "Top Music Users",
 						description: "แสดงคนที่ฟังเพลงมากที่สุดใน 2 อาทิตย์ล่าสุด",
-						fields: ({ playCount }: { playCount: number }) =>
-							`เล่นไปแล้ว ${playCount} เพลง`,
-						footer: ({ length }: { length: number }) =>
-							`แสดงอันดับ ${length} ผู้ใช้`,
+						fields: ({ playCount }) => `เล่นไปแล้ว ${playCount} เพลง`,
+						footer: ({ length }) => `แสดงอันดับ ${length} ผู้ใช้`,
 						unknown: "ไม่รู้จักผู้ใช้",
 						no_data: "ไม่มีผู้ใช้ใดเลยที่ฟังเพลงมากที่สุดใน 2 อาทิตย์ล่าสุด",
 					},
@@ -303,26 +275,17 @@ export default {
 			run: {
 				title: "เมนูช่วยเหลือของ Soundy",
 				description: {
-					1: ({ user, bot }: { user: string; bot: string }) =>
+					1: ({ user, bot }) =>
 						`**ซาหวัดดี! ${user} ฉันคือ ${bot} เป็นเพื่อนนักดนตรีของคุณ!**`,
-					2: ({ bot }: { bot: string }) =>
+					2: ({ bot }) =>
 						`**${bot} เป็นบอทเพลงที่ออกมาเพื่อประสบการณ์ที่ยอดเยี่ยมใน Discord และมีฟีเจอร์ที่ใช้ง่ายมาก ${bot} เป็นตัวเลือกที่ตอบโจทย์สำหรับเซิฟเวอร์ Discord ของคุณ**`,
 					3: "**เลือกหมวดหมู่จากเมนูด้านล่างนี้**",
-					4: ({
-						invite,
-						support,
-						vote,
-					}: {
-						invite: string;
-						support: string;
-						vote: string;
-					}) =>
+					4: ({ invite, support, vote }) =>
 						`**[Invite Me](${invite}) • [Support Server](${support}) • [Vote](${vote})**`,
 				},
-				footer: ({ bot }: { bot: string }) => `ขอบคุณที่คุณเลือกเรา ${bot}!`,
+				footer: ({ bot }) => `ขอบคุณที่คุณเลือกเรา ${bot}!`,
 				select: "เลือกหมวดหมู่",
-				categoryTitle: ({ category }: { category: string }) =>
-					`${category} คำสั่ง`,
+				categoryTitle: ({ category }) => `${category} คำสั่ง`,
 				notFound: "ไม่พบคำสั่ง",
 				unknown: "ไม่รู้จัก!",
 			},
@@ -334,10 +297,10 @@ export default {
 			run: {
 				title: "ภาพรวมสถานะของ Node เพลง",
 				description: "เลือก Node เพื่อดูข้อมูลและรายละเอียด",
-				fields: ({ players, uptime }: { players: number; uptime: string }) =>
+				fields: ({ players, uptime }) =>
 					`\`\`\`js\nตัวเล่นเพลง: ${players}\nเวลาที่ทำงานมาแล้ว: ${uptime}\`\`\``,
 				footer: "เลือก Node เพื่อดูข้อมูลและรายละเอียด",
-				status: ({ status }: { status: string }) => `สถานะ: ${status}`,
+				status: ({ status }) => `สถานะ: ${status}`,
 				connected: "เชื่อมต่อแล้ว",
 				disconnected: "ไม่ได้เชื่อมต่ออยู่",
 				no_nodes: "ไม่พบ Node!",
@@ -379,13 +342,8 @@ export default {
 			description: "เร่งความเร็วของเพลงปัจจุบันไปข้างหน้า 10 วินาที",
 			run: {
 				title: "เร่งความเร็วไปข้างหน้า",
-				description: ({
-					forwardPosition,
-					currentTrack,
-				}: {
-					forwardPosition: number;
-					currentTrack: string;
-				}) => `เร่งไปที่: ${forwardPosition} / ${currentTrack}`,
+				description: ({ forwardPosition, currentTrack }) =>
+					`เร่งไปที่: ${forwardPosition} / ${currentTrack}`,
 				no_song: "ไม่มีเพลงปัจจุบันที่เล่นอยู่",
 				stream: "ไม่สามารถข้ามไลฟ์สตรีมได้",
 			},
@@ -413,7 +371,7 @@ export default {
 			description: "ทำให้บอทเข้าร่วมมาในช่องเสียงที่คุณอยู่",
 			run: {
 				title: "เข้าร่วม",
-				description: ({ voiceChannel }: { voiceChannel: string }) =>
+				description: ({ voiceChannel }) =>
 					`วู้ฮู้! ฉันทำลายปาร์ตี้ใน ${voiceChannel}! แล้ว\nถึงเวลาที่จะเปิดเพลงให้ดังขึ้นแล้วสร้างเวทมนตร์แห่งดนตรีกัน!`,
 			},
 		},
@@ -443,9 +401,9 @@ export default {
 				},
 			},
 			run: {
-				title: ({ song }: { song: string }) => `เนื้อเพลงสำหรับ: ${song}`,
+				title: ({ song }) => `เนื้อเพลงสำหรับ: ${song}`,
 				description: "เนื้อเพลงสำหรับเพลงปัจจุบันหรือเพลงที่ระบุ",
-				footer: ({ user, provider }: { user: string; provider: string }) =>
+				footer: ({ user, provider }) =>
 					`ส่งคำขอมาโดย ${user} | ขับเคลื่อนโดย ${provider}`,
 				no_tracks: "ไม่พบเพลง",
 				invalid_url: "URL ที่ให้มาไม่ถูกต้อง",
@@ -469,13 +427,7 @@ export default {
 				},
 			},
 			run: {
-				description: ({
-					voiceChannel,
-					textChannel,
-				}: {
-					voiceChannel: string;
-					textChannel: string;
-				}) =>
+				description: ({ voiceChannel, textChannel }) =>
 					`ขยับตัวเล่นเพลงไปที่ห้อง ${voiceChannel}${textChannel ? ` และห้องข้อความเป็น ${textChannel}` : ""}.`,
 			},
 		},
@@ -539,13 +491,8 @@ export default {
 			description: "ย้อเวลาเพลงไป 10 นาที",
 			run: {
 				title: "ย้อนเวลา",
-				description: ({
-					rewindPosition,
-					currentTrack,
-				}: {
-					rewindPosition: string;
-					currentTrack: string;
-				}) => `ย้อนเพลงไปยัง ${rewindPosition} / ${currentTrack}`,
+				description: ({ rewindPosition, currentTrack }) =>
+					`ย้อนเพลงไปยัง ${rewindPosition} / ${currentTrack}`,
 				no_song: "ไม่มีเพลงที่เล่นอยู่ในปัจจุบัน",
 				no_stream: "ไม่สามารถย้อนไลฟ์สตรีมได้!",
 			},
@@ -562,12 +509,11 @@ export default {
 			},
 			run: {
 				title: "Seek",
-				description: ({ time }: { time: string }) => `ข้ามไปยัง ${time}`,
-				invalid_time: ({ time }: { time: string }) => `เวลาไม่ถูกต้อง: ${time}`,
+				description: ({ time }) => `ข้ามไปยัง ${time}`,
+				invalid_time: ({ time }) => `เวลาไม่ถูกต้อง: ${time}`,
 				no_track: "ไม่มีเพลงที่เล่นอยู่ในปัจจุบัน",
 				no_seekable: "เพลงนี้ไม่สามารถข้ามไปไหนได้",
-				time_exceeds: ({ time }: { time: string }) =>
-					`เวลาเกินกว่าความยาวของเพลง: ${time}`,
+				time_exceeds: ({ time }) => `เวลาเกินกว่าความยาวของเพลง: ${time}`,
 			},
 		},
 		// Shuffle Commands
@@ -605,7 +551,7 @@ export default {
 			name: "playlist",
 			description: "จัดการเพลย์ลิสต์เพลงของคุณ",
 			run: {
-				footer: ({ page, total }: { page: string; total: number }) =>
+				footer: ({ page, total }) =>
 					`หน้า ${page} • จำนวนเพลย์ลิสต์ทั้งหมด: ${total}`,
 				not_found: "ไม่พบเพลย์ลิสต์",
 				no_tracks: "ไม่พบเพลง",
@@ -625,7 +571,7 @@ export default {
 						},
 					},
 					run: {
-						added: ({ track, playlist }: { track: string; playlist: string }) =>
+						added: ({ track, playlist }) =>
 							`เพิ่มเพลง **${track}** ลงในเพลย์ลิสต์ ${playlist}`,
 						// - Added **1 tracks** to playlist **Tonikaku Kawaii**
 						// - Added track **Unmei?** to playlist **Tonikaku Kawaii**
@@ -642,8 +588,7 @@ export default {
 						},
 					},
 					run: {
-						success: ({ playlist }: { playlist: string }) =>
-							`สร้างเพลย์ลิสต์ \`${playlist}\` สำเร็จ`,
+						success: ({ playlist }) => `สร้างเพลย์ลิสต์ \`${playlist}\` สำเร็จ`,
 						already_exists: "มีเพลย์ลิสต์ที่มีชื่อเดียวกันนี้อยู่แล้ว",
 						error: "เกิดข้อผิดพลาดขณะสร้างเพลย์ลิสต์",
 					},
@@ -658,8 +603,7 @@ export default {
 						},
 					},
 					run: {
-						deleted: ({ playlist }: { playlist: string }) =>
-							`ลบเพลย์ลิสต์ \`${playlist}\` สำเร็จ`,
+						deleted: ({ playlist }) => `ลบเพลย์ลิสต์ \`${playlist}\` สำเร็จ`,
 						error: "เกิดข้อผิดพลาดขณะลบเพลย์ลิสต์",
 					},
 				},
@@ -667,14 +611,8 @@ export default {
 					name: "list",
 					description: "แสดงเพลย์ลิสต์ทั้งหมดของคุณ",
 					run: {
-						title: ({ author }: { author: string }) => `เพลย์ลิสต์ของ ${author}`,
-						list: ({
-							playlist,
-							tracks,
-						}: {
-							playlist: string;
-							tracks: number;
-						}) => `${playlist} - ${tracks} เพลง`,
+						title: ({ author }) => `เพลย์ลิสต์ของ ${author}`,
+						list: ({ playlist, tracks }) => `${playlist} - ${tracks} เพลง`,
 						no_playlists: "คุณไม่มีเพลย์ลิสต์",
 						error: "เกิดข้อผิดพลาดขณะดึงข้อมูลเพลย์ลิสต์",
 					},
@@ -689,13 +627,8 @@ export default {
 						},
 					},
 					run: {
-						loaded: ({
-							tracks,
-							playlist,
-						}: {
-							tracks: number;
-							playlist: string;
-						}) => `โหลด **${tracks} เพลง** จากเพลย์ลิสต์ ${playlist}`,
+						loaded: ({ tracks, playlist }) =>
+							`โหลด **${tracks} เพลง** จากเพลย์ลิสต์ ${playlist}`,
 						error: "เกิดข้อผิดพลาดขณะโหลดเพลย์ลิสต์",
 					},
 				},
@@ -713,8 +646,7 @@ export default {
 						},
 					},
 					run: {
-						removed: ({ name }: { name: string }) =>
-							`ลบเพลงออกจากเพลย์ลิสต์ ${name} สำเร็จ`,
+						removed: ({ name }) => `ลบเพลงออกจากเพลย์ลิสต์ ${name} สำเร็จ`,
 						invalid: "หมายเลขเพลงไม่ถูกต้อง",
 						error: "เกิดข้อผิดพลาดขณะลบเพลงออกจากเพลย์ลิสต์",
 					},
@@ -729,7 +661,7 @@ export default {
 						},
 					},
 					run: {
-						title: ({ name }: { name: string }) => `เพลย์ลิสต์: ${name}`,
+						title: ({ name }) => `เพลย์ลิสต์: ${name}`,
 						empty: "เพลย์ลิสต์นี้ว่างเปล่า",
 						failed: "ไม่สามารถโหลดรายละเอียดเพลงได้",
 						error: "เกิดข้อผิดพลาดขณะแสดงเพลย์ลิสต์",
@@ -756,7 +688,7 @@ export default {
 						steps_placeholder: "1. ขั้นตอนแรก\n2. ขั้นตอนที่สอง\n3. ขั้นตอนที่สาม...",
 						success: "รายงานข้อผิดพลาดถูกส่งแล้ว",
 						error: "เกิดข้อผิดพลาดขณะส่งรายงานข้อผิดพลาด",
-						success_description: ({ reportId }: { reportId: string }) =>
+						success_description: ({ reportId }) =>
 							`รายงานข้อผิดพลาดของคุณถูกส่งแล้ว\n\n**หมายเลขรายงาน:** ${reportId}`,
 						error_description:
 							"เกิดข้อผิดพลาดขณะส่งรายงานข้อผิดพลาดของคุณ กรุณาลองอีกครั้งในภายหลัง",
@@ -776,7 +708,7 @@ export default {
 						steps_placeholder: "1. ขั้นตอนแรก\n2. ขั้นตอนที่สอง\n3. ขั้นตอนที่สาม...",
 						success: "รายงานข้อเสนอแนถูกส่งแล้ว",
 						error: "เกิดข้อผิดพลาดขณะส่งรายงานข้อเสนอแน",
-						success_description: ({ reportId }: { reportId: string }) =>
+						success_description: ({ reportId }) =>
 							`ข้อเสนอแนของคุณถูกส่งแล้ว\n\n**หมายเลขรายงาน:** ${reportId}`,
 						error_description:
 							"เกิดข้อผิดพลาดขณะส่งข้อเสนอแนของคุณ กรุณาลองอีกครั้งในภายหลัง",
@@ -794,7 +726,7 @@ export default {
 			no_voice: "คุณต้องอยู่ในช่องเสียงเพื่อใช้คำสั่งนี้!",
 			no_connect: "ฉันต้องการสิทธิ์ `CONNECT` และ `SPEAK` ในช่องเสียงของคุณ!",
 			failed: "ไม่สามารถเข้าร่วมช่องเสียงของคุณได้!",
-			no_results: ({ query }: { query: string }) => `ไม่พบผลลัพธ์สำหรับ ${query}`,
+			no_results: ({ query }) => `ไม่พบผลลัพธ์สำหรับ ${query}`,
 			error: "เกิดข้อผิดพลาดขณะประมวลผลคำขอของคุณ!",
 		},
 		// Music Events
@@ -809,7 +741,7 @@ export default {
 			tracks: "เพลง",
 			added: "เพิ่มลงในคิว",
 			added_playlist: "เพิ่มเพลย์ลิสต์ลงในคิว",
-			added_songs: ({ songs }: { songs: string }) => `${songs} เพลง`,
+			added_songs: ({ songs }) => `${songs} เพลง`,
 			no_results: "ไม่พบผลลัพธ์สำหรับคำค้นหาที่กำหนด.",
 			pause: {
 				title: "เพลงถูกหยุดชั่วคราว",
@@ -821,8 +753,7 @@ export default {
 				description: "เพลงถูกเล่นต่อแล้ว!\nมาสนุกกันต่อเถอะ!",
 			},
 		},
-		cooldown: ({ seconds }: { seconds: number }) =>
-			`กรุณารอ ${seconds} วินาทีก่อนใช้คำสั่งนี้อีกครั้ง.`,
+		cooldown: ({ seconds }) => `กรุณารอ ${seconds} วินาทีก่อนใช้คำสั่งนี้อีกครั้ง.`,
 		// Manager
 		manager: {
 			no_nodes: "ไม่มี Node ที่พร้อมใช้งานในขณะนี้ กรุณาลองอีกครั้งในภายหลัง.",
@@ -834,7 +765,7 @@ export default {
 		premium: {
 			limit_reached: {
 				title: "คุณใช้คำสั่งฟรีทั้งหมดของคุณแล้ว!",
-				description: ({ time }: { time: number }) =>
+				description: ({ time }) =>
 					`กรุณาโหวตให้ Soundy บน top.gg เพื่อรับ ${time} ชั่วโมงของการเข้าถึงแบบไม่จำกัด.`,
 			},
 			vote_now: "โหวตตอนนี้",
@@ -846,29 +777,26 @@ export default {
 		},
 		// Voice
 		voice: {
-			no_same: ({ channel }: { channel: string }) =>
-				`คุณต้องอยู่ในช่องเสียงเดียวกันกับฉันในห้อง ${channel}!`,
+			no_same: ({ channel }) => `คุณต้องอยู่ในช่องเสียงเดียวกันกับฉันในห้อง ${channel}!`,
 			no_vc: "คุณต้องอยู่ในช่องเสียงเพื่อใช้คำสั่งนี้!",
-			no_perms: ({ channel }: { channel: string }) =>
-				`ฉันไม่มีสิทธิ์ที่จำเป็นใน ${channel}!`,
+			no_perms: ({ channel }) => `ฉันไม่มีสิทธิ์ที่จำเป็นใน ${channel}!`,
 			missing_perms: "ขาดสิทธิ์",
 			failed: "ไม่สามารถเข้าร่วมช่องเสียงของคุณได้!",
 		},
 		// Listeners
 		listeners: {
 			no_members: "ไม่มีสมาชิกในช่องเสียง",
-			disconnect: ({ time }: { time: string }) =>
-				`ช่องว่าง! ตัวเล่นจะถูกตัดการเชื่อมต่อใน ${time}`,
+			disconnect: ({ time }) => `ช่องว่าง! ตัวเล่นจะถูกตัดการเชื่อมต่อใน ${time}`,
 			resume: "สมาชิกเข้าร่วม! กำลังเล่นต่อ",
 		},
 		// Mention
 		mention: {
 			title: "ยินดีต้อนรับสู่ Soundy!",
 			description: {
-				1: ({ prefix }: { prefix: string }) =>
+				1: ({ prefix }) =>
 					`ใช้ \`${prefix}help\` หรือ \`/help\` เพื่อค้นพบคำสั่งที่น่าทึ่งทั้งหมดของฉัน`,
 				2: "ต้องการความช่วยเหลือ? เข้าร่วมเซิร์ฟเวอร์สนับสนุนของเราเพื่อขอความช่วยเหลือ",
-				3: ({ prefix }: { prefix: string }) =>
+				3: ({ prefix }) =>
 					`ต้องการเริ่มต้นใช้งาน? เพียงพิมพ์ \`${prefix}play\` หรือ \`/play\` เพื่อเริ่มการเดินทางทางดนตรีของคุณ!`,
 				4: "ฟีเจอร์:",
 				5: "การสตรีมเพลงคุณภาพสูง",
@@ -907,7 +835,7 @@ export default {
 		// Loop
 		loop: {
 			title: "โหมดลูปถูกอัปเดต",
-			description: ({ mode }: { mode: string }) => `โหมดลูปถูกอัปเดตเป็น ${mode}`,
+			description: ({ mode }) => `โหมดลูปถูกอัปเดตเป็น ${mode}`,
 			select_title: "การเลือกโหมดลูป",
 			select_description: "เลือกโหมดลูปเพื่อเปลี่ยน:",
 			off: "ปิด",
@@ -930,10 +858,9 @@ export default {
 		queue: {
 			name: "คิว",
 			now_playing: "กำลังเล่น",
-			total: ({ total }: { total: number }) => `จำนวนเพลงทั้งหมด: ${total}`,
-			track: ({ track, author }: { track: string; author: string }) =>
-				`${track} โดย ${author}`,
-			requested_by: ({ user }: { user: string }) => `ร้องขอโดย ${user}`,
+			total: ({ total }) => `จำนวนเพลงทั้งหมด: ${total}`,
+			track: ({ track, author }) => `${track} โดย ${author}`,
+			requested_by: ({ user }) => `ร้องขอโดย ${user}`,
 			up_next: "ถัดไป",
 			unknown_artist: "ศิลปินที่ไม่รู้จัก",
 		},
@@ -955,39 +882,34 @@ export default {
 		// Volume
 		volume: {
 			title: "ตั้งค่าเสียง",
-			description: ({ volume }: { volume: string }) =>
-				`ระดับเสียงถูกตั้งค่าเป็น ${volume}`,
+			description: ({ volume }) => `ระดับเสียงถูกตั้งค่าเป็น ${volume}`,
 		},
 
 		// Node Select
 		nodeSelect: {
-			title: ({ node }: { node: string }) => `ข้อมูล Node - ${node}`,
-			status: ({ status }: { status: string }) => `สถานะ: ${status}`,
+			title: ({ node }) => `ข้อมูล Node - ${node}`,
+			status: ({ status }) => `สถานะ: ${status}`,
 			connected: "เชื่อมต่อ",
 			disconnected: "ไม่เชื่อมต่อ",
 			description: "เลือก Node เพื่อดูข้อมูลรายละเอียด",
-			players: ({ players }: { players: number }) => `ผู้เล่น: ${players}`,
-			playing_players: ({ playingPlayers }: { playingPlayers: number }) =>
+			players: ({ players }) => `ผู้เล่น: ${players}`,
+			playing_players: ({ playingPlayers }) =>
 				`ตัวเล่นที่กำลังเล่น: ${playingPlayers}`,
-			uptime: ({ uptime }: { uptime: string }) => `Uptime: ${uptime}`,
+			uptime: ({ uptime }) => `Uptime: ${uptime}`,
 			cpu: "CPU",
-			cores: ({ cores }: { cores: number }) => `Cores: ${cores}`,
-			system_load: ({ systemLoad }: { systemLoad: string }) =>
-				`System Load: ${systemLoad}%`,
-			lavalink_load: ({ lavalinkLoad }: { lavalinkLoad: string }) =>
-				`Lavalink Load: ${lavalinkLoad}%`,
+			cores: ({ cores }) => `Cores: ${cores}`,
+			system_load: ({ systemLoad }) => `System Load: ${systemLoad}%`,
+			lavalink_load: ({ lavalinkLoad }) => `Lavalink Load: ${lavalinkLoad}%`,
 			memory: "Memory",
-			used: ({ used }: { used: string }) => `Used: ${used}`,
-			reservable: ({ reservable }: { reservable: string }) =>
-				`Reservable: ${reservable}`,
+			used: ({ used }) => `Used: ${used}`,
+			reservable: ({ reservable }) => `Reservable: ${reservable}`,
 			no_node: "Node นี้ไม่มีอีกต่อไป",
 		},
 	},
 	// Middleware
 	middlewares: {
 		cooldown: {
-			description: ({ seconds }: { seconds: number }) =>
-				`โปรดรอ ${seconds} วินาทีก่อนใช้คำสั่งนี้อีกครั้ง.`,
+			description: ({ seconds }) => `โปรดรอ ${seconds} วินาทีก่อนใช้คำสั่งนี้อีกครั้ง.`,
 		},
 	},
 	// Autocomplete
@@ -998,4 +920,4 @@ export default {
 			no_tracks: "ไม่พบเพลง",
 		},
 	},
-};
+} satisfies typeof English;
