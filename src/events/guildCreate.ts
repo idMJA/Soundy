@@ -10,7 +10,7 @@ export default createEvent({
 		if (!("name" in guild)) return;
 
 		// Try to get full guild data from cache first
-		const cachedGuild = await client.cache.guilds?.get(guild.id);
+		const cachedGuild = client.cache.guilds?.get(guild.id);
 		const guildData = cachedGuild || guild;
 
 		const guildIcon = guildData.icon
@@ -19,7 +19,7 @@ export default createEvent({
 
 		// Get owner info from cache
 		const ownerId = guildData.ownerId;
-		const cachedOwner = await client.cache.users?.get(ownerId);
+		const cachedOwner = client.cache.users?.get(ownerId);
 
 		const embed = new Embed()
 			.setColor(client.config.color.yes)
@@ -54,7 +54,7 @@ export default createEvent({
 				},
 				{
 					name: "`🤖` Server Count",
-					value: `\`${await client.cache.guilds?.count?.()}\``,
+					value: `\`${client.cache.guilds?.count?.()}\``,
 					inline: false,
 				},
 			)

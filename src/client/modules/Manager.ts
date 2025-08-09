@@ -50,8 +50,8 @@ export class SoundyManager extends LavalinkManager {
 				},
 			},
 		});
-		this.playerSaver = new PlayerSaver(client.logger); // Inisialisasi playerSaver
-		this.lavalinkHandler = new LavalinkHandler(client); // Inisialisasi handler saja, load di method async
+		this.playerSaver = new PlayerSaver(client.logger);
+		this.lavalinkHandler = new LavalinkHandler(client);
 	}
 
 	/**

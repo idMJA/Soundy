@@ -11,7 +11,6 @@ export default createLavalinkEvent({
 		);
 
 		try {
-			// Skip reporting rate limit errors as these are generally less critical
 			if (
 				payload.exception?.message.includes("rate limit") ||
 				payload.exception?.message.includes("429")
@@ -47,7 +46,7 @@ export default createLavalinkEvent({
 							},
 						],
 					})
-					.catch(() => null); // Silently fail if message can't be sent
+					.catch(() => null);
 			}
 		} catch (error) {
 			client.logger.error(

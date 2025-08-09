@@ -10,9 +10,8 @@ export const checkCooldown = createMiddleware<void>(
 
 		const { event } = await context.getLocale();
 
-		if (!command) return await pass();
-		if ("onlyDeveloper" in command && command.onlyDeveloper)
-			return await next();
+		if (!command) return pass();
+		if ("onlyDeveloper" in command && command.onlyDeveloper) return next();
 
 		const cooldown =
 			("cooldown" in command && typeof command.cooldown === "number"
@@ -34,14 +33,13 @@ export const checkCooldown = createMiddleware<void>(
 				],
 			});
 
-			return await pass();
+			return pass();
 		}
 
 		cooldowns.set(getCollectionKey(context), timeNow + cooldown, cooldown);
 
-		// Only run cooldown for commands, skip for components
-		if (context.isComponent?.()) return await next();
+		if (context.isComponent?.()) return next();
 
-		return await next();
+		return next();
 	},
 );

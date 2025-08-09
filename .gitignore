@@ -11,3 +11,4 @@ package-lock.json
 .env.keys
 .env.production
 sessions.json
+.fuse_*

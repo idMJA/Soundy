@@ -2,7 +2,7 @@ import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { jwt } from "@elysiajs/jwt";
 import type { UsingClient } from "seyfert";
-import type { MusicPlayerStatus } from "./index";
+import type { MusicPlayerStatus } from "#soundy/api";
 
 export function createMusicAPI(client: UsingClient) {
 	return (

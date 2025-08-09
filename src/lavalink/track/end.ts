@@ -41,15 +41,12 @@ export default createLavalinkEvent({
 			messageId === setupData.messageId &&
 			channelId === setupData.channelId
 		) {
-			// Ini setup message, jangan dihapus
 		} else if (messageId && channelId) {
 			try {
 				await client.messages.delete(messageId as string, channelId);
 				player.set("messageId", undefined);
 				await playerSaver.clearLastNowPlayingMessage(player.guildId);
-			} catch {
-				// Silently fail if message deletion fails
-			}
+			} catch {}
 		}
 
 		const playerData = player.toJSON();

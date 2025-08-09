@@ -24,12 +24,9 @@ export default createEvent({
 		const clientName = `${user.username} v${BOT_VERSION}`;
 		client.logger.info(`Logged in as "${clientName}" on Shard ${shard}`);
 
-		// Enable auto posting if configured
 		if (client.config.topgg.enabled && client.config.topgg.token) {
-			// Post stats after 5 seconds
 			setTimeout(postStats, 5000);
 
-			// Set up auto posting every 30 minutes
 			setInterval(postStats, 30 * 60 * 1000);
 
 			client.logger.info("[Top.gg] Auto Poster initialized");
@@ -40,7 +37,7 @@ export default createEvent({
 		async function postStats() {
 			try {
 				const api = new Api(client.config.topgg.token);
-				let guildCount = await client.cache.guilds?.count();
+				let guildCount = client.cache.guilds?.count();
 				if (typeof guildCount !== "number" || Number.isNaN(guildCount))
 					guildCount = 0;
 				const shardCount = client.gateway.totalShards;

@@ -813,7 +813,8 @@ export default {
 		listeners: {
 			no_members: "No members left in the voice channel",
 			disconnect: ({ time }) =>
-				`Channel is empty! Player will be disconnected in ${time}`,
+				`Channel is empty! Player will be disconnected in ${time} seconds.`,
+			kicked: "I've been kicked from the voice channel!",
 			resume: "Members joined! Resuming the players",
 		},
 		// Mention

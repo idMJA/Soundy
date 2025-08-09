@@ -1,12 +1,12 @@
 import {
-	Declare,
 	Command,
-	type CommandContext,
-	createStringOption,
-	Options,
+	Declare,
 	Embed,
-	Middlewares,
 	LocalesT,
+	Middlewares,
+	Options,
+	createStringOption,
+	type CommandContext,
 } from "seyfert";
 import { MessageFlags } from "seyfert/lib/types";
 import {
@@ -138,13 +138,15 @@ export default class PlayCommand extends Command {
 
 		if (!guildId) return;
 
+		ctx.deferReply();
+
 		const { event } = await ctx.getLocale();
 
 		const voiceState = await member?.voice();
 		if (!voiceState?.channelId) return;
 
 		const player = client.manager.createPlayer({
-			guildId: guildId,
+			guildId,
 			voiceChannelId: voiceState.channelId,
 			textChannelId: ctx.channelId,
 			selfDeaf: true,

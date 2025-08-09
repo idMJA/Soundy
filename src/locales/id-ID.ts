@@ -835,7 +835,8 @@ export default {
 		listeners: {
 			no_members: "Tidak ada anggota yang tersisa di voice channel",
 			disconnect: ({ time }) =>
-				`Voice channel kosong! Pemain akan diputuskan dalam ${time}`,
+				`Voice channel kosong! Pemain akan diputuskan dalam ${time} detik.`,
+			kicked: "Aku telah dikeluarkan dari voice channel!",
 			resume: "Anggota bergabung! Melanjutkan pemutaran",
 		},
 		// Mention

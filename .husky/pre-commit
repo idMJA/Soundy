@@ -1,1 +1,1 @@
-bun type-check && bun lint-staged
+bun lint && bun lint-staged

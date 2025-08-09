@@ -17,14 +17,13 @@ export const SoundyContext = extendContext((i) => ({
 	 * Get the locale string from the context.
 	 * @returns {Promise<LocaleString>} The locale string.
 	 */
-	getLocaleString(): Promise<LocaleString> {
+	async getLocaleString(): Promise<LocaleString> {
 		if (!i.guildId)
 			return Promise.resolve(
 				(i.user.locale as LocaleString | undefined) ??
 					(i.client.config.defaultLocale as LocaleString),
 			);
-		return i.client.database
-			.getLocale(i.guildId)
-			.then((l) => l as LocaleString);
+		const l = await i.client.database.getLocale(i.guildId);
+		return l as LocaleString;
 	},
 }));

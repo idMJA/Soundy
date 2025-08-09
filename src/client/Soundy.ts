@@ -148,7 +148,7 @@ export default class Soundy extends Client<true> {
 	/**
 	 * Start the main Soundy process.
 	 */
-	private async run(): Promise<"🌟"> {
+	private async run(): Promise<"🥘"> {
 		getWatermark();
 		this.commands.onCommand = (file) => {
 			const command = new file();
@@ -187,7 +187,7 @@ export default class Soundy extends Client<true> {
 		});
 		await this.start();
 		await this.manager.load();
-		return "🌟";
+		return "🥘";
 	}
 
 	/**

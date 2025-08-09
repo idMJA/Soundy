@@ -7,9 +7,11 @@ export default createLavalinkEvent({
 	type: LavalinkEventTypes.Manager,
 	async run(client, oldPlayer, newPlayer) {
 		const newPlayerData = newPlayer.toJSON();
+
 		client.logger.debug(
 			`[Music] Updating player for guild ${newPlayer.guildId}`,
 		);
+
 		if (
 			!oldPlayer ||
 			oldPlayer.voiceChannelId !== newPlayerData.voiceChannelId ||

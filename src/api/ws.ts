@@ -1,6 +1,6 @@
 // WebSocket helpers and setup for Soundy
 import type { Elysia } from "elysia";
-import type { SoundyWS, WSMessage, ElysiaApp, PlayerSaver } from "./types";
+import type { SoundyWS, WSMessage, ElysiaApp, PlayerSaver } from "#soundy/api";
 import type { UsingClient } from "seyfert";
 import type { Player } from "lavalink-client";
 
@@ -40,7 +40,6 @@ export function getRequesterId(msg: WSMessage, ws: SoundyWS) {
 	return String(msg.userId || ws.store?.userId || "websocket-user");
 }
 
-// --- WebSocket setup for Soundy ---
 export function setupSoundyWebSocket(
 	app: Elysia,
 	client: UsingClient,
@@ -508,15 +507,13 @@ export function setupSoundyWebSocket(
 	});
 }
 
-// Custom type for Elysia app with client property
-interface ElysiaWithClient extends Elysia {
-	client: UsingClient;
-}
-
 // Type for WebSocket server with clients property
 interface WebSocketServerWithClients {
 	clients?: Set<{ readyState: number; send: (msg: string) => void }>;
 }
+
+// Global app instance for broadcasting
+let globalAppInstance: ElysiaApp | Elysia | null = null;
 
 // Helper agar akses clients type-safe tanpa any di seluruh kode
 function getWsClients(app: Elysia | ElysiaApp) {
@@ -525,6 +522,11 @@ function getWsClients(app: Elysia | ElysiaApp) {
 		return null; // Return null if no clients
 	}
 	return server.clients;
+}
+
+// Set global app instance for external access
+export function setGlobalAppInstance(app: ElysiaApp | Elysia) {
+	globalAppInstance = app;
 }
 
 // --- WebSocket broadcast helper ---
@@ -585,16 +587,65 @@ function broadcastPlayerStatus(
 	}
 }
 
-export function setupPlayerStatusInterval(getApp: () => Elysia) {
-	setInterval(() => {
-		const app = getApp() as ElysiaWithClient;
-		const clients = getWsClients(app);
-		if (!clients) return;
-		if (!app.client || !app.client.manager) return;
-		for (const player of app.client.manager.players.values()) {
-			if (player.queue.current) {
-				broadcastPlayerStatus(player.guildId, player, app);
-			}
+// Export function to broadcast player status using global app instance
+export function broadcastPlayerUpdate(guildId: string, player: Player) {
+	if (globalAppInstance) {
+		broadcastPlayerStatus(guildId, player, globalAppInstance);
+	}
+}
+
+// Export function to broadcast specific player events
+export function broadcastPlayerEvent(
+	guildId: string,
+	player: Player,
+	eventType: string,
+	eventData?: unknown,
+) {
+	if (!globalAppInstance) return;
+
+	const clients = getWsClients(globalAppInstance);
+	if (!clients) return;
+
+	const eventMsg = JSON.stringify({
+		type: "player-event",
+		eventType,
+		guildId,
+		...serializePlayerState(player),
+		eventData,
+		timestamp: Date.now(),
+	});
+
+	for (const client of clients) {
+		if (client.readyState === 1) {
+			client.send(eventMsg);
 		}
-	}, 1000);
+	}
+}
+
+// Export function to broadcast player disconnection
+export function broadcastPlayerDisconnection(guildId: string) {
+	if (!globalAppInstance) return;
+
+	const clients = getWsClients(globalAppInstance);
+	if (!clients) return;
+
+	const disconnectionMsg = JSON.stringify({
+		type: "status",
+		guildId,
+		connected: false,
+		playing: false,
+		paused: false,
+		volume: 0,
+		position: 0,
+		current: null,
+		queue: [],
+		repeatMode: 0,
+		autoplay: false,
+	});
+
+	for (const client of clients) {
+		if (client.readyState === 1) {
+			client.send(disconnectionMsg);
+		}
+	}
 }
