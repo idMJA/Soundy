@@ -15,14 +15,11 @@ export async function playerSetup(message: Message, client: UsingClient) {
 	const locale = await client.database.getLocale(guild.id);
 	const { cmd, event } = client.t(locale);
 
-	// Check if message is in setup channel
 	const setupData = await client.database.getSetup(guild.id);
 	if (!setupData || setupData.channelId !== message.channelId) return;
 
-	// Delete the user's message
 	await message.delete().catch(() => {});
 
-	// Check if user is in a voice channel
 	const voiceState = await message.member?.voice();
 	if (!voiceState?.channelId) {
 		const reply = await client.messages.write(message.channelId, {
@@ -40,11 +37,10 @@ export async function playerSetup(message: Message, client: UsingClient) {
 		return;
 	}
 
-	// Check bot permissions
 	const voiceChannel = await client.channels.fetch(voiceState.channelId);
 	if (!voiceChannel.is(["GuildVoice", "GuildStageVoice"])) return;
 
-	if (!message.guildId) return; // Ensure we're in a guild
+	if (!message.guildId) return;
 	const me = await client.members.fetch(message.guildId, client.me.id);
 	const permissions = await client.channels.memberPermissions(
 		voiceChannel.id,
@@ -66,10 +62,8 @@ export async function playerSetup(message: Message, client: UsingClient) {
 		return;
 	}
 
-	// Get player settings from database
 	const { defaultVolume } = await client.database.getPlayer(message.guildId);
 
-	// Get or create player with proper settings
 	let player = client.manager.getPlayer(guild.id);
 	if (!player) {
 		try {
@@ -86,7 +80,6 @@ export async function playerSetup(message: Message, client: UsingClient) {
 			player.set("me", { ...client.me, tag: client.me.username });
 			if (!player.get("localeString")) player.set("localeString", locale);
 
-			// Handle stage channel
 			const bot = client.cache.voiceStates?.get(client.me.id, message.guildId);
 			if (voiceChannel.isStage() && bot?.suppress) await bot.setSuppress(false);
 		} catch (error) {
@@ -110,7 +103,6 @@ export async function playerSetup(message: Message, client: UsingClient) {
 
 	if (!player) return;
 
-	// Search and play the track
 	try {
 		const result = await player.search(
 			{ query: message.content },
@@ -202,12 +194,10 @@ export async function playerSetup(message: Message, client: UsingClient) {
 			});
 		}
 
-		// Send the message to the channel
 		const messageResponse = await client.messages.write(message.channelId, {
 			embeds: [embed],
 		});
 
-		// Delete the message after 5 seconds
 		setTimeout(() => {
 			client.messages
 				.delete(messageResponse.id, message.channelId)

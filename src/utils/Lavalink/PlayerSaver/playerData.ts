@@ -28,15 +28,12 @@ export class PlayerDataManager {
 		try {
 			await this.dbOps.ensureReady();
 
-			// Make sure players object exists
 			if (!this.db.data.players) {
 				this.db.data.players = {};
 			}
 
-			// Save player data
 			this.db.data.players[guildId] = playerData;
 
-			// Write changes
 			await this.dbOps.writeChanges();
 		} catch (error) {
 			this.logger.error(
@@ -53,12 +50,10 @@ export class PlayerDataManager {
 		try {
 			await this.dbOps.ensureReady();
 
-			// Check if data structure exists
 			if (!this.db.data || !this.db.data.players) {
 				return null;
 			}
 
-			// Return player data if it exists
 			return this.db.data.players[guildId] || null;
 		} catch (error) {
 			this.logger.error(
@@ -76,15 +71,12 @@ export class PlayerDataManager {
 		try {
 			await this.dbOps.ensureReady();
 
-			// Check if data structure exists
 			if (!this.db.data || !this.db.data.players) {
 				return;
 			}
 
-			// Delete player data
 			delete this.db.data.players[guildId];
 
-			// Write changes
 			await this.dbOps.writeChanges();
 		} catch (error) {
 			this.logger.error(

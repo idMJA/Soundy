@@ -1,6 +1,5 @@
-import { PlayerSaver } from "#soundy/utils";
 import { LavalinkEventTypes } from "#soundy/types";
-import { createLavalinkEvent } from "#soundy/utils";
+import { PlayerSaver, createLavalinkEvent } from "#soundy/utils";
 
 export default createLavalinkEvent({
 	name: "playerUpdate",

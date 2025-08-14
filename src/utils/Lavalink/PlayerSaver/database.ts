@@ -19,19 +19,15 @@ export class DatabaseOperations {
 	 */
 	async init(): Promise<void> {
 		try {
-			// Load existing data
 			await this.db.read();
 
-			// Ensure the data structure exists
 			if (!this.db.data) {
 				this.db.data = { players: {}, sessions: {} };
 			} else {
-				// Make sure both players and sessions objects exist
 				if (!this.db.data.players) this.db.data.players = {};
 				if (!this.db.data.sessions) this.db.data.sessions = {};
 			}
 
-			// Save the initialized structure
 			await this.safeWrite();
 		} catch (error: unknown) {
 			const err = error as { code?: string; syscall?: string; path?: string };
@@ -42,7 +38,6 @@ export class DatabaseOperations {
 				err.path &&
 				err.path.includes(".sessions.json.tmp")
 			) {
-				// Suppress this specific error
 				return;
 			}
 			this.logger.error("Error initializing PlayerSaver:", error);
@@ -80,7 +75,6 @@ export class DatabaseOperations {
 				err.path &&
 				err.path.includes(".sessions.json.tmp")
 			) {
-				// Suppress this specific error
 				return;
 			}
 			throw error;

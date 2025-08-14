@@ -29,23 +29,19 @@ export class NodeSessionManager {
 		try {
 			await this.dbOps.ensureReady();
 
-			// Ensure sessions object exists
 			if (!this.db.data || !this.db.data.sessions) {
 				return;
 			}
 
-			// Get current sessions
 			const currentSessions = this.db.data.sessions;
 			const sessionsToRemove: string[] = [];
 
-			// Find sessions that don't exist in validNodeIds
 			for (const nodeId of Object.keys(currentSessions)) {
 				if (!validNodeIds.includes(nodeId)) {
 					sessionsToRemove.push(nodeId);
 				}
 			}
 
-			// Remove invalid sessions
 			if (sessionsToRemove.length > 0) {
 				this.logger.info(
 					`Removing ${sessionsToRemove.length} invalid node sessions: ${sessionsToRemove.join(", ")}`,
@@ -55,7 +51,6 @@ export class NodeSessionManager {
 					delete this.db.data.sessions[nodeId];
 				}
 
-				// Write changes
 				await this.dbOps.writeChanges();
 				this.logger.info("Successfully cleaned up invalid node sessions");
 			}
@@ -71,15 +66,12 @@ export class NodeSessionManager {
 		try {
 			await this.dbOps.ensureReady();
 
-			// Make sure sessions object exists
 			if (!this.db.data.sessions) {
 				this.db.data.sessions = {};
 			}
 
-			// Save session ID
 			this.db.data.sessions[nodeId] = sessionId;
 
-			// Write changes
 			await this.dbOps.writeChanges();
 		} catch (error) {
 			this.logger.error(`Error saving session ID for node ${nodeId}:`, error);
@@ -93,14 +85,12 @@ export class NodeSessionManager {
 		try {
 			await this.dbOps.ensureReady();
 
-			// Ensure sessions object exists
 			if (!this.db.data.sessions) {
 				this.db.data.sessions = {};
 				await this.dbOps.writeChanges();
 				return new Map();
 			}
 
-			// Convert to Map
 			const sessionMap = new Map<string, string>();
 			for (const [nodeId, sessionId] of Object.entries(this.db.data.sessions)) {
 				sessionMap.set(nodeId, sessionId);
@@ -120,12 +110,10 @@ export class NodeSessionManager {
 		try {
 			await this.dbOps.ensureReady();
 
-			// Ensure sessions object exists
 			if (!this.db.data || !this.db.data.sessions) {
 				return null;
 			}
 
-			// Return session ID if it exists
 			return this.db.data.sessions[nodeId] || null;
 		} catch (error) {
 			this.logger.error(`Error getting session ID for node ${nodeId}:`, error);

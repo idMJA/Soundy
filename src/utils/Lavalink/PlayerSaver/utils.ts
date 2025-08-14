@@ -17,7 +17,6 @@ export class PlayerSaverUtils {
 	public extractSafePlayerData(
 		playerData: Record<string, unknown>,
 	): PlayerData {
-		// Default minimal data
 		const defaultData: PlayerData = {
 			guildId: (playerData.guildId as string) || "",
 			voiceChannelId: (playerData.voiceChannelId as string) || "",
@@ -113,12 +112,12 @@ export class PlayerSaverUtils {
 					vcRegion: options.vcRegion as string,
 				},
 				repeatMode:
-					(playerData.repeatMode as "off" | "track" | "queue") ?? "off", // <-- simpan repeatMode
-				enabledAutoplay: playerData.enabledAutoplay as boolean, // <-- simpan autoplay state
-				lyricsEnabled: playerData.lyricsEnabled as boolean, // <-- simpan lyrics state
-				lyricsId: playerData.lyricsId as string, // <-- simpan lyrics message ID
-				lyricsRequester: playerData.lyricsRequester as string, // <-- simpan lyrics requester
-				localeString: playerData.localeString as string, // <-- simpan locale string
+					(playerData.repeatMode as "off" | "track" | "queue") ?? "off",
+				enabledAutoplay: playerData.enabledAutoplay as boolean,
+				lyricsEnabled: playerData.lyricsEnabled as boolean,
+				lyricsId: playerData.lyricsId as string,
+				lyricsRequester: playerData.lyricsRequester as string,
+				localeString: playerData.localeString as string,
 				lyrics: playerData.lyrics
 					? {
 							provider: (playerData.lyrics as Record<string, unknown>)
@@ -131,7 +130,7 @@ export class PlayerSaverUtils {
 								timestamp?: number;
 							}>,
 						}
-					: undefined, // <-- simpan lyrics data
+					: undefined,
 				track: playerData.track
 					? {
 							encoded:
@@ -159,7 +158,7 @@ export class PlayerSaverUtils {
 			};
 		} catch (error) {
 			this.logger.error("Error extracting safe player data:", error);
-			// Return minimal data if extraction fails
+
 			return defaultData;
 		}
 	}
@@ -179,7 +178,6 @@ export class PlayerSaverUtils {
 				err.path &&
 				err.path.includes(".sessions.json.tmp")
 			) {
-				// Suppress this specific error
 				return;
 			}
 			throw error;
