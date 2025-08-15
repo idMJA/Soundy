@@ -12,11 +12,26 @@ import { MessageFlags } from "seyfert/lib/types";
 
 const option = {
 	name: createStringOption({
-		description: "The name of the playlist",
+		description: "The playlist to load",
 		required: true,
 		locales: {
 			name: "cmd.playlist.sub.load.options.name.name",
 			description: "cmd.playlist.sub.load.options.name.description",
+		},
+		autocomplete: async (interaction) => {
+			const { client, member } = interaction;
+			if (!member) return;
+			const playlists = await client.database.getPlaylists(member.id);
+			if (!playlists.length) {
+				return interaction.respond([
+					{ name: "No playlists found", value: "noPlaylists" },
+				]);
+			}
+			return interaction.respond(
+				playlists
+					.slice(0, 25)
+					.map((playlist) => ({ name: playlist.name, value: playlist.id })),
+			);
 		},
 	}),
 };
@@ -31,18 +46,20 @@ const option = {
 export default class LoadPlaylistCommand extends SubCommand {
 	async run(ctx: CommandContext<typeof option>) {
 		const { client, guildId, options } = ctx;
-		const userId = ctx.author.id;
-		const voiceState = await ctx.member?.voice("cache");
+		const voiceState = ctx.member?.voice("cache");
 		if (!guildId) return;
 
 		const { cmd } = await ctx.getLocale();
 
 		if (!voiceState?.channelId) return;
 
-		const tracks = await client.database.getTracksFromPlaylist(
-			userId,
-			options.name,
-		);
+		const playlist = await client.database.getPlaylistById(options.name);
+		const tracks = playlist
+			? playlist.tracks.map((track) => ({
+					url: track.url,
+					info: track.info ? JSON.parse(track.info) : null,
+				}))
+			: null;
 
 		if (!tracks || tracks.length === 0) {
 			return ctx.editOrReply({
@@ -84,7 +101,7 @@ export default class LoadPlaylistCommand extends SubCommand {
 				new Embed()
 					.setColor(client.config.color.primary)
 					.setDescription(
-						`${client.config.emoji.yes} ${cmd.playlist.sub.load.run.loaded({ tracks: tracks.length, playlist: `**${options.name}**` })}`,
+						`${client.config.emoji.yes} ${cmd.playlist.sub.load.run.loaded({ tracks: tracks.length, playlist: `**${playlist?.name || options.name}**` })}`,
 					)
 					.setFooter({
 						text: cmd.requested_by({ user: ctx.author.username }),

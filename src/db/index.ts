@@ -626,22 +626,20 @@ export class SoundyDatabase {
 	}
 
 	/**
-	 * Add tracks to a playlist
-	 * @param userId The user ID
-	 * @param name The playlist name
+	 * Add tracks to a playlist by ID
+	 * @param playlistId The playlist ID
 	 * @param tracks Array of track objects with URL and info
 	 */
 	public async addTracksToPlaylist(
-		userId: string,
-		name: string,
+		playlistId: string,
 		tracks: Array<{ url: string; info?: object }>,
 	) {
-		const playlist = await this.getPlaylist(userId, name);
+		const playlist = await this.getPlaylistById(playlistId);
 		if (!playlist) return;
 
 		const trackValues = tracks.map((track) => ({
 			id: randomUUID(),
-			playlistId: playlist.id,
+			playlistId: playlistId,
 			url: track.url,
 			info: track.info ? JSON.stringify(track.info) : null,
 		}));
@@ -650,32 +648,27 @@ export class SoundyDatabase {
 	}
 
 	/**
-	 * Remove a track from a playlist by id
-	 * @param userId The user ID
-	 * @param name The playlist name
-	 * @param id The track id (primary key in playlistTrack)
+	 * Remove a track from a playlist by playlist ID and track ID
+	 * @param playlistId The playlist ID
+	 * @param trackId The track id (primary key in playlistTrack)
 	 */
-	public async removeSong(userId: string, name: string, id: string) {
-		const playlist = await this.getPlaylist(userId, name);
-		if (!playlist) return;
-
+	public async removeSong(playlistId: string, trackId: string) {
 		await this.db
 			.delete(schema.playlistTrack)
 			.where(
 				and(
-					eq(schema.playlistTrack.playlistId, playlist.id),
-					eq(schema.playlistTrack.id, id),
+					eq(schema.playlistTrack.playlistId, playlistId),
+					eq(schema.playlistTrack.id, trackId),
 				),
 			);
 	}
 
 	/**
-	 * Get tracks from a playlist
-	 * @param userId The user ID
-	 * @param name The playlist name
+	 * Get tracks from a playlist by ID
+	 * @param playlistId The playlist ID
 	 */
-	public async getTracksFromPlaylist(userId: string, name: string) {
-		const playlist = await this.getPlaylist(userId, name);
+	public async getTracksFromPlaylist(playlistId: string) {
+		const playlist = await this.getPlaylistById(playlistId);
 		if (!playlist) return null;
 
 		return playlist.tracks.map((track) => ({

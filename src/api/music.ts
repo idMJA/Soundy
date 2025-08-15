@@ -230,7 +230,7 @@ export function createMusicAPI(client: UsingClient) {
 
 			// Get recently played tracks for a user
 			.get("/recent/:userId", async ({ params, query }) => {
-				const limit = query.limit ? parseInt(query.limit as string) : 10;
+				const limit = query.limit ? parseInt(query.limit as string, 10) : 10;
 				const guildId = query.guildId as string | undefined;
 				try {
 					const recentTracks = await client.database.getRecentlyPlayed(

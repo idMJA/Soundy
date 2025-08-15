@@ -1,8 +1,9 @@
 // WebSocket helpers and setup for Soundy
 import type { Elysia } from "elysia";
-import type { SoundyWS, WSMessage, ElysiaApp, PlayerSaver } from "#soundy/api";
+import type { SoundyWS, WSMessage, ElysiaApp } from "#soundy/api";
 import type { UsingClient } from "seyfert";
 import type { Player } from "lavalink-client";
+import { PlayerSaver } from "#soundy/utils";
 
 export function serializePlayerState(player: Player) {
 	const current = player.queue.current;
@@ -21,6 +22,7 @@ export function serializePlayerState(player: Player) {
 					artwork: current.info.artworkUrl || undefined,
 					isStream: current.info.isStream,
 					position: player.position,
+					albumName: current.pluginInfo.albumName,
 				}
 			: null,
 		repeatMode:
@@ -498,6 +500,283 @@ export function setupSoundyWebSocket(
 							type: "set-volume",
 							success: false,
 							message: "No active player",
+						}),
+					);
+				}
+				return;
+			}
+			// Toggle repeat mode (loop)
+			if (msg.type === "repeat" && msg.guildId) {
+				const player = client.manager.getPlayer(msg.guildId);
+				if (player) {
+					// Toggle loop mode: off -> track -> queue -> off
+					let newMode: "off" | "track" | "queue";
+					if (player.repeatMode === "off") newMode = "track";
+					else if (player.repeatMode === "track") newMode = "queue";
+					else newMode = "off";
+
+					await player.setRepeatMode(newMode);
+
+					// Save repeatMode to PlayerSaver
+					try {
+						const playerSaver = new PlayerSaver(client.logger);
+						const playerData = player.toJSON();
+						playerData.repeatMode = newMode;
+						const safeData = playerSaver.extractSafePlayerData(
+							playerData as unknown as Record<string, unknown>,
+						);
+						await playerSaver.savePlayer(player.guildId, safeData);
+					} catch (e) {
+						client.logger.error("Failed to save repeatMode to PlayerSaver", e);
+					}
+
+					ws.send(
+						JSON.stringify({
+							type: "repeat",
+							success: true,
+							mode: newMode,
+							modeNumber: newMode === "off" ? 0 : newMode === "track" ? 1 : 2,
+						}),
+					);
+				} else {
+					ws.send(
+						JSON.stringify({
+							type: "repeat",
+							success: false,
+							message: "No active player",
+						}),
+					);
+				}
+				return;
+			}
+			// Shuffle queue
+			if (msg.type === "shuffle" && msg.guildId) {
+				const player = client.manager.getPlayer(msg.guildId);
+				if (player) {
+					if (player.queue.tracks.length === 0) {
+						ws.send(
+							JSON.stringify({
+								type: "shuffle",
+								success: false,
+								message: "No tracks in the queue to shuffle",
+							}),
+						);
+						return;
+					}
+
+					await player.queue.shuffle();
+
+					ws.send(
+						JSON.stringify({
+							type: "shuffle",
+							success: true,
+							message: "Queue shuffled successfully",
+						}),
+					);
+				} else {
+					ws.send(
+						JSON.stringify({
+							type: "shuffle",
+							success: false,
+							message: "No active player",
+						}),
+					);
+				}
+				return;
+			}
+			// Load and play playlist
+			if (
+				msg.type === "load-playlist" &&
+				msg.guildId &&
+				msg.playlistId &&
+				msg.userId &&
+				msg.voiceChannelId
+			) {
+				const { guildId } = msg;
+				const userId = String(msg.userId);
+				const playlistId = String(msg.playlistId);
+				const voiceChannelId = String(msg.voiceChannelId);
+
+				if (!voiceChannelId.trim()) {
+					ws.send(
+						JSON.stringify({
+							type: "load-playlist",
+							success: false,
+							message: "voiceChannelId is required",
+						}),
+					);
+					return;
+				}
+
+				try {
+					// Get playlist details first to verify ownership
+					const playlist = await client.database.getPlaylistById(playlistId);
+					if (!playlist || playlist.userId !== userId) {
+						ws.send(
+							JSON.stringify({
+								type: "load-playlist",
+								success: false,
+								message: "Playlist not found or access denied",
+							}),
+						);
+						return;
+					}
+
+					// Get tracks from the playlist
+					const tracks =
+						await client.database.getTracksFromPlaylist(playlistId);
+
+					if (!tracks || tracks.length === 0) {
+						ws.send(
+							JSON.stringify({
+								type: "load-playlist",
+								success: false,
+								message: "Playlist is empty",
+							}),
+						);
+						return;
+					}
+
+					// Get default volume for the guild
+					const { defaultVolume } = await client.database.getPlayer(guildId);
+
+					// Get or create player
+					let player = client.manager.players.get(guildId);
+					if (!player) {
+						player = client.manager.createPlayer({
+							guildId: guildId,
+							voiceChannelId: voiceChannelId,
+							textChannelId: voiceChannelId, // Use voice channel as text channel
+							volume: defaultVolume || client.config.defaultVolume,
+							selfDeaf: true,
+						});
+						await player.connect();
+					}
+
+					// Load and add tracks to queue
+					let addedCount = 0;
+					const requesterId = getRequesterId(msg, ws);
+
+					for (const trackData of tracks) {
+						try {
+							const result = await client.manager.search(trackData.url);
+							if (result.tracks[0]) {
+								const track = result.tracks[0];
+								track.requester = { id: requesterId };
+								await player.queue.add(track);
+								addedCount++;
+							}
+						} catch (error) {
+							// Continue with next track if one fails
+							client.logger?.error?.(
+								`Failed to load track ${trackData.url}:`,
+								error,
+							);
+						}
+					}
+
+					// Start playing if player isn't already playing or paused
+					if (!(player.playing || player.paused) && addedCount > 0) {
+						await player.play();
+					}
+
+					ws.send(
+						JSON.stringify({
+							type: "load-playlist",
+							success: true,
+							message: `Loaded ${addedCount} tracks from playlist "${playlist.name}"`,
+							tracksLoaded: addedCount,
+							totalTracks: tracks.length,
+							playlistId: playlistId,
+							playlistName: playlist.name,
+						}),
+					);
+				} catch (error) {
+					ws.send(
+						JSON.stringify({
+							type: "load-playlist",
+							success: false,
+							message: `Error loading playlist: ${String(error)}`,
+						}),
+					);
+				}
+				return;
+			}
+			// Get user playlists
+			if (msg.type === "get-playlists" && msg.userId) {
+				const userId = String(msg.userId);
+
+				try {
+					const playlists = await client.database.getPlaylists(userId);
+
+					ws.send(
+						JSON.stringify({
+							type: "get-playlists",
+							success: true,
+							playlists: playlists.map((playlist) => ({
+								id: playlist.id,
+								name: playlist.name,
+								trackCount: playlist.tracks.length,
+								createdAt: playlist.createdAt,
+							})),
+						}),
+					);
+				} catch (error) {
+					ws.send(
+						JSON.stringify({
+							type: "get-playlists",
+							success: false,
+							message: `Error getting playlists: ${String(error)}`,
+						}),
+					);
+				}
+				return;
+			}
+			// Get playlist details
+			if (msg.type === "get-playlist" && msg.playlistId) {
+				const playlistId = String(msg.playlistId);
+
+				try {
+					const playlist = await client.database.getPlaylistById(playlistId);
+
+					if (!playlist) {
+						ws.send(
+							JSON.stringify({
+								type: "get-playlist",
+								success: false,
+								message: "Playlist not found",
+							}),
+						);
+						return;
+					}
+
+					const tracks = playlist.tracks.map((track, index) => ({
+						id: track.id,
+						index,
+						url: track.url,
+						info: track.info ? JSON.parse(track.info) : null,
+					}));
+
+					ws.send(
+						JSON.stringify({
+							type: "get-playlist",
+							success: true,
+							playlist: {
+								id: playlist.id,
+								name: playlist.name,
+								userId: playlist.userId,
+								trackCount: tracks.length,
+								tracks: tracks,
+								createdAt: playlist.createdAt,
+							},
+						}),
+					);
+				} catch (error) {
+					ws.send(
+						JSON.stringify({
+							type: "get-playlist",
+							success: false,
+							message: `Error getting playlist: ${String(error)}`,
 						}),
 					);
 				}

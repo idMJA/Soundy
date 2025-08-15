@@ -13,15 +13,15 @@ import { EmbedPaginator, TimeFormat } from "#soundy/utils";
 
 const option = {
 	name: createStringOption({
-		description: "The name of the playlist",
+		description: "The playlist to view",
 		required: true,
 		locales: {
 			name: "cmd.playlist.sub.view.options.name.name",
 			description: "cmd.playlist.sub.view.options.name.description",
 		},
 		autocomplete: async (interaction) => {
-			const { client, guildId, member } = interaction;
-			if (!guildId || !member) return;
+			const { client, member } = interaction;
+			if (!member) return;
 			const playlists = await client.database.getPlaylists(member.id);
 			if (!playlists.length) {
 				return interaction.respond([
@@ -29,10 +29,9 @@ const option = {
 				]);
 			}
 			return interaction.respond(
-				playlists.slice(0, 25).map((playlist) => ({
-					name: playlist.name,
-					value: playlist.id,
-				})),
+				playlists
+					.slice(0, 25)
+					.map((playlist) => ({ name: playlist.name, value: playlist.id })),
 			);
 		},
 	}),
@@ -48,12 +47,9 @@ const option = {
 export default class ViewPlaylistCommand extends SubCommand {
 	async run(ctx: CommandContext<typeof option>) {
 		const { client, options } = ctx;
-		const userId = ctx.author.id;
 		const { cmd } = await ctx.getLocale();
 
-		const playlists = await client.database.getPlaylists(userId);
-		const playlist = playlists.find((p) => p.id === options.name);
-
+		const playlist = await client.database.getPlaylistById(options.name);
 		if (!playlist) {
 			return ctx.editOrReply({
 				embeds: [
@@ -65,11 +61,7 @@ export default class ViewPlaylistCommand extends SubCommand {
 				flags: MessageFlags.Ephemeral,
 			});
 		}
-
-		const tracks = await client.database.getTracksFromPlaylist(
-			userId,
-			playlist.name,
-		);
+		const tracks = playlist.tracks;
 
 		if (!tracks || tracks.length === 0) {
 			return ctx.editOrReply({
@@ -93,7 +85,10 @@ export default class ViewPlaylistCommand extends SubCommand {
 				if (track.info) {
 					// Use stored info
 					return {
-						info: track.info,
+						info:
+							typeof track.info === "string"
+								? JSON.parse(track.info)
+								: track.info,
 					};
 				} else {
 					// Fallback: search for track info

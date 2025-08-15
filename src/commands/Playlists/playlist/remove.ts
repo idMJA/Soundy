@@ -102,7 +102,7 @@ export default class RemovePlaylistCommand extends SubCommand {
 				});
 			}
 
-			await client.database.removeSong(userId, playlist.name, trackToRemove.id);
+			await client.database.removeSong(playlist.id, trackToRemove.id);
 
 			return ctx.editOrReply({
 				embeds: [

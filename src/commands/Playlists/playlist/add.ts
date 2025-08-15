@@ -16,11 +16,27 @@ import {
 
 const option = {
 	playlist: createStringOption({
-		description: "The name of the playlist",
+		description: "The playlist to add to",
 		required: true,
 		locales: {
 			name: "cmd.playlist.sub.add.options.playlist.name",
 			description: "cmd.playlist.sub.add.options.playlist.description",
+		},
+		autocomplete: async (interaction) => {
+			const { client, member } = interaction;
+			if (!member) return;
+			const playlists = await client.database.getPlaylists(member.id);
+			if (!playlists.length) {
+				return interaction.respond([
+					{ name: "No playlists found", value: "noPlaylists" },
+				]);
+			}
+			return interaction.respond(
+				playlists.slice(0, 25).map((playlist) => ({
+					name: playlist.name,
+					value: playlist.id,
+				})),
+			);
 		},
 	}),
 	query: createStringOption({
@@ -133,16 +149,10 @@ const option = {
 export default class AddPlaylistCommand extends SubCommand {
 	async run(ctx: CommandContext<typeof option>) {
 		const { client, options } = ctx;
-		const userId = ctx.author.id;
-
 		const { cmd } = await ctx.getLocale();
 
 		try {
-			const playlist = await client.database.getPlaylist(
-				userId,
-				options.playlist,
-			);
-
+			const playlist = await client.database.getPlaylistById(options.playlist);
 			if (!playlist) {
 				return ctx.editOrReply({
 					embeds: [
@@ -183,21 +193,17 @@ export default class AddPlaylistCommand extends SubCommand {
 				},
 			}));
 
-			await client.database.addTracksToPlaylist(
-				userId,
-				options.playlist,
-				tracksToAdd,
-			);
+			await client.database.addTracksToPlaylist(playlist.id, tracksToAdd);
 
 			const responseMessage =
 				result.tracks.length > 1
 					? cmd.playlist.sub.add.run.added({
 							track: result.tracks.length.toString(),
-							playlist: `**${options.playlist}**`,
+							playlist: `**${playlist.name}**`,
 						})
 					: cmd.playlist.sub.add.run.added({
 							track: result.tracks[0]?.info.title ?? "",
-							playlist: `**${options.playlist}**`,
+							playlist: `**${playlist.name}**`,
 						});
 
 			return ctx.editOrReply({

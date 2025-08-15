@@ -26,23 +26,19 @@ export function createPlaylistAPI(client: UsingClient) {
 				return { success: true };
 			})
 			.post("/add", async ({ body }) => {
-				const { userId, playlist, tracks } = body as {
-					userId: string;
-					playlist: string;
+				const { playlistId, tracks } = body as {
+					playlistId: string;
 					tracks: Array<{ url: string; info?: object }>;
 				};
-				await client.database.addTracksToPlaylist(userId, playlist, tracks);
+				await client.database.addTracksToPlaylist(playlistId, tracks);
 				return { success: true };
 			})
 			.post("/remove", async ({ body }) => {
-				const { userId, playlistId, trackId } = body as {
-					userId: string;
+				const { playlistId, trackId } = body as {
 					playlistId: string;
 					trackId: string;
 				};
-				const playlist = await client.database.getPlaylistById(playlistId);
-				if (!playlist) return { error: "Playlist not found" };
-				await client.database.removeSong(userId, playlist.name, trackId);
+				await client.database.removeSong(playlistId, trackId);
 				return { success: true };
 			})
 			.post("/delete", async ({ body }) => {
