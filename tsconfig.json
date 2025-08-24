@@ -46,7 +46,7 @@
 			"#soundy/config": ["./src/config/config.ts"],
 			"#soundy/types": ["./src/types/index.ts"],
 			"#soundy/utils": ["./src/utils/index.ts"],
-			"#soundy/api": ["./src/api/server.ts"],
+			"#soundy/api": ["./src/api/index.ts"],
 			"#soundy/db": ["./src/db/index.ts"],
 			"#soundy/middlewares": ["./src/middlewares/index.ts"]
 		}

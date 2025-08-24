@@ -1,5 +1,6 @@
 dist
 drizzle
+.drizzle
 node_modules
 commands.json
 pnpm-lock.yaml
@@ -9,5 +10,5 @@ package-lock.json
 .env
 .env.keys
 .env.production
-.env.development
 sessions.json
+.fuse_*

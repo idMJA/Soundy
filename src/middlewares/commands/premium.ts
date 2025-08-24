@@ -9,10 +9,9 @@ const PREMIUM_CATEGORIES = [
 ];
 
 const FREE_COMMANDS_LIMIT = 6;
-const PREMIUM_TIME = 12; // in hours
+const PREMIUM_TIME = 12;
 const commandUsage = new Map<string, number>();
 
-// Reset command usage every 12 hours
 setInterval(
 	() => {
 		commandUsage.clear();
@@ -24,7 +23,6 @@ export const checkPremium = createMiddleware<void>(async (middle) => {
 	const { context } = middle;
 	const { client, command } = context;
 
-	// Robust category detection
 	let category: SoundyCategory | undefined;
 	if ("category" in command && typeof command.category !== "undefined") {
 		category = command.category as SoundyCategory;
@@ -41,7 +39,6 @@ export const checkPremium = createMiddleware<void>(async (middle) => {
 
 	const { event } = await context.getLocale();
 
-	// Only run premium check for commands, skip for components
 	if (context.isComponent?.()) return middle.next();
 
 	if (
@@ -49,7 +46,6 @@ export const checkPremium = createMiddleware<void>(async (middle) => {
 		context.client.config.premium.enabled &&
 		PREMIUM_CATEGORIES.includes(category)
 	) {
-		// Check if user has active premium from voting
 		const premiumStatus =
 			await context.client.database.getPremiumStatus(userId);
 		if (premiumStatus) {
@@ -60,13 +56,11 @@ export const checkPremium = createMiddleware<void>(async (middle) => {
 		const userUsage = commandUsage.get(userId) || 0;
 
 		if (userUsage < FREE_COMMANDS_LIMIT) {
-			// Increment usage and allow command
 			commandUsage.set(userId, userUsage + 1);
 			middle.next();
 			return;
 		}
 
-		// User has exceeded free limit
 		await context.editOrReply({
 			embeds: [
 				new Embed()

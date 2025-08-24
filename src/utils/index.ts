@@ -26,7 +26,9 @@ export * from "./Handler/Validate";
 export * from "./Lavalink/Events/LavalinkEvents";
 export * from "./Lavalink/Events/LavalinkHandler";
 export * from "./Lavalink/Events/NodeLog";
-export * from "./Lavalink/Player/PlayerSaver";
+export * from "./Lavalink/Player/Listener";
+export * from "./Lavalink/Player/Saver";
+export * from "./Lavalink/Player/Setup";
 export * from "./Lavalink/Player/Autoplay";
 
 // UI utilities

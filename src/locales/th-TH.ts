@@ -10,6 +10,8 @@ export default {
 	cmd: {
 		// Requested By
 		requested_by: ({ user }) => `ส่งคำขอโดย ${user}`,
+		// Powered By
+		powered_by: ({ provider }) => `ขับเคลื่อนโดย ${provider}`,
 		// Error
 		error: "เกิดข้อผิดพลาดในการประมวลผลคำสั่ง โปรดลองใหม่อีกครั้ง",
 		// Default Commands
@@ -401,14 +403,9 @@ export default {
 				},
 			},
 			run: {
-				title: ({ song }) => `เนื้อเพลงสำหรับ: ${song}`,
-				description: "เนื้อเพลงสำหรับเพลงปัจจุบันหรือเพลงที่ระบุ",
-				footer: ({ user, provider }) =>
-					`ส่งคำขอมาโดย ${user} | ขับเคลื่อนโดย ${provider}`,
 				no_tracks: "ไม่พบเพลง",
 				invalid_url: "URL ที่ให้มาไม่ถูกต้อง",
 				provide_song: "กรุณาระบุชื่อเพลงหรือ URL หรือเล่นเพลงก่อน",
-				no_lyrics: "ไม่เจอเนื้อเพลงสำหรับเพลงนี้",
 				error: "เกิดข้อผิดพลาดในระหว่างการค้นหาเนื้อเพลง",
 			},
 		},
@@ -786,7 +783,8 @@ export default {
 		// Listeners
 		listeners: {
 			no_members: "ไม่มีสมาชิกในช่องเสียง",
-			disconnect: ({ time }) => `ช่องว่าง! ตัวเล่นจะถูกตัดการเชื่อมต่อใน ${time}`,
+			disconnect: ({ time }) => `ช่องว่าง! ตัวเล่นจะถูกตัดการเชื่อมต่อใน ${time} วินาที`,
+			kicked: "ฉันถูกเตะออกจากช่องเสียง!",
 			resume: "สมาชิกเข้าร่วม! กำลังเล่นต่อ",
 		},
 		// Mention
@@ -884,7 +882,12 @@ export default {
 			title: "ตั้งค่าเสียง",
 			description: ({ volume }) => `ระดับเสียงถูกตั้งค่าเป็น ${volume}`,
 		},
-
+		// Lyrics
+		lyrics: {
+			title: ({ song }) => `เนื้อเพลงสำหรับ ${song}`,
+			description: "เนื้อเพลงสำหรับเพลงปัจจุบันหรือเพลงที่ระบุ",
+			no_lyrics: "ไม่เจอเนื้อเพลงสำหรับเพลงนี้",
+		},
 		// Node Select
 		nodeSelect: {
 			title: ({ node }) => `ข้อมูล Node - ${node}`,
