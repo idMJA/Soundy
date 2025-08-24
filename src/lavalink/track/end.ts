@@ -41,6 +41,7 @@ export default createLavalinkEvent({
 			messageId === setupData.messageId &&
 			channelId === setupData.channelId
 		) {
+			// This is the setup message, do not delete it
 		} else if (messageId && channelId) {
 			try {
 				await client.messages.delete(messageId as string, channelId);
