@@ -78,7 +78,7 @@ export function setupSoundyWebSocket(
 		},
 
 		open: (ws: WSWithInterval) => {
-			console.log("[WebSocket] Client connected");
+			client.logger.info("[WebSocket] Client connected");
 
 			ws.send(
 				JSON.stringify({
@@ -102,7 +102,7 @@ export function setupSoundyWebSocket(
 						}
 					}
 				} catch (error) {
-					console.error("[WebSocket] Auto-update error:", error);
+					client.logger.error("[WebSocket] Auto-update error:", error);
 				}
 			}, 50);
 
@@ -110,7 +110,7 @@ export function setupSoundyWebSocket(
 		},
 
 		close: (ws: WSWithInterval) => {
-			console.log("[WebSocket] Client disconnected");
+			client.logger.info("[WebSocket] Client disconnected");
 
 			if (ws.updateInterval) {
 				clearInterval(ws.updateInterval);
