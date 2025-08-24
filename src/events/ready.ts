@@ -34,6 +34,23 @@ export default createEvent({
 			client.logger.info("[Top.gg] Auto Poster disabled");
 		}
 
+		setInterval(
+			async () => {
+				try {
+					await client.database.cleanupExpiredVotes();
+					client.logger.debug("[Database] Expired vote cleanup completed");
+				} catch (error) {
+					client.logger.error(
+						"[Database] Failed to cleanup expired votes:",
+						error,
+					);
+				}
+			},
+			60 * 60 * 1000,
+		);
+
+		client.logger.info("[Database] Periodic vote cleanup initialized");
+
 		async function postStats() {
 			try {
 				const api = new Api(client.config.topgg.token);

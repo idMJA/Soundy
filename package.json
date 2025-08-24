@@ -21,6 +21,7 @@
   "scripts": {
     "start": "tsup && dotenvx run -- bun run src/index.ts",
     "dev": "dotenvx run -- bun run --watch src/index.ts",
+    "encrypt": "dotenvx encrypt",
     "build": "tsup",
     "format": "biome format --write ./src",
     "lint": "tsc --noEmit && biome lint --write ./src",

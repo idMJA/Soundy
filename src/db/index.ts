@@ -686,13 +686,38 @@ export class SoundyDatabase {
 		const expiresAt = new Date(Date.now() + TWELVE_HOURS);
 		const now = new Date().toISOString();
 
-		await this.db.insert(schema.userVote).values({
-			id: randomUUID(),
-			userId,
-			expiresAt: expiresAt.toISOString(),
-			type: "vote",
-			votedAt: now,
-		});
+		// Check if user already has an active vote
+		const existingVote = await this.db
+			.select()
+			.from(schema.userVote)
+			.where(
+				and(
+					eq(schema.userVote.userId, userId),
+					eq(schema.userVote.type, "vote"),
+					gt(schema.userVote.expiresAt, now),
+				),
+			)
+			.get();
+
+		if (existingVote) {
+			// Update existing vote expiration time
+			await this.db
+				.update(schema.userVote)
+				.set({
+					expiresAt: expiresAt.toISOString(),
+					votedAt: now,
+				})
+				.where(eq(schema.userVote.id, existingVote.id));
+		} else {
+			// Insert new vote record
+			await this.db.insert(schema.userVote).values({
+				id: randomUUID(),
+				userId,
+				expiresAt: expiresAt.toISOString(),
+				type: "vote",
+				votedAt: now,
+			});
+		}
 	}
 
 	/**
@@ -771,9 +796,10 @@ export class SoundyDatabase {
 	 * Clean up expired premium entries
 	 */
 	public async cleanupExpiredVotes(): Promise<void> {
+		const now = new Date().toISOString();
 		await this.db
 			.delete(schema.userVote)
-			.where(eq(schema.userVote.expiresAt, new Date().toISOString()));
+			.where(sql`${schema.userVote.expiresAt} <= ${now}`);
 	}
 
 	/**

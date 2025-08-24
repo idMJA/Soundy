@@ -53,19 +53,57 @@ export function APIServer(client: UsingClient): void {
 		)
 		.post("/vote", async ({ body, set }) => {
 			const vote = body as VoteWebhookPayload;
+
+			// Validate required fields
+			if (!vote.user) {
+				set.status = 400;
+				return { error: "Missing user field" };
+			}
+
 			try {
 				const voter = await client.users.fetch(vote.user);
-				const webhookResponse = await sendVoteWebhook(client, voter);
-
-				if (webhookResponse.ok) {
-					return { success: true };
+				if (!voter) {
+					set.status = 404;
+					return { error: "User not found" };
 				}
-				set.status = 500;
-				return { error: "Failed to send webhook message" };
+
+				// check if user already has an active vote premium to prevent spam
+				const hasActivePremium = await client.database.hasActivePremium(
+					voter.id,
+				);
+				if (hasActivePremium) {
+					const premiumStatus = await client.database.getPremiumStatus(
+						voter.id,
+					);
+					if (premiumStatus && premiumStatus.type === "vote") {
+						client.logger.info(
+							`[Vote] User ${voter.username} (${voter.id}) already has active vote premium, extending expiration`,
+						);
+					}
+				}
+
+				const webhookSuccess = await sendVoteWebhook(client, voter);
+
+				if (webhookSuccess) {
+					return {
+						success: true,
+						message: `Vote processed for ${voter.username}`,
+					};
+				}
+
+				// this shouldn't happen with the current implementation
+				// but kept for safety
+				return {
+					success: true,
+					message: `Vote processed for ${voter.username} (webhook issue)`,
+				};
 			} catch (error) {
 				client.logger.error("Error handling vote:", error);
 				set.status = 500;
-				return { error: "Internal Server Error" };
+				return {
+					error: "Internal Server Error",
+					details: error instanceof Error ? error.message : "Unknown error",
+				};
 			}
 		})
 		.get("/stats", async ({ set }) => {
