@@ -1,4 +1,3 @@
-// Type definitions for Soundy API
 import type { UsingClient } from "seyfert";
 import type { PlayerData } from "#soundy/types";
 
@@ -64,7 +63,6 @@ export interface ElysiaApp {
 	_client?: Client;
 }
 
-// Tambahkan type SearchQuery agar autocomplete dan type checking benar
 export type SearchQuery =
 	| string
 	| {

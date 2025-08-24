@@ -1,80 +1,79 @@
 {
-	"$schema": "https://json.schemastore.org/package.json",
-	"name": "soundy",
-	"version": "3.4.0",
-	"description": "A powerful music bot built with Seyfert and lavalink-client to play high quality music in your Discord server for free.",
-	"author": "iaMJ",
-	"license": "AGPL-3.0",
-	"homepage": "https://github.com/idMJA/Soundy",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/idMJA/Soundy"
-	},
-	"bugs": {
-		"url": "https://github.com/idMJA/Soundy/issues"
-	},
-	"type": "module",
-	"main": "src/index.ts",
-	"engines": {
-		"bun": ">=1.2.0"
-	},
-	"scripts": {
-		"start": "tsup && dotenvx run -- bun run src/index.ts",
-		"dev": "dotenvx run -- bun run --watch src/index.ts",
-		"build": "tsup",
-		"format": "biome format --write ./src",
-		"lint": "tsc --noEmit && biome lint --write ./src",
-		"db:generate": "dotenvx run -- drizzle-kit generate",
-		"db:migrate": "dotenvx run -- drizzle-kit migrate",
-		"db:studio": "dotenvx run -- drizzle-kit studio",
-		"db:push": "dotenvx run -- drizzle-kit push"
-	},
-	"lint-staged": {
-		"*.ts": [
-			"bun format"
-		]
-	},
-	"dependencies": {
-		"@dotenvx/dotenvx": "^1.48.4",
-		"@elysiajs/cors": "^1.3.3",
-		"@elysiajs/jwt": "^1.3.2",
-		"@elysiajs/swagger": "^1.3.1",
-		"@libsql/client": "^0.15.11",
-		"@top-gg/sdk": "^3.1.6",
-		"axios": "^1.11.0",
-		"drizzle-orm": "^0.44.4",
-		"elysia": "^1.3.8",
-		"genius-lyrics": "^4.4.7",
-		"jsonwebtoken": "^9.0.2",
-		"lavalink-client": "^2.5.9",
-		"lowdb": "^7.0.1",
-		"seyfert": "^3.2.6-dev-16956543526.0",
-		"yunaforseyfert": "^1.1.3"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^2.2.0",
-		"@types/bun": "^1.2.20",
-		"@types/jsonwebtoken": "^9.0.10",
-		"@types/node": "^24.2.1",
-		"drizzle-kit": "^0.31.4",
-		"husky": "^9.1.7",
-		"lint-staged": "^16.1.5",
-		"tsup": "^8.5.0",
-		"tsx": "^4.20.4",
-		"typescript": "^5.9.2"
-	},
-	"trustedDependencies": [
-		"@biomejs/biome",
-		"esbuild"
-	],
-	"keywords": [
-		"discord",
-		"bot",
-		"music",
-		"lavalink",
-		"seyfert",
-		"typescript",
-		"discord-bot",
-		"music-bot"
-	]
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "soundy",
+  "version": "3.4.0",
+  "description": "A powerful music bot built with Seyfert and lavalink-client to play high quality music in your Discord server for free.",
+  "author": "iaMJ",
+  "license": "AGPL-3.0",
+  "homepage": "https://github.com/idMJA/Soundy",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/idMJA/Soundy"
+  },
+  "bugs": {
+    "url": "https://github.com/idMJA/Soundy/issues"
+  },
+  "type": "module",
+  "main": "src/index.ts",
+  "engines": {
+    "bun": ">=1.2.0"
+  },
+  "scripts": {
+    "start": "tsup && dotenvx run -- bun run src/index.ts",
+    "dev": "dotenvx run -- bun run --watch src/index.ts",
+    "build": "tsup",
+    "format": "biome format --write ./src",
+    "lint": "tsc --noEmit && biome lint --write ./src",
+    "db:generate": "dotenvx run -- drizzle-kit generate",
+    "db:migrate": "dotenvx run -- drizzle-kit migrate",
+    "db:studio": "dotenvx run -- drizzle-kit studio",
+    "db:push": "dotenvx run -- drizzle-kit push"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "bun format"
+    ]
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "^1.49.0",
+    "@elysiajs/cors": "^1.3.3",
+    "@elysiajs/jwt": "^1.3.2",
+    "@elysiajs/swagger": "^1.3.1",
+    "@libsql/client": "^0.15.12",
+    "@top-gg/sdk": "^3.1.6",
+    "axios": "^1.11.0",
+    "drizzle-orm": "^0.44.4",
+    "elysia": "^1.3.18",
+    "genius-lyrics": "^4.4.7",
+    "jsonwebtoken": "^9.0.2",
+    "lavalink-client": "^2.6.0",
+    "lowdb": "^7.0.1",
+    "seyfert": "^3.2.7-dev-17041037679.0",
+    "yunaforseyfert": "^1.1.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.2",
+    "@types/bun": "^1.2.20",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.3.0",
+    "drizzle-kit": "^0.31.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2"
+  },
+  "trustedDependencies": [
+    "@biomejs/biome",
+    "esbuild"
+  ],
+  "keywords": [
+    "discord",
+    "bot",
+    "music",
+    "lavalink",
+    "seyfert",
+    "typescript",
+    "discord-bot",
+    "music-bot"
+  ]
 }
