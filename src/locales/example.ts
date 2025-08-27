@@ -816,6 +816,7 @@ export default {
 				`Channel is empty! Player will be disconnected in ${time} seconds.`,
 			kicked: "I've been kicked from the voice channel!",
 			resume: "Members joined! Resuming the players",
+			paused_247: "Paused music because I'm alone (24/7 mode enabled)",
 		},
 		// Mention
 		mention: {

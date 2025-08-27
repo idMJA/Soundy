@@ -42,3 +42,13 @@ export function formatDuration(ms: number): string {
 
 	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
+
+/**
+ * Format bytes to human-readable format
+ * @param bytes - The number of bytes
+ * @returns Formatted bytes as string
+ */
+export function formatBytes(bytes: number) {
+	const mb = bytes / 1024 / 1024;
+	return `${mb.toFixed(2)} MB`;
+}

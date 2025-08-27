@@ -43,7 +43,7 @@ export async function playerListener(
 						],
 					});
 				} catch (error) {
-					client.logger?.error(`Failed to send kick message: ${error}`);
+					client.logger.error(`Failed to send kick message: ${error}`);
 				}
 			}
 
@@ -87,113 +87,135 @@ export async function playerListener(
 
 		const isEmpty = nonBotCount === 0;
 
+		const mode247 = await client.database.get247Mode(guildId);
+		const is247Enabled = mode247?.enabled ?? false;
+
 		if (isEmpty) {
-			if (
-				!player.playing &&
-				!player.paused &&
-				!(player.queue.tracks.length + Number(!!player.queue.current)) &&
-				player.connected
-			) {
-				await player.destroy();
-				await client.messages.write(player.textChannelId, {
-					embeds: [
-						{
-							description: `${client.config.emoji.warn} ${event.listeners.no_members}`,
-							color: client.config.color.warn,
-						},
-					],
-				});
-				return;
-			}
-
-			if (
-				!player.playing &&
-				player.paused &&
-				player.queue.current &&
-				!player.queue.tracks.length
-			) {
-				await player.destroy();
-				await client.messages.write(player.textChannelId, {
-					embeds: [
-						{
-							description: `${client.config.emoji.warn} ${event.listeners.no_members}`,
-							color: client.config.color.warn,
-						},
-					],
-				});
-				return;
-			}
-
-			if (player.paused || player.playing) {
-				if (player.playing) {
-					await player.pause();
+			if (!is247Enabled) {
+				if (
+					!player.playing &&
+					!player.paused &&
+					!(player.queue.tracks.length + Number(!!player.queue.current)) &&
+					player.connected
+				) {
+					await player.destroy();
+					await client.messages.write(player.textChannelId, {
+						embeds: [
+							{
+								description: `${client.config.emoji.warn} ${event.listeners.no_members}`,
+								color: client.config.color.warn,
+							},
+						],
+					});
+					return;
 				}
 
-				await client.messages.write(player.textChannelId, {
-					embeds: [
-						{
-							description: `${client.config.emoji.warn} ${event.listeners.disconnect({ time: "30" })}`,
-							color: client.config.color.warn,
-						},
-					],
-				});
+				if (
+					!player.playing &&
+					player.paused &&
+					player.queue.current &&
+					!player.queue.tracks.length
+				) {
+					await player.destroy();
+					await client.messages.write(player.textChannelId, {
+						embeds: [
+							{
+								description: `${client.config.emoji.warn} ${event.listeners.no_members}`,
+								color: client.config.color.warn,
+							},
+						],
+					});
+					return;
+				}
+
+				if (player.paused || player.playing) {
+					if (player.playing) {
+						await player.pause();
+					}
+
+					await client.messages.write(player.textChannelId, {
+						embeds: [
+							{
+								description: `${client.config.emoji.warn} ${event.listeners.disconnect({ time: "30" })}`,
+								color: client.config.color.warn,
+							},
+						],
+					});
+
+					if (timeouts.has(guildId)) {
+						clearTimeout(timeouts.get(guildId));
+					}
+
+					const timeoutId = setTimeout(async () => {
+						const currentPlayer = client.manager.getPlayer(guildId);
+						if (currentPlayer) {
+							try {
+								const currentVoiceChannelId = currentPlayer.voiceChannelId;
+								if (!currentVoiceChannelId) return;
+
+								const currentChannel = await client.channels.fetch(
+									currentVoiceChannelId,
+								);
+								if (currentChannel?.is(["GuildVoice", "GuildStageVoice"])) {
+									const currentVoiceStates =
+										client.cache.voiceStates?.values(guildId) || [];
+									const currentChannelStates = currentVoiceStates.filter(
+										(state) => state.channelId === currentVoiceChannelId,
+									);
+
+									let currentNonBotCount = 0;
+									for (const state of currentChannelStates) {
+										try {
+											const member = await state.member();
+											if (!member.user.bot) {
+												currentNonBotCount++;
+											}
+										} catch {}
+									}
+
+									if (currentNonBotCount === 0) {
+										await currentPlayer.destroy();
+										const textChannelId = currentPlayer.textChannelId;
+										if (textChannelId) {
+											await client.messages.write(textChannelId, {
+												embeds: [
+													{
+														description: `${client.config.emoji.warn} ${event.listeners.no_members}`,
+														color: client.config.color.warn,
+													},
+												],
+											});
+										}
+									}
+								}
+							} catch (error) {
+								client.logger.error(`Error during auto disconnect: ${error}`);
+							}
+						}
+						timeouts.delete(guildId);
+					}, 30000);
+
+					timeouts.set(guildId, timeoutId);
+				}
+			} else {
+				if (player.playing) {
+					await player.pause();
+					await client.messages.write(player.textChannelId, {
+						embeds: [
+							{
+								description: `${client.config.emoji.warn} ${event.listeners.paused_247}`,
+								color: client.config.color.warn,
+							},
+						],
+					});
+				}
 
 				if (timeouts.has(guildId)) {
 					clearTimeout(timeouts.get(guildId));
-				}
-
-				const timeoutId = setTimeout(async () => {
-					const currentPlayer = client.manager.getPlayer(guildId);
-					if (currentPlayer) {
-						try {
-							const currentVoiceChannelId = currentPlayer.voiceChannelId;
-							if (!currentVoiceChannelId) return;
-
-							const currentChannel = await client.channels.fetch(
-								currentVoiceChannelId,
-							);
-							if (currentChannel?.is(["GuildVoice", "GuildStageVoice"])) {
-								const currentVoiceStates =
-									client.cache.voiceStates?.values(guildId) || [];
-								const currentChannelStates = currentVoiceStates.filter(
-									(state) => state.channelId === currentVoiceChannelId,
-								);
-
-								let currentNonBotCount = 0;
-								for (const state of currentChannelStates) {
-									try {
-										const member = await state.member();
-										if (!member.user.bot) {
-											currentNonBotCount++;
-										}
-									} catch {}
-								}
-
-								if (currentNonBotCount === 0) {
-									await currentPlayer.destroy();
-									const textChannelId = currentPlayer.textChannelId;
-									if (textChannelId) {
-										await client.messages.write(textChannelId, {
-											embeds: [
-												{
-													description: `${client.config.emoji.warn} ${event.listeners.no_members}`,
-													color: client.config.color.warn,
-												},
-											],
-										});
-									}
-								}
-							}
-						} catch (error) {
-							client.logger?.error(`Error during auto disconnect: ${error}`);
-						}
-					}
 					timeouts.delete(guildId);
-				}, 30000); // 30 seconds
-
-				timeouts.set(guildId, timeoutId);
+				}
 			}
-		} else if (timeouts.has(guildId) && !isEmpty && player.paused) {
+		} else if (!isEmpty && player.paused) {
 			await player.resume();
 			await client.messages.write(player.textChannelId, {
 				embeds: [
@@ -204,8 +226,10 @@ export async function playerListener(
 				],
 			});
 
-			clearTimeout(timeouts.get(guildId));
-			timeouts.delete(guildId);
+			if (timeouts.has(guildId)) {
+				clearTimeout(timeouts.get(guildId));
+				timeouts.delete(guildId);
+			}
 		}
 	} catch (error) {
 		client.logger.error("Error in playerListener:", error);
