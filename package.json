@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json.schemastore.org/package.json",
   "name": "soundy",
   "version": "3.4.0",
   "description": "A powerful music bot built with Seyfert and lavalink-client to play high quality music in your Discord server for free.",
@@ -19,7 +18,7 @@
     "bun": ">=1.2.0"
   },
   "scripts": {
-    "start": "tsup && dotenvx run -- bun run src/index.ts",
+    "start": "dotenvx run -- bun run src/index.ts",
     "dev": "dotenvx run -- bun run --watch src/index.ts",
     "encrypt": "dotenvx encrypt",
     "build": "tsup",

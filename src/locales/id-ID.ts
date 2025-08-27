@@ -838,6 +838,7 @@ export default {
 				`Voice channel kosong! Pemain akan diputuskan dalam ${time} detik.`,
 			kicked: "Aku telah dikeluarkan dari voice channel!",
 			resume: "Anggota bergabung! Melanjutkan pemutaran",
+			paused_247: "Musik dipause karena aku sendirian (mode 24/7 aktif)",
 		},
 		// Mention
 		mention: {

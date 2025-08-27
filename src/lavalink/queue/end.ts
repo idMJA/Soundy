@@ -11,9 +11,7 @@ export default createLavalinkEvent({
 		const voice = await client.channels.fetch(player.voiceChannelId);
 		if (!voice.is(["GuildStageVoice", "GuildVoice"])) return;
 
-		// Reset voice channel status if possible
 		if (voice.is(["GuildVoice"])) {
-			// Check if voice status is enabled for this guild
 			const voiceStatusEnabled = await client.database.getVoiceStatus(
 				player.guildId,
 			);
@@ -72,15 +70,12 @@ export default createLavalinkEvent({
 			messageId === setupData.messageId &&
 			channelId === setupData.channelId
 		) {
-			// Ini setup message, jangan dihapus
 		} else if (messageId && channelId) {
 			try {
 				await client.messages.delete(messageId as string, channelId);
 				player.set("messageId", undefined);
 				await playerSaver.clearLastNowPlayingMessage(player.guildId);
-			} catch {
-				// Silently fail if message deletion fails
-			}
+			} catch {}
 		}
 
 		const playerData = player.toJSON();
@@ -134,8 +129,14 @@ export default createLavalinkEvent({
 				if (currentPlayer && !currentPlayer.queue.current) {
 					await currentPlayer.destroy();
 				}
-			}, 60000); // 1 menit
+			}, 60000);
 			player.set("disconnectTimeout", disconnectTimeout);
+		} else {
+			const existingTimeout = player.get<NodeJS.Timeout>("disconnectTimeout");
+			if (existingTimeout) {
+				clearTimeout(existingTimeout);
+				player.set("disconnectTimeout", undefined);
+			}
 		}
 	},
 });
