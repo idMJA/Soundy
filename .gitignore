@@ -12,3 +12,4 @@ package-lock.json
 .env.production
 sessions.json
 .fuse_*
+data

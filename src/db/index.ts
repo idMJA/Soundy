@@ -4,6 +4,7 @@ import * as schema from "./schema";
 import { Configuration, Environment } from "#soundy/config";
 import { eq, and, desc, gt, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
+import { bunDatabase } from "./bunDb";
 
 const client = createClient({
 	url:
@@ -23,6 +24,8 @@ export interface ISetup {
 
 export class SoundyDatabase {
 	public db = db;
+	public bunDb = bunDatabase;
+
 	private cache = new Map<
 		string,
 		{ locale?: string; defaultVolume?: number }
@@ -30,29 +33,26 @@ export class SoundyDatabase {
 
 	/**
 	 * Get the locale for a guild from the database, or return default if not found.
+	 * Uses Bun-first approach for ultra-fast performance.
 	 * @param guildId Guild ID
 	 * @returns locale string
 	 */
 	public async getLocale(guildId: string): Promise<string> {
 		const cached = this.cache.get(guildId)?.locale;
 		if (cached) return cached;
-		const data = await this.db
-			.select()
-			.from(schema.guild)
-			.where(eq(schema.guild.id, guildId))
-			.get();
-		if (data?.locale) {
-			this.cache.set(guildId, {
-				...this.cache.get(guildId),
-				locale: data.locale,
-			});
-			return data.locale;
-		}
-		return Configuration.defaultLocale ?? "en-US";
+
+		const locale = await bunDatabase.getLocale(guildId);
+		this.cache.set(guildId, {
+			...this.cache.get(guildId),
+			locale,
+		});
+
+		return locale;
 	}
 
 	/**
 	 * Get the guild player from the database.
+	 * Uses Bun-first approach for ultra-fast performance.
 	 * @param guildId The guild id.
 	 */
 	public async getPlayer(guildId: string): Promise<{ defaultVolume: number }> {
@@ -60,60 +60,24 @@ export class SoundyDatabase {
 		if (cached !== undefined) {
 			return { defaultVolume: cached };
 		}
-		const data = await this.db
-			.select()
-			.from(schema.guild)
-			.where(eq(schema.guild.id, guildId))
-			.get();
-		const defaultVolume = data?.defaultVolume ?? Configuration.defaultVolume;
-		this.cache.set(guildId, { ...this.cache.get(guildId), defaultVolume });
-		return { defaultVolume };
+
+		const playerData = await bunDatabase.getPlayer(guildId);
+		this.cache.set(guildId, {
+			...this.cache.get(guildId),
+			defaultVolume: playerData.defaultVolume,
+		});
+		return playerData;
 	}
 
 	/**
 	 * Get premium status details for a user
+	 * Uses Bun-first approach for ultra-fast performance.
 	 * @param userId The user ID
 	 */
 	public async getPremiumStatus(
 		userId: string,
 	): Promise<{ type: string; timeRemaining: number } | null> {
-		const now = new Date().toISOString();
-		// Check for regular premium first, then fall back to vote premium
-		let vote = await this.db
-			.select()
-			.from(schema.userVote)
-			.where(
-				and(
-					eq(schema.userVote.userId, userId),
-					eq(schema.userVote.type, "regular"),
-					gt(schema.userVote.expiresAt, now),
-				),
-			)
-			.orderBy(desc(schema.userVote.expiresAt))
-			.get();
-
-		if (!vote) {
-			// If no regular premium, check for vote premium
-			vote = await this.db
-				.select()
-				.from(schema.userVote)
-				.where(
-					and(
-						eq(schema.userVote.userId, userId),
-						eq(schema.userVote.type, "vote"),
-						gt(schema.userVote.expiresAt, now),
-					),
-				)
-				.orderBy(desc(schema.userVote.expiresAt))
-				.get();
-		}
-
-		if (!vote) return null;
-
-		return {
-			type: vote.type,
-			timeRemaining: new Date(vote.expiresAt).getTime() - Date.now(),
-		};
+		return await bunDatabase.getPremiumStatus(userId);
 	}
 
 	/**
@@ -153,6 +117,7 @@ export class SoundyDatabase {
 
 	/**
 	 * Create a new setup for a guild
+	 * Uses Bun-first approach for better performance.
 	 * @param guildId The guild ID
 	 * @param channelId The channel ID
 	 * @param messageId The message ID
@@ -162,16 +127,22 @@ export class SoundyDatabase {
 		channelId: string,
 		messageId: string,
 	): Promise<void> {
-		await this.db
+		await bunDatabase
+			.getBunDb()
 			.insert(schema.guild)
 			.values({
 				id: guildId,
 				setupChannelId: channelId,
 				setupTextId: messageId,
+				updatedAt: new Date().toISOString(),
 			})
 			.onConflictDoUpdate({
 				target: schema.guild.id,
-				set: { setupChannelId: channelId, setupTextId: messageId },
+				set: {
+					setupChannelId: channelId,
+					setupTextId: messageId,
+					updatedAt: new Date().toISOString(),
+				},
 			});
 	}
 
@@ -429,37 +400,6 @@ export class SoundyDatabase {
 	}
 
 	/**
-	 * Get top tracks globally or for a specific guild
-	 * @param guildId The guild ID (empty string for global stats)
-	 * @param limit Number of tracks to return
-	 */
-	public async getTopTracks(guildId: string, limit = 10) {
-		const query = this.db
-			.select({
-				trackId: schema.trackStats.trackId,
-				title: schema.trackStats.title,
-				author: schema.trackStats.author,
-				playCount: sql<number>`sum(${schema.trackStats.playCount})`.as(
-					"playCount",
-				),
-			})
-			.from(schema.trackStats)
-			.groupBy(
-				schema.trackStats.trackId,
-				schema.trackStats.title,
-				schema.trackStats.author,
-			)
-			.orderBy(desc(sql`playCount`))
-			.limit(limit);
-
-		if (guildId) {
-			query.where(eq(schema.trackStats.guildId, guildId));
-		}
-
-		return await query;
-	}
-
-	/**
 	 * Get top users globally or for a specific guild
 	 * @param guildId The guild ID (empty string for global stats)
 	 * @param limit Number of users to return
@@ -558,58 +498,41 @@ export class SoundyDatabase {
 	}
 
 	/**
-	 * Get all playlists for a user
+	 * Get playlists with Bun-first approach
 	 * @param userId The user ID
 	 */
 	public async getPlaylists(userId: string) {
-		const playlists = await this.db
-			.select()
-			.from(schema.playlist)
-			.where(eq(schema.playlist.userId, userId))
-			.all();
-
-		const playlistsWithTracks = await Promise.all(
-			playlists.map(async (playlist) => {
-				const tracks = await this.db
-					.select()
-					.from(schema.playlistTrack)
-					.where(eq(schema.playlistTrack.playlistId, playlist.id))
-					.all();
-				return { ...playlist, tracks };
-			}),
-		);
-
-		return playlistsWithTracks;
+		return await bunDatabase.getPlaylists(userId);
 	}
 
 	/**
-	 * Create a new playlist
+	 * Create playlist with Bun-first approach
 	 * @param userId The user ID
 	 * @param name The playlist name
 	 */
 	public async createPlaylist(userId: string, name: string): Promise<boolean> {
-		try {
-			await this.db.insert(schema.playlist).values({
-				id: crypto.randomUUID(),
-				userId,
-				name,
-			});
-			return true;
-		} catch (error) {
-			if (
-				typeof error === "object" &&
-				error !== null &&
-				"code" in error &&
-				(error as { code?: string }).code === "SQLITE_CONSTRAINT"
-			) {
-				console.error(
-					"SQLite constraint error while creating playlist:",
-					error,
-				);
-				return false;
-			}
-			throw error;
-		}
+		return await bunDatabase.createPlaylist(userId, name);
+	}
+
+	/**
+	 * Get top tracks with Bun-first approach
+	 * @param guildId The guild ID (empty string for global stats)
+	 * @param limit Number of tracks to return
+	 */
+	public async getTopTracks(guildId: string, limit = 10) {
+		return await bunDatabase.getTopTracks(guildId, limit);
+	}
+
+	/**
+	 * Set the guild locale to the database.
+	 * Uses Bun-first approach for better performance.
+	 * @param guildId The guild id.
+	 * @param locale The locale.
+	 */
+	public async setLocale(guildId: string, locale: string): Promise<void> {
+		await bunDatabase.setLocale(guildId, locale);
+		// Clear cache to force refresh
+		this.cache.delete(guildId);
 	}
 
 	/**
@@ -682,42 +605,7 @@ export class SoundyDatabase {
 	 * @param userId The user ID
 	 */
 	public async addUserVote(userId: string): Promise<void> {
-		const TWELVE_HOURS = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
-		const expiresAt = new Date(Date.now() + TWELVE_HOURS);
-		const now = new Date().toISOString();
-
-		// Check if user already has an active vote
-		const existingVote = await this.db
-			.select()
-			.from(schema.userVote)
-			.where(
-				and(
-					eq(schema.userVote.userId, userId),
-					eq(schema.userVote.type, "vote"),
-					gt(schema.userVote.expiresAt, now),
-				),
-			)
-			.get();
-
-		if (existingVote) {
-			// Update existing vote expiration time
-			await this.db
-				.update(schema.userVote)
-				.set({
-					expiresAt: expiresAt.toISOString(),
-					votedAt: now,
-				})
-				.where(eq(schema.userVote.id, existingVote.id));
-		} else {
-			// Insert new vote record
-			await this.db.insert(schema.userVote).values({
-				id: randomUUID(),
-				userId,
-				expiresAt: expiresAt.toISOString(),
-				type: "vote",
-				votedAt: now,
-			});
-		}
+		await bunDatabase.addUserVote(userId);
 	}
 
 	/**
@@ -1049,32 +937,23 @@ export class SoundyDatabase {
 	}
 
 	/**
-	 * Set the guild locale to the database.
-	 * @param guildId The guild id.
-	 * @param locale The locale.
-	 */
-	public async setLocale(guildId: string, locale: string): Promise<void> {
-		await this.db
-			.insert(schema.guild)
-			.values({ id: guildId, locale })
-			.onConflictDoUpdate({
-				target: schema.guild.id,
-				set: { locale },
-			});
-	}
-
-	/**
 	 * Set the guild prefix to the database.
+	 * Uses Bun-first approach for better performance.
 	 * @param guildId The guild id.
 	 * @param prefix The prefix.
 	 */
 	public async setPrefix(guildId: string, prefix: string): Promise<void> {
-		await this.db
+		await bunDatabase
+			.getBunDb()
 			.insert(schema.guild)
-			.values({ id: guildId, prefix })
+			.values({
+				id: guildId,
+				prefix,
+				updatedAt: new Date().toISOString(),
+			})
 			.onConflictDoUpdate({
 				target: schema.guild.id,
-				set: { prefix },
+				set: { prefix, updatedAt: new Date().toISOString() },
 			});
 	}
 
@@ -1177,7 +1056,7 @@ export class SoundyDatabase {
 	}
 
 	/**
-	 * Add a track to user's liked songs
+	 * Add a track to user's liked songs with Bun-first approach
 	 * @param userId The user ID
 	 * @param trackId The track ID
 	 * @param title The track title
@@ -1197,41 +1076,16 @@ export class SoundyDatabase {
 		length?: number,
 		isStream?: boolean,
 	): Promise<boolean> {
-		try {
-			// Check if already liked
-			const existing = await this.db
-				.select()
-				.from(schema.likedSongs)
-				.where(
-					and(
-						eq(schema.likedSongs.userId, userId),
-						eq(schema.likedSongs.trackId, trackId),
-					),
-				)
-				.get();
-
-			if (existing) {
-				return false; // Already liked
-			}
-
-			await this.db.insert(schema.likedSongs).values({
-				id: randomUUID(),
-				userId,
-				trackId,
-				title,
-				author,
-				uri,
-				artwork: artwork || null,
-				length: length || null,
-				isStream: isStream || false,
-				likedAt: new Date().toISOString(),
-			});
-
-			return true; // Successfully added
-		} catch (error) {
-			console.error("Error adding to liked songs:", error);
-			return false;
-		}
+		return await bunDatabase.addToLikedSongs(
+			userId,
+			trackId,
+			title,
+			author,
+			uri,
+			artwork,
+			length,
+			isStream,
+		);
 	}
 
 	/**
@@ -1286,7 +1140,7 @@ export class SoundyDatabase {
 	}
 
 	/**
-	 * Get user's liked songs
+	 * Get liked songs with Bun-first approach
 	 * @param userId The user ID
 	 * @param limit The maximum number of results to return
 	 */
@@ -1306,29 +1160,7 @@ export class SoundyDatabase {
 			likedAt: string;
 		}>
 	> {
-		try {
-			const likedSongs = await this.db
-				.select()
-				.from(schema.likedSongs)
-				.where(eq(schema.likedSongs.userId, userId))
-				.orderBy(desc(schema.likedSongs.likedAt))
-				.limit(limit);
-
-			return likedSongs.map((track) => ({
-				id: track.id,
-				trackId: track.trackId,
-				title: track.title,
-				author: track.author,
-				uri: track.uri,
-				artwork: track.artwork,
-				length: track.length,
-				isStream: !!track.isStream,
-				likedAt: track.likedAt ?? new Date().toISOString(),
-			}));
-		} catch (error) {
-			console.error("Error fetching liked songs:", error);
-			return [];
-		}
+		return await bunDatabase.getLikedSongs(userId, limit);
 	}
 
 	/**
@@ -1348,6 +1180,52 @@ export class SoundyDatabase {
 			console.error("Error getting liked songs count:", error);
 			return 0;
 		}
+	}
+
+	// ========================================
+	// Bun Database Helper Methods
+	// ========================================
+
+	/**
+	 * Get direct access to Bun database (for advanced operations)
+	 */
+	public getBunDb() {
+		return bunDatabase.getBunDb();
+	}
+
+	/**
+	 * Get direct access to Turso database (for advanced operations)
+	 */
+	public getTursoDb() {
+		return bunDatabase.getTursoDb();
+	}
+
+	/**
+	 * Test database connections
+	 */
+	public async testConnections(): Promise<{ bun: boolean; turso: boolean }> {
+		return await bunDatabase.testConnections();
+	}
+
+	/**
+	 * Sync data from Turso to Bun SQLite
+	 */
+	public async sync() {
+		return await bunDatabase.sync();
+	}
+
+	/**
+	 * Get performance statistics
+	 */
+	public async getPerformanceStats() {
+		return await bunDatabase.getPerformanceStats();
+	}
+
+	/**
+	 * Check if databases are ready
+	 */
+	public isReady(): boolean {
+		return bunDatabase.isReady();
 	}
 }
 

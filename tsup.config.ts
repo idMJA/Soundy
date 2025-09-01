@@ -5,5 +5,6 @@ export default defineConfig((options: Options) => ({
 	clean: true,
 	format: "cjs",
 	legacyOutput: true,
+	external: ["bun:sqlite"],
 	...options,
 }));

@@ -33,6 +33,9 @@ export class SoundyManager extends LavalinkManager {
 	constructor(client: Soundy) {
 		super({
 			nodes,
+			autoSkip: true,
+			autoMove: true,
+			autoSkipOnResolveError: true,
 			sendToShard: (guildId, payload) =>
 				client.gateway.send(client.gateway.calculateShardId(guildId), payload),
 			queueOptions: {
@@ -48,6 +51,7 @@ export class SoundyManager extends LavalinkManager {
 					autoPlayFunction,
 					// destroyAfterMs: 60_000, // 1 minute
 				},
+				useUnresolvedData: true,
 			},
 		});
 		this.playerSaver = new PlayerSaver(client.logger);

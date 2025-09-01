@@ -1,28 +1,24 @@
 import {
 	ActionRow,
-	type AnyContext,
 	Button,
+	StringSelectMenu,
+	type AnyContext,
 	type ButtonInteraction,
 	type Embed,
 	type Message,
-	type MessageBuilderComponents,
-	StringSelectMenu,
 	type StringSelectMenuInteraction,
 	type WebhookMessage,
 } from "seyfert";
 import {
-	type APIButtonComponentWithCustomId,
 	ButtonStyle,
 	MessageFlags,
+	type APIActionRowComponent,
+	type APIButtonComponentWithCustomId,
+	type APIMessageActionRowComponent,
 } from "seyfert/lib/types";
-import type {
-	APIActionRowComponent,
-	APIMessageActionRowComponent,
-} from "seyfert/lib/types";
-
 import {
-	type Awaitable,
 	EmbedColors,
+	type Awaitable,
 	type InteractionCreateBodyRequest,
 	type InteractionMessageUpdateBodyRequest,
 } from "seyfert/lib/common";
@@ -139,9 +135,9 @@ export class EmbedPaginator {
 	 * Get the current row of the paginator.
 	 * @returns
 	 */
-	private getRows(): ActionRow<MessageBuilderComponents>[] {
-		const rows: ActionRow<MessageBuilderComponents>[] = [
-			new ActionRow<MessageBuilderComponents>().addComponents(
+	private getRows(): ActionRow<Button | SoundyComponents>[] {
+		const rows: ActionRow<Button | SoundyComponents>[] = [
+			new ActionRow<Button>().addComponents(
 				new Button()
 					.setEmoji(this.ctx.client.config.emoji.previous)
 					.setStyle(ButtonStyle.Secondary)
@@ -160,7 +156,8 @@ export class EmbedPaginator {
 			),
 		];
 
-		if (this.rows.length) rows.unshift(...this.rows);
+		if (this.rows.length)
+			rows.unshift(...(this.rows as ActionRow<Button | SoundyComponents>[]));
 
 		return rows;
 	}

@@ -1,41 +1,58 @@
 import type { WSHandler } from "./types";
+import type { PlayerSaver } from "#soundy/utils";
 
 export const handleVolume: WSHandler = async (ws, msg, client) => {
-	if (msg.type === "volume" && msg.guildId && typeof msg.volume === "number") {
+	if (
+		msg.type === "set-volume" &&
+		msg.guildId &&
+		typeof msg.volume === "number"
+	) {
 		const player = client.manager.getPlayer(msg.guildId);
 		if (player) {
-			const volume = Math.max(0, Math.min(100, msg.volume));
-			await player.setVolume(volume);
+			await player.setVolume(msg.volume);
 			ws.send(
 				JSON.stringify({
-					type: "volume",
-					volume: volume,
-					message: `Volume set to ${volume}%`,
+					type: "set-volume",
+					success: true,
+					volume: player.volume,
 				}),
 			);
 		} else {
 			ws.send(
 				JSON.stringify({
-					type: "volume",
+					type: "set-volume",
 					success: false,
 					message: "No active player",
 				}),
 			);
 		}
-		return;
+		return true;
 	}
+	return false;
 };
 
 export const handleShuffle: WSHandler = async (ws, msg, client) => {
 	if (msg.type === "shuffle" && msg.guildId) {
 		const player = client.manager.getPlayer(msg.guildId);
 		if (player) {
-			player.queue.shuffle();
+			if (player.queue.tracks.length === 0) {
+				ws.send(
+					JSON.stringify({
+						type: "shuffle",
+						success: false,
+						message: "No tracks in the queue to shuffle",
+					}),
+				);
+				return true;
+			}
+
+			await player.queue.shuffle();
+
 			ws.send(
 				JSON.stringify({
 					type: "shuffle",
 					success: true,
-					message: "Queue shuffled",
+					message: "Queue shuffled successfully",
 				}),
 			);
 		} else {
@@ -47,32 +64,42 @@ export const handleShuffle: WSHandler = async (ws, msg, client) => {
 				}),
 			);
 		}
-		return;
+		return true;
 	}
+	return false;
 };
 
-export const handleRepeat: WSHandler = async (ws, msg, client) => {
-	if (msg.type === "repeat" && msg.guildId && typeof msg.mode === "string") {
+export const handleRepeat: WSHandler = async (ws, msg, client, ...args) => {
+	if (msg.type === "repeat" && msg.guildId) {
+		const playerSaver = args[0] as PlayerSaver | undefined;
 		const player = client.manager.getPlayer(msg.guildId);
 		if (player) {
-			const modes = ["off", "track", "queue"] as const;
-			const mode = modes.includes(msg.mode as (typeof modes)[number])
-				? (msg.mode as (typeof modes)[number])
-				: "off";
+			let newMode: "off" | "track" | "queue";
+			if (player.repeatMode === "off") newMode = "track";
+			else if (player.repeatMode === "track") newMode = "queue";
+			else newMode = "off";
 
-			if (mode === "track") {
-				player.setRepeatMode("track");
-			} else if (mode === "queue") {
-				player.setRepeatMode("queue");
-			} else {
-				player.setRepeatMode("off");
+			await player.setRepeatMode(newMode);
+
+			if (playerSaver) {
+				try {
+					const playerData = player.toJSON();
+					playerData.repeatMode = newMode;
+					const safeData = playerSaver.extractSafePlayerData(
+						playerData as unknown as Record<string, unknown>,
+					);
+					await playerSaver.savePlayer(player.guildId, safeData);
+				} catch (e) {
+					client.logger.error("Failed to save repeatMode to PlayerSaver", e);
+				}
 			}
 
 			ws.send(
 				JSON.stringify({
 					type: "repeat",
-					mode: mode,
-					message: `Repeat mode set to ${mode}`,
+					success: true,
+					mode: newMode,
+					modeNumber: newMode === "off" ? 0 : newMode === "track" ? 1 : 2,
 				}),
 			);
 		} else {
@@ -84,6 +111,7 @@ export const handleRepeat: WSHandler = async (ws, msg, client) => {
 				}),
 			);
 		}
-		return;
+		return true;
 	}
+	return false;
 };

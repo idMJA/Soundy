@@ -60,10 +60,29 @@ export default class RemovePlaylistCommand extends SubCommand {
 		const { cmd } = await ctx.getLocale();
 
 		try {
-			const playlists = await client.database.getPlaylists(userId);
-			const playlist = playlists.find((p) => p.id === options.name);
+			let playlist = await client.database.getPlaylistById(options.name);
 
 			if (!playlist) {
+				const userPlaylists = await client.database.getPlaylists(userId);
+				playlist =
+					userPlaylists.find(
+						(p) => p.name.toLowerCase() === options.name.toLowerCase(),
+					) || null;
+			}
+
+			if (!playlist) {
+				return ctx.editOrReply({
+					embeds: [
+						{
+							color: client.config.color.no,
+							description: `${client.config.emoji.no} ${cmd.playlist.run.not_found}`,
+						},
+					],
+					flags: MessageFlags.Ephemeral,
+				});
+			}
+
+			if (playlist.userId !== userId) {
 				return ctx.editOrReply({
 					embeds: [
 						{

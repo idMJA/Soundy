@@ -1,47 +1,31 @@
 import type { WSHandler } from "./types";
+import { getContext, getRequesterId } from "./types";
 
 export const handleQueue: WSHandler = async (ws, msg, client) => {
 	if (msg.type === "queue" && msg.guildId) {
 		const player = client.manager.getPlayer(msg.guildId);
 		if (player) {
-			const queue = player.queue.tracks.slice(0, 50).map((track, index) => ({
-				position: index + 1,
-				title: track.info.title,
-				author: track.info.author,
-				duration: track.info.duration,
-				uri: track.info.uri,
-				artwork: track.info.artworkUrl,
+			const queue = player.queue.tracks.map((track, index: number) => ({
+				index,
+				title: track.info.title || "Unknown",
+				author: track.info.author || "Unknown",
+				duration: track.info.duration || 0,
+				uri: track.info.uri || "",
+				artwork: track.info.artworkUrl || undefined,
+				requester:
+					track.requester &&
+					typeof track.requester === "object" &&
+					"id" in track.requester
+						? (track.requester as { id: string }).id
+						: undefined,
 			}));
-
-			ws.send(
-				JSON.stringify({
-					type: "queue",
-					queue: queue,
-					total: player.queue.tracks.length,
-					current: player.queue.current
-						? {
-								title: player.queue.current.info.title,
-								author: player.queue.current.info.author,
-								duration: player.queue.current.info.duration,
-								uri: player.queue.current.info.uri,
-								artwork: player.queue.current.info.artworkUrl,
-								position: player.position,
-							}
-						: null,
-				}),
-			);
+			ws.send(JSON.stringify({ type: "queue", queue, length: queue.length }));
 		} else {
-			ws.send(
-				JSON.stringify({
-					type: "queue",
-					queue: [],
-					total: 0,
-					current: null,
-				}),
-			);
+			ws.send(JSON.stringify({ type: "queue", queue: [], length: 0 }));
 		}
-		return;
+		return true;
 	}
+	return false;
 };
 
 export const handleClear: WSHandler = async (ws, msg, client) => {
@@ -67,22 +51,24 @@ export const handleClear: WSHandler = async (ws, msg, client) => {
 				}),
 			);
 		}
-		return;
+		return true;
 	}
+	return false;
 };
 
 export const handleRemove: WSHandler = async (ws, msg, client) => {
 	if (msg.type === "remove" && msg.guildId && typeof msg.index === "number") {
 		const player = client.manager.getPlayer(msg.guildId);
 		if (player) {
-			const index = msg.index - 1;
+			const index = msg.index;
 			if (index >= 0 && index < player.queue.tracks.length) {
-				const removedTrack = player.queue.tracks.splice(index, 1)[0];
+				const removedTrack = player.queue.tracks[index];
+				player.queue.remove(index);
 				ws.send(
 					JSON.stringify({
 						type: "remove",
 						success: true,
-						message: `Removed "${removedTrack?.info.title}" from queue`,
+						message: `Removed track from position ${index + 1}`,
 						removedTrack: {
 							title: removedTrack?.info.title,
 							author: removedTrack?.info.author,
@@ -108,81 +94,208 @@ export const handleRemove: WSHandler = async (ws, msg, client) => {
 				}),
 			);
 		}
-		return;
+		return true;
 	}
+	return false;
 };
 
 export const handlePlay: WSHandler = async (ws, msg, client) => {
-	if (msg.type === "play" && msg.guildId && msg.query) {
-		const player = client.manager.getPlayer(msg.guildId);
-		if (!player) {
+	// Handle play with guildId and voiceChannelId
+	if (msg.type === "play" && msg.guildId && msg.query && msg.voiceChannelId) {
+		if (typeof msg.voiceChannelId !== "string" || !msg.voiceChannelId.trim()) {
 			ws.send(
 				JSON.stringify({
 					type: "play",
 					success: false,
-					message: "No active player - join a voice channel first",
+					message: "voiceChannelId harus string",
 				}),
 			);
-			return;
+			return true;
 		}
-
+		const player =
+			client.manager.getPlayer(msg.guildId) ??
+			client.manager.createPlayer({
+				guildId: msg.guildId,
+				voiceChannelId: msg.voiceChannelId,
+				textChannelId: msg.voiceChannelId,
+				selfDeaf: true,
+				volume: client.config.defaultVolume,
+			});
+		if (!player.connected) {
+			await player.connect();
+		}
 		try {
-			const result = await client.manager.search(String(msg.query));
-
-			if (!result?.tracks?.length) {
+			const result = await player.search(String(msg.query), {
+				requester: { id: getRequesterId(msg, ws) },
+			});
+			if (
+				["track", "search"].includes(result.loadType) &&
+				result.tracks.length
+			) {
+				const track = result.tracks[0];
+				if (track) {
+					track.requester = { id: getRequesterId(msg, ws) };
+					await player.queue.add(track);
+					if (!player.playing && !player.paused) await player.play();
+					ws.send(
+						JSON.stringify({
+							type: "play",
+							success: true,
+							track: {
+								title: track.info.title,
+								author: track.info.author,
+								duration: track.info.duration,
+								uri: track.info.uri,
+								artwork: track.info.artworkUrl,
+							},
+						}),
+					);
+				} else {
+					ws.send(
+						JSON.stringify({
+							type: "play",
+							success: false,
+							message: "No track found",
+						}),
+					);
+				}
+			} else if (result.loadType === "playlist") {
+				for (const track of result.tracks) {
+					track.requester = { id: getRequesterId(msg, ws) };
+				}
+				await player.queue.add(result.tracks);
+				if (!player.playing && !player.paused) await player.play();
+				ws.send(
+					JSON.stringify({
+						type: "play",
+						success: true,
+						playlist: {
+							name: result.playlist?.name,
+							tracks: result.tracks.length,
+						},
+					}),
+				);
+			} else {
 				ws.send(
 					JSON.stringify({
 						type: "play",
 						success: false,
-						message: "No tracks found for your query",
+						message: "No results found",
 					}),
 				);
-				return;
 			}
-
-			const track = result.tracks[0];
-			if (!track) {
-				ws.send(
-					JSON.stringify({
-						type: "play",
-						success: false,
-						message: "No track found",
-					}),
-				);
-				return;
-			}
-
-			player.queue.add(track);
-
-			if (!player.playing && !player.paused) {
-				await player.play();
-			}
-
-			ws.send(
-				JSON.stringify({
-					type: "play",
-					success: true,
-					track: {
-						title: track.info.title,
-						author: track.info.author,
-						duration: track.info.duration,
-						uri: track.info.uri,
-						artwork: track.info.artworkUrl,
-					},
-					message: player.playing
-						? `Added "${track.info.title}" to queue`
-						: `Now playing "${track.info.title}"`,
-				}),
-			);
 		} catch (error) {
 			ws.send(
 				JSON.stringify({
 					type: "play",
 					success: false,
-					message: `Failed to play track: ${String(error)}`,
+					message: `Error: ${String(error)}`,
 				}),
 			);
 		}
-		return;
+		return true;
 	}
+
+	// Handle play without explicit guildId/voiceChannelId (using context)
+	if (msg.type === "play" && msg.query) {
+		const { guildId, voiceChannelId } = getContext(msg, ws);
+		if (!guildId || !voiceChannelId) {
+			ws.send(
+				JSON.stringify({
+					type: "play",
+					success: false,
+					message: "guildId/voiceChannelId not set",
+				}),
+			);
+			return true;
+		}
+		const requesterId = ws.store?.userId || msg.userId || "websocket-user";
+
+		if (!ws.store) ws.store = {};
+		ws.store.guildId = guildId;
+		ws.store.voiceChannelId = String(voiceChannelId);
+		const player =
+			client.manager.getPlayer(guildId) ??
+			client.manager.createPlayer({
+				guildId: guildId,
+				voiceChannelId: String(voiceChannelId),
+				textChannelId: String(voiceChannelId),
+				selfDeaf: true,
+				volume: client.config.defaultVolume,
+			});
+		if (!player.connected) {
+			await player.connect();
+		}
+		try {
+			const result = await player.search(String(msg.query), {
+				requester: { id: requesterId },
+			});
+			if (
+				["track", "search"].includes(result.loadType) &&
+				result.tracks.length
+			) {
+				const track = result.tracks[0];
+				if (track) {
+					track.requester = { id: requesterId };
+					await player.queue.add(track);
+					if (!player.playing && !player.paused) await player.play();
+					ws.send(
+						JSON.stringify({
+							type: "play",
+							success: true,
+							track: {
+								title: track.info.title,
+								author: track.info.author,
+								duration: track.info.duration,
+								uri: track.info.uri,
+								artwork: track.info.artworkUrl,
+							},
+						}),
+					);
+				} else {
+					ws.send(
+						JSON.stringify({
+							type: "play",
+							success: false,
+							message: "No track found",
+						}),
+					);
+				}
+			} else if (result.loadType === "playlist") {
+				for (const track of result.tracks) {
+					track.requester = { id: requesterId };
+				}
+				await player.queue.add(result.tracks);
+				if (!player.playing && !player.paused) await player.play();
+				ws.send(
+					JSON.stringify({
+						type: "play",
+						success: true,
+						playlist: {
+							name: result.playlist?.name,
+							tracks: result.tracks.length,
+						},
+					}),
+				);
+			} else {
+				ws.send(
+					JSON.stringify({
+						type: "play",
+						success: false,
+						message: "No results found",
+					}),
+				);
+			}
+		} catch (error) {
+			ws.send(
+				JSON.stringify({
+					type: "play",
+					success: false,
+					message: `Error: ${String(error)}`,
+				}),
+			);
+		}
+		return true;
+	}
+	return false;
 };

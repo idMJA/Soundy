@@ -10,7 +10,8 @@ export type WSHandler = (
 	ws: SoundyWS,
 	msg: WSMessage,
 	client: UsingClient,
-) => Promise<void> | void;
+	...args: unknown[]
+) => Promise<boolean> | boolean;
 
 export function serializePlayerState(player: Player) {
 	const current = player.queue.current;

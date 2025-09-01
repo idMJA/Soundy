@@ -54,7 +54,7 @@
 
 	/* Project Structure */
 	"include": ["src/**/*"],
-	"exclude": ["node_modules", "dist", "drizzle.config.ts"],
+	"exclude": ["node_modules", "dist"],
 
 	/* Additional Options */
 	"ts-node": {

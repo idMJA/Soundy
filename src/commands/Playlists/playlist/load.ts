@@ -53,13 +53,44 @@ export default class LoadPlaylistCommand extends SubCommand {
 
 		if (!voiceState?.channelId) return;
 
-		const playlist = await client.database.getPlaylistById(options.name);
-		const tracks = playlist
-			? playlist.tracks.map((track) => ({
-					url: track.url,
-					info: track.info ? JSON.parse(track.info) : null,
-				}))
-			: null;
+		let playlist = await client.database.getPlaylistById(options.name);
+
+		if (!playlist) {
+			const userPlaylists = await client.database.getPlaylists(ctx.author.id);
+			playlist =
+				userPlaylists.find(
+					(p) => p.name.toLowerCase() === options.name.toLowerCase(),
+				) || null;
+		}
+
+		if (!playlist) {
+			return ctx.editOrReply({
+				embeds: [
+					{
+						color: client.config.color.no,
+						description: `${client.config.emoji.no} ${cmd.playlist.run.not_found}`,
+					},
+				],
+				flags: MessageFlags.Ephemeral,
+			});
+		}
+
+		if (playlist.userId !== ctx.author.id) {
+			return ctx.editOrReply({
+				embeds: [
+					{
+						color: client.config.color.no,
+						description: `${client.config.emoji.no} ${cmd.playlist.run.not_found}`,
+					},
+				],
+				flags: MessageFlags.Ephemeral,
+			});
+		}
+
+		const tracks = playlist.tracks.map((track) => ({
+			url: track.url,
+			info: track.info ? JSON.parse(track.info) : null,
+		}));
 
 		if (!tracks || tracks.length === 0) {
 			return ctx.editOrReply({
@@ -75,7 +106,6 @@ export default class LoadPlaylistCommand extends SubCommand {
 
 		const { defaultVolume } = await client.database.getPlayer(guildId);
 
-		// Get or create player
 		let player = client.manager.players.get(guildId);
 		if (!player) {
 			player = client.manager.createPlayer({
@@ -88,7 +118,6 @@ export default class LoadPlaylistCommand extends SubCommand {
 			await player.connect();
 		}
 
-		// Load and add tracks
 		for (const trackUrl of tracks) {
 			const result = await client.manager.search(trackUrl.url);
 			if (result.tracks[0]) {

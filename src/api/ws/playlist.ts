@@ -22,7 +22,7 @@ export const handleLoadPlaylist: WSHandler = async (ws, msg, client) => {
 					message: "voiceChannelId is required",
 				}),
 			);
-			return;
+			return true;
 		}
 
 		try {
@@ -35,7 +35,7 @@ export const handleLoadPlaylist: WSHandler = async (ws, msg, client) => {
 						message: "Playlist not found or access denied",
 					}),
 				);
-				return;
+				return true;
 			}
 
 			const tracks = await client.database.getTracksFromPlaylist(playlistId);
@@ -48,7 +48,7 @@ export const handleLoadPlaylist: WSHandler = async (ws, msg, client) => {
 						message: "Playlist is empty",
 					}),
 				);
-				return;
+				return true;
 			}
 
 			const { defaultVolume } = await client.database.getPlayer(guildId);
@@ -85,7 +85,7 @@ export const handleLoadPlaylist: WSHandler = async (ws, msg, client) => {
 				}
 			}
 
-			if (!player.playing && !player.paused && addedCount > 0) {
+			if (!(player.playing || player.paused) && addedCount > 0) {
 				await player.play();
 			}
 
@@ -93,12 +93,11 @@ export const handleLoadPlaylist: WSHandler = async (ws, msg, client) => {
 				JSON.stringify({
 					type: "load-playlist",
 					success: true,
-					message: `Loaded ${addedCount} tracks from "${playlist.name}"`,
-					playlist: {
-						name: playlist.name,
-						tracksLoaded: addedCount,
-						totalTracks: tracks.length,
-					},
+					message: `Loaded ${addedCount} tracks from playlist "${playlist.name}"`,
+					tracksLoaded: addedCount,
+					totalTracks: tracks.length,
+					playlistId: playlistId,
+					playlistName: playlist.name,
 				}),
 			);
 		} catch (error) {
@@ -106,12 +105,13 @@ export const handleLoadPlaylist: WSHandler = async (ws, msg, client) => {
 				JSON.stringify({
 					type: "load-playlist",
 					success: false,
-					message: `Failed to load playlist: ${String(error)}`,
+					message: `Error loading playlist: ${String(error)}`,
 				}),
 			);
 		}
-		return;
+		return true;
 	}
+	return false;
 };
 
 export const handleUserPlaylists: WSHandler = async (ws, msg, client) => {
@@ -138,6 +138,7 @@ export const handleUserPlaylists: WSHandler = async (ws, msg, client) => {
 				}),
 			);
 		}
-		return;
+		return true;
 	}
+	return false;
 };

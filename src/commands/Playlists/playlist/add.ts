@@ -152,8 +152,29 @@ export default class AddPlaylistCommand extends SubCommand {
 		const { cmd } = await ctx.getLocale();
 
 		try {
-			const playlist = await client.database.getPlaylistById(options.playlist);
+			let playlist = await client.database.getPlaylistById(options.playlist);
+
 			if (!playlist) {
+				const userPlaylists = await client.database.getPlaylists(ctx.author.id);
+				playlist =
+					userPlaylists.find(
+						(p) => p.name.toLowerCase() === options.playlist.toLowerCase(),
+					) || null;
+			}
+
+			if (!playlist) {
+				return ctx.editOrReply({
+					embeds: [
+						{
+							color: client.config.color.no,
+							description: `${client.config.emoji.no} ${cmd.playlist.run.not_found}`,
+						},
+					],
+					flags: MessageFlags.Ephemeral,
+				});
+			}
+
+			if (playlist.userId !== ctx.author.id) {
 				return ctx.editOrReply({
 					embeds: [
 						{

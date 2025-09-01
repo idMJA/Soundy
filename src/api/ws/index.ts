@@ -20,6 +20,7 @@ import {
 	handleUserConnect,
 	handleGetPlaylist,
 	handleGetPlaylists,
+	handleUserStatus,
 } from "./misc";
 
 interface WSWithInterval extends SoundyWS {
@@ -34,7 +35,15 @@ export function setupSoundyWebSocket(
 	(app as unknown as { client: UsingClient }).client = client;
 
 	return app.ws("/ws", {
-		message: async (ws: SoundyWS, msg: WSMessage) => {
+		message: async (ws: SoundyWS, data: unknown) => {
+			let msg: WSMessage;
+			try {
+				msg = typeof data === "string" ? JSON.parse(data) : (data as WSMessage);
+			} catch {
+				ws.send(JSON.stringify({ type: "error", message: "Invalid JSON" }));
+				return;
+			}
+
 			if (!ws.store) ws.store = {};
 
 			await handleStatus(ws, msg, client);
@@ -46,16 +55,17 @@ export function setupSoundyWebSocket(
 			await handlePrevious(ws, msg, client);
 			await handleVolume(ws, msg, client);
 			await handleShuffle(ws, msg, client);
-			await handleRepeat(ws, msg, client);
+			await handleRepeat(ws, msg, client, playerSaver);
 			await handleQueue(ws, msg, client);
 			await handleClear(ws, msg, client);
 			await handleRemove(ws, msg, client);
 			await handlePlay(ws, msg, client);
 			await handleLoadPlaylist(ws, msg, client);
 			await handleUserPlaylists(ws, msg, client);
-			await handleUserConnect(ws, msg, client);
+			await handleUserConnect(ws, msg, client, playerSaver);
 			await handleGetPlaylist(ws, msg, client);
 			await handleGetPlaylists(ws, msg, client);
+			await handleUserStatus(ws, msg, client);
 
 			if (msg.guildId) {
 				const player = client.manager.getPlayer(msg.guildId);

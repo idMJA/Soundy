@@ -49,8 +49,29 @@ export default class ViewPlaylistCommand extends SubCommand {
 		const { client, options } = ctx;
 		const { cmd } = await ctx.getLocale();
 
-		const playlist = await client.database.getPlaylistById(options.name);
+		let playlist = await client.database.getPlaylistById(options.name);
+
 		if (!playlist) {
+			const userPlaylists = await client.database.getPlaylists(ctx.author.id);
+			playlist =
+				userPlaylists.find(
+					(p) => p.name.toLowerCase() === options.name.toLowerCase(),
+				) || null;
+		}
+
+		if (!playlist) {
+			return ctx.editOrReply({
+				embeds: [
+					{
+						color: client.config.color.no,
+						description: `${client.config.emoji.no} ${cmd.playlist.run.not_found}`,
+					},
+				],
+				flags: MessageFlags.Ephemeral,
+			});
+		}
+
+		if (playlist.userId !== ctx.author.id) {
 			return ctx.editOrReply({
 				embeds: [
 					{
@@ -79,11 +100,9 @@ export default class ViewPlaylistCommand extends SubCommand {
 		const pages = Math.ceil(tracks.length / tracksPerPage);
 		const paginator = new EmbedPaginator(ctx);
 
-		// Get tracks with stored info
 		const trackDetails = tracks
 			.map((track) => {
 				if (track.info) {
-					// Use stored info
 					return {
 						info:
 							typeof track.info === "string"
@@ -91,7 +110,6 @@ export default class ViewPlaylistCommand extends SubCommand {
 								: track.info,
 					};
 				} else {
-					// Fallback: search for track info
 					return null;
 				}
 			})

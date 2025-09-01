@@ -10,7 +10,9 @@ import {
 	type ModalSubmitInteraction,
 	SubCommand,
 	TextInput,
+	Embed,
 } from "seyfert";
+import { Label } from "seyfert/lib/builders/Label";
 import { ButtonStyle, MessageFlags, TextInputStyle } from "seyfert/lib/types";
 
 @Declare({
@@ -31,7 +33,6 @@ export default class SuggestionsCommand extends SubCommand {
 
 		const { cmd } = await ctx.getLocale();
 
-		// Create report button
 		const reportButton = new Button()
 			.setCustomId("open-suggestions-report")
 			.setLabel(cmd.report.sub.suggestion.run.label)
@@ -40,7 +41,6 @@ export default class SuggestionsCommand extends SubCommand {
 
 		const row = new ActionRow<Button>().addComponents(reportButton);
 
-		// Send initial message with button and fetch the reply
 		const message = (await ctx.write(
 			{
 				embeds: [
@@ -55,7 +55,6 @@ export default class SuggestionsCommand extends SubCommand {
 			true,
 		)) as Message;
 
-		// Create the text inputs for modal
 		const descriptionInput = new TextInput()
 			.setCustomId("suggestions-description")
 			.setLabel(cmd.report.sub.suggestion.run.description)
@@ -72,14 +71,19 @@ export default class SuggestionsCommand extends SubCommand {
 			.setLength({ min: 20, max: 1000 })
 			.setPlaceholder(cmd.report.sub.suggestion.run.steps_placeholder);
 
-		// Create the modal with its handler
 		const modal = new Modal()
 			.setCustomId("suggestions-report-modal")
 			.setTitle(cmd.report.sub.suggestion.run.label)
-			.addComponents(
-				new ActionRow<TextInput>().addComponents(descriptionInput),
-				new ActionRow<TextInput>().addComponents(stepsInput),
-			)
+			.setComponents([
+				new Label()
+					.setLabel(cmd.report.sub.suggestion.run.description)
+					.setDescription(cmd.report.sub.suggestion.run.description_placeholder)
+					.setComponent(descriptionInput),
+				new Label()
+					.setLabel(cmd.report.sub.suggestion.run.steps)
+					.setDescription(cmd.report.sub.suggestion.run.steps_placeholder)
+					.setComponent(stepsInput),
+			])
 			.run(async (modalCtx: ModalSubmitInteraction) => {
 				const description =
 					modalCtx.data.components?.[0]?.components?.[0]?.value ?? "";
@@ -87,10 +91,8 @@ export default class SuggestionsCommand extends SubCommand {
 					modalCtx.data.components?.[1]?.components?.[0]?.value ?? "";
 				const reportId = Date.now().toString(36);
 
+				let webhookSuccess = true;
 				try {
-					let webhookSuccess = true;
-
-					// Try to send report to webhook if configured
 					if (client.config.webhooks?.report) {
 						try {
 							const webhookBody = {
@@ -115,7 +117,6 @@ export default class SuggestionsCommand extends SubCommand {
 									},
 								],
 							};
-
 							const response = await fetch(
 								`${client.config.webhooks.report}?wait=true`,
 								{
@@ -124,7 +125,6 @@ export default class SuggestionsCommand extends SubCommand {
 									body: JSON.stringify(webhookBody),
 								},
 							);
-
 							if (!response.ok) {
 								throw new Error(
 									`Webhook error: ${response.status} ${response.statusText}`,
@@ -136,7 +136,6 @@ export default class SuggestionsCommand extends SubCommand {
 						}
 					}
 
-					// Send response to user
 					await modalCtx.write({
 						content: "",
 						embeds: [
@@ -157,7 +156,6 @@ export default class SuggestionsCommand extends SubCommand {
 						flags: MessageFlags.Ephemeral,
 					});
 
-					// Only try to update the original message if everything was successful
 					if (webhookSuccess) {
 						try {
 							await message.edit({
@@ -170,18 +168,15 @@ export default class SuggestionsCommand extends SubCommand {
 								],
 								components: [row],
 							});
-						} catch {
-							// Don't throw here as the report was still submitted successfully
-						}
+						} catch {}
 					}
 				} catch (error) {
 					client.logger.error("Modal submission error:", error);
 
-					const errorEmbed = {
-						color: client.config.color.no,
-						title: cmd.report.sub.suggestion.run.error,
-						description: cmd.report.sub.suggestion.run.error_description,
-					};
+					const errorEmbed = new Embed()
+						.setColor(client.config.color.no)
+						.setTitle(cmd.report.sub.suggestion.run.error)
+						.setDescription(cmd.report.sub.suggestion.run.error_description);
 
 					try {
 						await modalCtx.write({
@@ -189,7 +184,6 @@ export default class SuggestionsCommand extends SubCommand {
 							flags: MessageFlags.Ephemeral,
 						});
 					} catch {
-						// If reply fails, try followup as fallback
 						try {
 							await modalCtx.followup({
 								embeds: [errorEmbed],
@@ -205,24 +199,20 @@ export default class SuggestionsCommand extends SubCommand {
 				}
 			});
 
-		// Create collector for the button
 		const collector = message.createComponentCollector({
 			filter: (i) => i.customId === "open-suggestions-report",
-			idle: 300000, // 5 minutes
+			idle: 300000,
 		});
 
-		// Handle button click
 		collector.run(
 			"open-suggestions-report",
 			async (interaction: ComponentInteraction) => {
-				// Check if the user is authorized
 				if (interaction.user.id !== ctx.author.id) {
 					await interaction.write({
 						embeds: [
-							{
-								color: client.config.color.no,
-								description: cmd.report.sub.suggestion.run.invalid_user,
-							},
+							new Embed()
+								.setColor(client.config.color.no)
+								.setDescription(cmd.report.sub.suggestion.run.invalid_user),
 						],
 						flags: MessageFlags.Ephemeral,
 					});

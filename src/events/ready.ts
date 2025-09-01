@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { cwd } from "node:process";
 import { Api } from "@top-gg/sdk";
 import { BOT_VERSION } from "#soundy/utils";
+import { changePresence } from "#soundy/utils";
 
 export default createEvent({
 	data: { once: true, name: "ready" },
@@ -23,6 +24,8 @@ export default createEvent({
 
 		const clientName = `${user.username} v${BOT_VERSION}`;
 		client.logger.info(`Logged in as "${clientName}" on Shard ${shard}`);
+
+		changePresence(client);
 
 		if (client.config.topgg.enabled && client.config.topgg.token) {
 			setTimeout(postStats, 5000);

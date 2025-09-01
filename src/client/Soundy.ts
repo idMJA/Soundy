@@ -55,7 +55,7 @@ export default class Soundy extends Client<true> {
 	 */
 	constructor() {
 		super({
-			context: SoundyContext, // FIX: use custom context so getLocale is available everywhere
+			context: SoundyContext,
 			globalMiddlewares: [
 				"checkCooldown",
 				"checkVerifications",
@@ -97,7 +97,6 @@ export default class Soundy extends Client<true> {
 							.trim()
 							.split(" ")[0];
 						if (commandName) {
-							// Format the prefix for logging - convert mention ID to @BotName format
 							let logPrefix: string;
 							if (
 								usedPrefix.startsWith("<@") ||
@@ -146,9 +145,47 @@ export default class Soundy extends Client<true> {
 	}
 
 	/**
+	 * Setup process event listeners
+	 */
+	private setupProcessListeners(): void {
+		// Handle unhandled promise rejections
+		process.on("unhandledRejection", (reason, promise) => {
+			this.logger.error("Unhandled Rejection at:", promise, "reason:", reason);
+			this.logger.warn("Bot will continue running despite the error");
+		});
+
+		// Handle uncaught exceptions
+		process.on("uncaughtException", (error) => {
+			this.logger.error("Uncaught Exception:", error);
+			this.logger.warn("Bot will continue running despite the critical error");
+		});
+
+		// Handle SIGINT (Ctrl+C) - Only shutdown when manually requested
+		process.on("SIGINT", () => {
+			this.logger.info("Received SIGINT (Ctrl+C), shutting down the bots...");
+		});
+
+		// Handle SIGTERM (process termination) - Only shutdown when explicitly terminated
+		process.on("SIGTERM", () => {
+			this.logger.info("Received SIGTERM, shutting down the bots...");
+		});
+
+		// Handle warnings
+		process.on("warning", (warning) => {
+			this.logger.warn("Process Warning:", warning.name, warning.message);
+		});
+
+		this.logger.info(
+			"Process event listeners setup completed - Bot will stay alive on errors",
+		);
+	}
+
+	/**
 	 * Start the main Soundy process.
 	 */
 	private async run(): Promise<"🥘"> {
+		this.setupProcessListeners();
+
 		getWatermark();
 		this.commands.onCommand = (file) => {
 			const command = new file();

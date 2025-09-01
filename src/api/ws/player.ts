@@ -11,8 +11,9 @@ export const handleStatus: WSHandler = async (ws, msg, client) => {
 		} else {
 			ws.send(JSON.stringify({ type: "status", connected: false }));
 		}
-		return;
+		return true;
 	}
+	return false;
 };
 
 export const handlePause: WSHandler = async (ws, msg, client) => {
@@ -31,8 +32,9 @@ export const handlePause: WSHandler = async (ws, msg, client) => {
 				}),
 			);
 		}
-		return;
+		return true;
 	}
+	return false;
 };
 
 export const handleResume: WSHandler = async (ws, msg, client) => {
@@ -54,8 +56,9 @@ export const handleResume: WSHandler = async (ws, msg, client) => {
 				}),
 			);
 		}
-		return;
+		return true;
 	}
+	return false;
 };
 
 export const handleSkip: WSHandler = async (ws, msg, client) => {
@@ -70,7 +73,7 @@ export const handleSkip: WSHandler = async (ws, msg, client) => {
 						message: "No tracks in the queue to skip",
 					}),
 				);
-				return;
+				return true;
 			}
 			await player.skip();
 			ws.send(JSON.stringify({ type: "skip", success: true }));
@@ -83,8 +86,9 @@ export const handleSkip: WSHandler = async (ws, msg, client) => {
 				}),
 			);
 		}
-		return;
+		return true;
 	}
+	return false;
 };
 
 export const handleStop: WSHandler = async (ws, msg, client) => {
@@ -102,8 +106,9 @@ export const handleStop: WSHandler = async (ws, msg, client) => {
 				}),
 			);
 		}
-		return;
+		return true;
 	}
+	return false;
 };
 
 export const handleSeek: WSHandler = async (ws, msg, client) => {
@@ -143,8 +148,9 @@ export const handleSeek: WSHandler = async (ws, msg, client) => {
 				}),
 			);
 		}
-		return;
+		return true;
 	}
+	return false;
 };
 
 export const handlePrevious: WSHandler = async (ws, msg, client) => {
@@ -159,7 +165,7 @@ export const handlePrevious: WSHandler = async (ws, msg, client) => {
 						message: "No previous tracks available",
 					}),
 				);
-				return;
+				return true;
 			}
 
 			try {
@@ -174,7 +180,7 @@ export const handlePrevious: WSHandler = async (ws, msg, client) => {
 							message: "No previous track found",
 						}),
 					);
-					return;
+					return true;
 				}
 
 				if (player.queue.current) {
@@ -218,6 +224,7 @@ export const handlePrevious: WSHandler = async (ws, msg, client) => {
 				}),
 			);
 		}
-		return;
+		return true;
 	}
+	return false;
 };
