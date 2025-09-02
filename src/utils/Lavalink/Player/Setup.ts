@@ -136,6 +136,10 @@ export async function playerSetup(message: Message, client: UsingClient) {
 		};
 
 		if (result.loadType === "playlist" && result.playlist) {
+			for (const track of result.tracks) {
+				track.requester = { ...message.author, tag: message.author.tag };
+			}
+
 			if (player.get("enabledAutoplay"))
 				await player.queue.add(result.tracks, 0);
 			else await player.queue.add(result.tracks);
@@ -162,6 +166,8 @@ export async function playerSetup(message: Message, client: UsingClient) {
 			const track = result.tracks[0];
 
 			if (track) {
+				track.requester = { ...message.author, tag: message.author.tag };
+
 				if (player.get("enabledAutoplay")) await player.queue.add(track, 0);
 				else await player.queue.add(track);
 			}

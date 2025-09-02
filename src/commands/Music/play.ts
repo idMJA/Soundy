@@ -138,8 +138,6 @@ export default class PlayCommand extends Command {
 
 		if (!guildId) return;
 
-		ctx.deferReply();
-
 		const { event } = await ctx.getLocale();
 
 		const voiceState = await member?.voice();

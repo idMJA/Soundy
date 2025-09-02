@@ -5,7 +5,12 @@ import {
 } from "lavalink-client";
 import { Logger } from "seyfert";
 import { nodes } from "#soundy/config";
-import { LavalinkHandler, PlayerSaver, autoPlayFunction } from "#soundy/utils";
+import {
+	LavalinkHandler,
+	PlayerSaver,
+	autoPlayFunction,
+	SoundyQueueWatcher,
+} from "#soundy/utils";
 import type Soundy from "#soundy/client";
 
 const logger = new Logger({
@@ -40,6 +45,7 @@ export class SoundyManager extends LavalinkManager {
 				client.gateway.send(client.gateway.calculateShardId(guildId), payload),
 			queueOptions: {
 				maxPreviousTracks: 25,
+				queueChangesWatcher: new SoundyQueueWatcher(client),
 			},
 			playerOptions: {
 				defaultSearchPlatform: client.config.defaultSearchPlatform,
@@ -86,9 +92,8 @@ export class SoundyManager extends LavalinkManager {
 	 */
 	public async load(): Promise<void> {
 		await this.initPlayerSaver();
-		await this.lavalinkHandler.load(); // Load the Lavalink handler events
+		await this.lavalinkHandler.load();
 
-		// Load saved session IDs for all nodes dan update ke nodeManager
 		const savedSessions = await this.playerSaver.getAllNodeSessions();
 		logger.info(`[Music] Found ${savedSessions.size} saved node sessions`);
 		for (const node of this.nodeManager.nodes.values()) {

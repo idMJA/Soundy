@@ -1,16 +1,18 @@
-import { PresenceUpdateStatus } from "seyfert/lib/types";
+import type { UsingClient } from "seyfert";
+import {
+	PresenceUpdateStatus,
+	type GatewayActivityUpdateData,
+} from "seyfert/lib/types";
 import { BOT_VERSION, BOT_ACTIVITIES } from "#soundy/utils";
-import type { GatewayActivityUpdateData } from "seyfert/lib/types";
 
 /**
  * Periodically update bot presence with dynamic stats and random activity.
  */
-export function changePresence(client: any): void {
+export function changePresence(client: UsingClient): void {
 	setInterval(() => {
-		const guilds = client.cache.guilds?.size ?? 0;
-		const users = client.cache.users?.size ?? 0;
-		const players = client.manager?.players?.size ?? 0;
-		// Pick a random activity and replace placeholders
+		const guilds = client.cache.guilds?.count() ?? 0;
+		const users = client.cache.users?.count() ?? 0;
+		const players = client.manager.players.size ?? 0;
 		let activity =
 			BOT_ACTIVITIES[Math.floor(Math.random() * BOT_ACTIVITIES.length)];
 		if (!activity) {

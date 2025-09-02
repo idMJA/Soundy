@@ -13,7 +13,6 @@ export default createLavalinkEvent({
 			`[Music] Node ${node.id} has an error. Error: ${getDepth(error)}`,
 		);
 
-		// Send error to webhook
 		try {
 			await sendNodeLog(client, "error", node, error);
 		} catch (webhookError) {
@@ -22,7 +21,6 @@ export default createLavalinkEvent({
 			);
 		}
 
-		// If the error is connection-related, try to reconnect
 		if (
 			error.code === "ECONNREFUSED" ||
 			error.code === "ECONNRESET" ||
@@ -32,10 +30,9 @@ export default createLavalinkEvent({
 				`[Music] Node ${node.id} connection error, attempting to reconnect in 5s...`,
 			);
 
-			// Set up reconnection attempt with exponential backoff
 			setTimeout(async () => {
 				try {
-					await node.connect();
+					node.connect();
 					client.logger.info(
 						`[Music] Node ${node.id} reconnection attempt initiated`,
 					);
@@ -44,8 +41,8 @@ export default createLavalinkEvent({
 						`[Music] Node ${node.id} reconnection failed`,
 						reconnectError,
 					);
-					// If reconnection fails, try again with exponential backoff
-					const backoffTime = Math.min(5000, 30000); // Simple fixed backoff
+
+					const backoffTime = Math.min(5000, 30000);
 					client.logger.warn(
 						`[Music] Node ${node.id} will try again in ${backoffTime / 1000}s...`,
 					);

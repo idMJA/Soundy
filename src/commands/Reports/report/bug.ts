@@ -54,7 +54,6 @@ export default class BugReportCommand extends SubCommand {
 
 		const descriptionInput = new TextInput()
 			.setCustomId("bug-description")
-			.setLabel(cmd.report.sub.bug.run.description)
 			.setStyle(TextInputStyle.Paragraph)
 			.setRequired(true)
 			.setLength({ min: 20, max: 1000 })
@@ -62,7 +61,6 @@ export default class BugReportCommand extends SubCommand {
 
 		const stepsInput = new TextInput()
 			.setCustomId("bug-steps")
-			.setLabel(cmd.report.sub.bug.run.steps)
 			.setStyle(TextInputStyle.Paragraph)
 			.setRequired(true)
 			.setLength({ min: 20, max: 1000 })

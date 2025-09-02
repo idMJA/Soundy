@@ -667,6 +667,13 @@ export class BunDatabase {
 			totalErrors: 0,
 		};
 
+		function getTableSync(name: string) {
+			if (!result.tablesSync[name]) {
+				result.tablesSync[name] = { copied: 0, errors: 0 };
+			}
+			return result.tablesSync[name];
+		}
+
 		const tables = [
 			{ name: "guild", schema: schema.guild },
 			{ name: "likedSongs", schema: schema.likedSongs },
@@ -680,10 +687,9 @@ export class BunDatabase {
 		logger.info("Starting Turso -> Bun SQLite sync...");
 
 		for (const table of tables) {
-			result.tablesSync[table.name] = { copied: 0, errors: 0 };
+			getTableSync(table.name);
 
 			try {
-				// Get all data from Turso
 				const tursoData = await this.tursoDb.select().from(table.schema).all();
 
 				if (tursoData.length === 0) {
@@ -691,33 +697,29 @@ export class BunDatabase {
 					continue;
 				}
 
-				// Clear Bun table first
 				await this.bunDb.delete(table.schema);
 
-				// Insert data to Bun in batches
 				const batchSize = 100;
 				for (let i = 0; i < tursoData.length; i += batchSize) {
 					const batch = tursoData.slice(i, i + batchSize);
 
 					try {
 						await this.bunDb.insert(table.schema).values(batch);
-						result.tablesSync[table.name]!.copied += batch.length;
+						getTableSync(table.name).copied += batch.length;
 					} catch (error) {
 						logger.error(`Batch insert failed for ${table.name}:`, error);
-						result.tablesSync[table.name]!.errors += batch.length;
+						getTableSync(table.name).errors += batch.length;
 					}
 				}
 
-				logger.info(
-					`Table ${table.name}: ${result.tablesSync[table.name]!.copied} records synced`,
-				);
+				const tableSync = getTableSync(table.name);
+				logger.info(`Table ${table.name}: ${tableSync.copied} records synced`);
 			} catch (error) {
 				logger.error(`Failed to sync table ${table.name}:`, error);
-				result.tablesSync[table.name]!.errors += 1;
+				getTableSync(table.name).errors += 1;
 			}
 		}
 
-		// Calculate totals
 		for (const tableName in result.tablesSync) {
 			const tableResult = result.tablesSync[tableName];
 			if (tableResult) {

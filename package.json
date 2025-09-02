@@ -1,6 +1,6 @@
 {
   "name": "soundy",
-  "version": "3.4.1",
+  "version": "3.4.2",
   "description": "A powerful music bot built with Seyfert and lavalink-client to play high quality music in your Discord server for free.",
   "author": "iaMJ",
   "license": "AGPL-3.0",
@@ -50,7 +50,7 @@
     "jsonwebtoken": "^9.0.2",
     "lavalink-client": "^2.6.1",
     "lowdb": "^7.0.1",
-    "seyfert": "^3.2.7-dev-17350702966.0",
+    "seyfert": "^3.2.7-dev-17390658076.0",
     "yunaforseyfert": "^1.1.3"
   },
   "devDependencies": {

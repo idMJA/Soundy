@@ -1,4 +1,3 @@
-// Define player data interface for what we expect from the player object
 export interface PlayerData {
 	guildId: string;
 	voiceChannelId?: string;
@@ -35,8 +34,7 @@ export interface PlayerData {
 				info?: {
 					title?: string;
 					uri?: string;
-					length?: number;
-					thumbnail?: string;
+					duration?: number;
 					artworkUrl?: string;
 				};
 				requester?: { id: unknown } | string | null;
@@ -47,12 +45,11 @@ export interface PlayerData {
 			title?: string;
 			uri?: string;
 			author?: string;
-			length?: number;
+			duration?: number;
 			identifier?: string;
 			isStream?: boolean;
 			isSeekable?: boolean;
 			sourceName?: string;
-			thumbnail?: string;
 			artworkUrl?: string;
 		};
 		requester?: { id: unknown } | string | null;
@@ -88,12 +85,12 @@ export interface QueueTrack {
 		title?: string;
 		uri?: string;
 		author?: string;
-		length?: number;
+		duration?: number;
 		identifier?: string;
 		isStream?: boolean;
 		isSeekable?: boolean;
 		sourceName?: string;
-		thumbnail?: string;
+		artworkUrl?: string;
 	};
 	requester?: string | { id: unknown } | null;
 }

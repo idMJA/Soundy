@@ -31,6 +31,7 @@ export * from "./Lavalink/Player/Listener";
 export * from "./Lavalink/Player/Saver";
 export * from "./Lavalink/Player/Setup";
 export * from "./Lavalink/Player/Autoplay";
+export * from "./Lavalink/Player/QueueWatcher";
 
 // UI utilities
 export * from "./UI/Paginator";

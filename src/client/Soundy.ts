@@ -1,5 +1,8 @@
 import { Client, LimitedCollection } from "seyfert";
 import { ActivityType, PresenceUpdateStatus } from "seyfert/lib/types";
+import { HandleCommand } from "seyfert/lib/commands/handle";
+import { Yuna } from "yunaforseyfert";
+
 import type { SoundyConfiguration } from "#soundy/types";
 import { SoundyMiddlewares } from "#soundy/middlewares";
 import { Configuration } from "#soundy/config";
@@ -10,15 +13,11 @@ import {
 	isBotMention,
 	onRunError,
 	sendCommandLog,
+	THINK_MESSAGES,
+	DEBUG_MODE,
 } from "#soundy/utils";
 import { SoundyDatabase } from "#soundy/db";
 import { SoundyManager } from "./modules/Manager";
-import { HandleCommand } from "seyfert/lib/commands/handle";
-import { Yuna } from "yunaforseyfert";
-
-// Ganti dengan pesan custom jika ingin efek "thinking"
-const THINK_MESSAGES = ["is thinking..."];
-const DEBUG_MODE = false;
 
 /**
  * Main Soundy class.
@@ -148,29 +147,26 @@ export default class Soundy extends Client<true> {
 	 * Setup process event listeners
 	 */
 	private setupProcessListeners(): void {
-		// Handle unhandled promise rejections
 		process.on("unhandledRejection", (reason, promise) => {
 			this.logger.error("Unhandled Rejection at:", promise, "reason:", reason);
 			this.logger.warn("Bot will continue running despite the error");
 		});
 
-		// Handle uncaught exceptions
 		process.on("uncaughtException", (error) => {
 			this.logger.error("Uncaught Exception:", error);
 			this.logger.warn("Bot will continue running despite the critical error");
 		});
 
-		// Handle SIGINT (Ctrl+C) - Only shutdown when manually requested
 		process.on("SIGINT", () => {
 			this.logger.info("Received SIGINT (Ctrl+C), shutting down the bots...");
+			process.exit(0);
 		});
 
-		// Handle SIGTERM (process termination) - Only shutdown when explicitly terminated
 		process.on("SIGTERM", () => {
 			this.logger.info("Received SIGTERM, shutting down the bots...");
+			process.exit(0);
 		});
 
-		// Handle warnings
 		process.on("warning", (warning) => {
 			this.logger.warn("Process Warning:", warning.name, warning.message);
 		});
@@ -237,8 +233,7 @@ export default class Soundy extends Client<true> {
 			await this.commands?.reloadAll();
 			await this.components?.reloadAll();
 			await this.langs?.reloadAll();
-			// await this.manager.handler.reloadAll(); // Tidak ada method ini, hapus
-			// await this.uploadCommands({ cachePath: this.config.cache.filename }); // Pastikan config.cache.filename ada jika ingin pakai
+			// await this.manager.handler.reloadAll(); // Tidak ada method ini
 			this.logger.info("Soundy has been reloaded.");
 		} catch (error) {
 			this.logger.error("Error -", error);

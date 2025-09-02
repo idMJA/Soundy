@@ -57,7 +57,6 @@ export default class SuggestionsCommand extends SubCommand {
 
 		const descriptionInput = new TextInput()
 			.setCustomId("suggestions-description")
-			.setLabel(cmd.report.sub.suggestion.run.description)
 			.setStyle(TextInputStyle.Paragraph)
 			.setRequired(true)
 			.setLength({ min: 20, max: 1000 })
@@ -65,7 +64,6 @@ export default class SuggestionsCommand extends SubCommand {
 
 		const stepsInput = new TextInput()
 			.setCustomId("suggestions-steps")
-			.setLabel(cmd.report.sub.suggestion.run.steps)
 			.setStyle(TextInputStyle.Paragraph)
 			.setRequired(true)
 			.setLength({ min: 20, max: 1000 })

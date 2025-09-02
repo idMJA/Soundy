@@ -8,7 +8,6 @@ import type {
 	Track,
 } from "lavalink-client";
 
-// Keep track of resuming players by guild ID
 const resumingPlayers = new Set<string>();
 
 export default createLavalinkEvent({
@@ -28,7 +27,6 @@ export default createLavalinkEvent({
 			`[Music] Node ${node.id} resumed session with ${players.length} players`,
 		);
 
-		// Update the session ID in case it changed
 		if (payload.sessionId) {
 			try {
 				const playerSaver = new PlayerSaver(client.logger);
@@ -50,7 +48,6 @@ export default createLavalinkEvent({
 					continue;
 				}
 
-				// Save current locale for this guild
 				try {
 					const currentLocale = await client.database.getLocale(data.guildId);
 					await playerSaver.saveLyricsData(data.guildId, {
@@ -92,18 +89,16 @@ export default createLavalinkEvent({
 						dataOfSaving.options?.instaUpdateFiltersFix || false,
 					vcRegion: dataOfSaving.options?.vcRegion || undefined,
 				});
-				// Set bot user info for autoplay/embeds
+
 				player.set("me", {
 					...client.me,
 					tag: client.me.username,
 				});
 
-				// Set locale string from saved session
 				if (dataOfSaving.localeString) {
 					player.set("localeString", dataOfSaving.localeString);
 				}
 
-				// Restore repeatMode (loop mode) if available
 				if (dataOfSaving.repeatMode) {
 					try {
 						await player.setRepeatMode(dataOfSaving.repeatMode);
@@ -115,7 +110,6 @@ export default createLavalinkEvent({
 					}
 				}
 
-				// Restore autoplay state if available
 				if (typeof dataOfSaving.enabledAutoplay === "boolean") {
 					player.set("enabledAutoplay", dataOfSaving.enabledAutoplay);
 				}
@@ -211,7 +205,6 @@ export default createLavalinkEvent({
 					resumingPlayers.delete(data.guildId);
 				}, 1000);
 
-				// Re-subscribe to lyrics if it was enabled
 				try {
 					const savedLyricsData = await playerSaver.getLyricsData(data.guildId);
 					if (savedLyricsData?.lyricsEnabled && player.queue.current) {

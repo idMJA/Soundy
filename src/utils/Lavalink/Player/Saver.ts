@@ -17,6 +17,7 @@ import {
 	NowPlayingManager,
 	LyricsManager,
 } from "../PlayerSaver";
+
 export class PlayerSaver {
 	private db: Low<DatabaseSchema>;
 	private isReady = false;
@@ -32,12 +33,10 @@ export class PlayerSaver {
 		this.logger = logger;
 		this.utils = new PlayerSaverUtils(logger);
 
-		// Set up lowdb with JSONFile adapter
 		const file = path.resolve(process.cwd(), "sessions.json");
 		const adapter = new JSONFile<DatabaseSchema>(file);
 		this.db = new Low(adapter, { players: {}, sessions: {} });
 
-		// Initialize managers
 		this.dbOps = new DatabaseOperations(this.db, logger);
 		this.nodeSessionManager = new NodeSessionManager(
 			this.db,
@@ -48,7 +47,6 @@ export class PlayerSaver {
 		this.nowPlayingManager = new NowPlayingManager(this.db, logger, this.dbOps);
 		this.lyricsManager = new LyricsManager(this.db, logger, this.dbOps);
 
-		// Initialize the database
 		this.init()
 			.then(() => {
 				this.isReady = true;
@@ -56,17 +54,14 @@ export class PlayerSaver {
 			})
 			.catch((error) => {
 				this.logger.error("Failed to initialize PlayerSaver database:", error);
-				// Still mark as ready to allow operations with default empty data
 				this.isReady = true;
 			});
 	}
 
-	// Add a method to check if the database is ready
 	public isDbReady(): boolean {
 		return this.isReady;
 	}
 
-	// Wait for the database to be ready
 	public async waitForReady(): Promise<void> {
 		if (this.isReady) return;
 

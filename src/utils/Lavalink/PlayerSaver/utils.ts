@@ -1,5 +1,6 @@
 import type { Logger } from "seyfert";
-import type { PlayerData } from "#soundy/types";
+import type { PlayerData, QueueTrack } from "#soundy/types";
+import type { Track } from "lavalink-client";
 
 /**
  * Helper functions for PlayerSaver
@@ -28,73 +29,123 @@ export class PlayerSaverUtils {
 
 			let queueData: PlayerData["queue"];
 			try {
-				const queueObject = playerData.queue as Record<string, unknown>;
-				if (queueObject && Array.isArray(queueObject.tracks)) {
-					queueData = queueObject.tracks.map((track) => {
-						if (typeof track === "string") return { encoded: track };
-						const trackObj = track as Record<string, unknown>;
-						let safeRequester = null;
+				// this.logger.debug(
+				// 	`[PlayerSaver] Raw playerData.queue type: ${typeof playerData.queue}`,
+				// );
+				// this.logger.debug(
+				// 	`[PlayerSaver] Raw playerData.queue isArray: ${Array.isArray(playerData.queue)}`,
+				// );
+				// this.logger.debug(
+				// 	`[PlayerSaver] Raw playerData.queue length: ${Array.isArray(playerData.queue) ? playerData.queue.length : "N/A"}`,
+				// );
+
+				const tracksArray: unknown[] = [];
+
+				// if (Array.isArray(playerData.queue)) {
+				// 	this.logger.debug(
+				// 		`[PlayerSaver] Processing ${playerData.queue.length} tracks directly from queue array`,
+				// 	);
+				// 	tracksArray = playerData.queue;
+				// } else if (playerData.queue && typeof playerData.queue === "object") {
+				// 	const queueObject = playerData.queue as Record<string, unknown>;
+				// 	if (Array.isArray(queueObject.tracks)) {
+				// 		this.logger.debug(
+				// 			`[PlayerSaver] Processing ${queueObject.tracks.length} tracks from queue.tracks property`,
+				// 		);
+				// 		tracksArray = queueObject.tracks;
+				// 	} else {
+				// 		this.logger.debug(`[PlayerSaver] No tracks found in queue object`);
+				// 	}
+				// }
+
+				if (tracksArray.length > 0) {
+					this.logger.debug(
+						`[PlayerSaver] Processing ${tracksArray.length} tracks for queue data`,
+					);
+					queueData = tracksArray.map((track): QueueTrack => {
+						if (typeof track === "string") {
+							return { encoded: track };
+						}
+
+						const trackObj = track as Track;
+						let safeRequester: QueueTrack["requester"] = null;
+
 						if (trackObj.requester) {
 							try {
-								const requesterObj = trackObj.requester as Record<
-									string,
-									unknown
-								>;
-								if (typeof requesterObj === "object" && requesterObj !== null) {
+								if (typeof trackObj.requester === "string") {
+									safeRequester = trackObj.requester;
+								} else if (
+									typeof trackObj.requester === "object" &&
+									trackObj.requester !== null
+								) {
+									const requesterObj = trackObj.requester as Record<
+										string,
+										unknown
+									>;
 									if (requesterObj.id) {
 										safeRequester = { id: requesterObj.id };
 									}
-								} else if (typeof requesterObj === "string") {
-									safeRequester = requesterObj;
 								}
 							} catch (e) {
 								this.logger.error("Error processing requester:", e);
 							}
 						}
-						const info = trackObj.info as Record<string, unknown>;
+
 						return {
-							encoded: trackObj.encoded as string,
+							encoded: trackObj.encoded,
 							info: {
-								title: info?.title as string,
-								uri: info?.uri as string,
-								author: info?.author as string,
-								duration: info?.duration as number,
-								identifier: info?.identifier as string,
-								isStream: info?.isStream as boolean,
-								isSeekable: info?.isSeekable as boolean,
-								sourceName: info?.sourceName as string,
-								thumbnail:
-									(info?.thumbnail as string) || (info?.artworkUrl as string),
-								artworkUrl:
-									(info?.artworkUrl as string) || (info?.thumbnail as string),
+								title: trackObj.info?.title,
+								uri: trackObj.info?.uri,
+								author: trackObj.info?.author,
+								duration: trackObj.info?.duration,
+								identifier: trackObj.info?.identifier,
+								isStream: trackObj.info?.isStream,
+								isSeekable: trackObj.info?.isSeekable,
+								sourceName: trackObj.info?.sourceName,
 							},
 							requester: safeRequester,
 						};
 					});
+					// this.logger.debug(
+					// 	`[PlayerSaver] Final queueData length: ${queueData?.length || 0}`,
+					// );
+					// this.logger.debug(`[PlayerSaver] Final queueData:`, queueData);
+				} else {
+					// this.logger.debug(
+					// 	`[PlayerSaver] Queue not array - playerData.queue:`,
+					// 	playerData.queue,
+					// );
 				}
 			} catch (error) {
 				this.logger.error("Error extracting queue data:", error);
 			}
 
-			let safeRequester = null;
-			let trackInfo: Record<string, unknown> | undefined;
+			let safeRequester: string | { id: unknown } | null = null;
+			let trackInfo: Track["info"] | undefined;
+
 			if (playerData.track && typeof playerData.track === "object") {
-				const trackObj = playerData.track as Record<string, unknown>;
+				const trackObj = playerData.track as Track;
 				if (trackObj.requester) {
 					try {
-						const requesterObj = trackObj.requester as Record<string, unknown>;
-						if (typeof requesterObj === "object" && requesterObj !== null) {
+						if (typeof trackObj.requester === "string") {
+							safeRequester = trackObj.requester;
+						} else if (
+							typeof trackObj.requester === "object" &&
+							trackObj.requester !== null
+						) {
+							const requesterObj = trackObj.requester as Record<
+								string,
+								unknown
+							>;
 							if (requesterObj.id) {
 								safeRequester = { id: requesterObj.id };
 							}
-						} else if (typeof requesterObj === "string") {
-							safeRequester = requesterObj;
 						}
 					} catch (e) {
 						this.logger.error("Error processing track requester:", e);
 					}
 				}
-				trackInfo = trackObj.info as Record<string, unknown>;
+				trackInfo = trackObj.info;
 			}
 
 			return {
@@ -140,15 +191,10 @@ export class PlayerSaverUtils {
 											.encoded as string),
 							info: trackInfo
 								? {
-										title: trackInfo.title as string,
-										uri: trackInfo.uri as string,
-										length: trackInfo.length as number,
-										thumbnail:
-											(trackInfo.thumbnail as string) ||
-											(trackInfo.artworkUrl as string),
-										artworkUrl:
-											(trackInfo.artworkUrl as string) ||
-											(trackInfo.thumbnail as string),
+										title: trackInfo.title,
+										uri: trackInfo.uri,
+										duration: trackInfo.duration,
+										artworkUrl: trackInfo.artworkUrl ?? undefined,
 									}
 								: undefined,
 							requester: safeRequester,
