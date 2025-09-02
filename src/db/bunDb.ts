@@ -1,5 +1,4 @@
 import { Database } from "bun:sqlite";
-import { $ } from "bun";
 import { Logger } from "seyfert";
 import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
 import { eq, and, desc, gt, sql } from "drizzle-orm";
@@ -53,15 +52,82 @@ export class BunDatabase {
 	}
 
 	/**
-	 * Initialize Bun SQLite schema
+	 * Initialize Bun SQLite schema manually
 	 */
 	private async initializeBunSchema(): Promise<void> {
 		try {
-			await $`drizzle-kit push --config=drizzle.config.local.ts`.quiet();
-			logger.info("[Database] Bun schema synchronized successfully");
+			const createQueries = [
+				`CREATE TABLE IF NOT EXISTS guild (
+					id TEXT PRIMARY KEY,
+					locale TEXT DEFAULT 'en-US',
+					defaultVolume INTEGER DEFAULT 100,
+					updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+				)`,
+				`CREATE TABLE IF NOT EXISTS likedSongs (
+					id TEXT PRIMARY KEY,
+					userId TEXT NOT NULL,
+					trackId TEXT NOT NULL,
+					title TEXT NOT NULL,
+					author TEXT NOT NULL,
+					uri TEXT NOT NULL,
+					artwork TEXT,
+					length INTEGER,
+					isStream BOOLEAN DEFAULT FALSE,
+					likedAt TEXT DEFAULT CURRENT_TIMESTAMP,
+					UNIQUE(userId, trackId)
+				)`,
+				`CREATE TABLE IF NOT EXISTS playlist (
+					id TEXT PRIMARY KEY,
+					userId TEXT NOT NULL,
+					name TEXT NOT NULL,
+					createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+				)`,
+				`CREATE TABLE IF NOT EXISTS playlistTrack (
+					id TEXT PRIMARY KEY,
+					playlistId TEXT NOT NULL,
+					trackId TEXT NOT NULL,
+					title TEXT NOT NULL,
+					author TEXT NOT NULL,
+					uri TEXT NOT NULL,
+					artwork TEXT,
+					length INTEGER,
+					addedAt TEXT DEFAULT CURRENT_TIMESTAMP,
+					FOREIGN KEY (playlistId) REFERENCES playlist(id) ON DELETE CASCADE
+				)`,
+				`CREATE TABLE IF NOT EXISTS trackStats (
+					id TEXT PRIMARY KEY,
+					guildId TEXT NOT NULL,
+					trackId TEXT NOT NULL,
+					title TEXT NOT NULL,
+					author TEXT NOT NULL,
+					playCount INTEGER DEFAULT 1,
+					lastPlayed TEXT DEFAULT CURRENT_TIMESTAMP
+				)`,
+				`CREATE TABLE IF NOT EXISTS userStats (
+					id TEXT PRIMARY KEY,
+					userId TEXT NOT NULL,
+					guildId TEXT NOT NULL,
+					tracksPlayed INTEGER DEFAULT 0,
+					timeListened INTEGER DEFAULT 0,
+					lastActive TEXT DEFAULT CURRENT_TIMESTAMP
+				)`,
+				`CREATE TABLE IF NOT EXISTS userVote (
+					id TEXT PRIMARY KEY,
+					userId TEXT NOT NULL,
+					type TEXT NOT NULL CHECK (type IN ('vote', 'regular')),
+					expiresAt TEXT NOT NULL,
+					votedAt TEXT DEFAULT CURRENT_TIMESTAMP
+				)`,
+			];
+
+			for (const query of createQueries) {
+				this.bunClient.run(query);
+			}
+
+			logger.info("[Database] Bun schema initialized successfully");
 		} catch (error) {
 			logger.warn(
-				"[Database] Schema sync failed, database may already be up to date:",
+				"[Database] Schema initialization failed, database may already be up to date:",
 				error,
 			);
 		}
