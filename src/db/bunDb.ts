@@ -6,7 +6,7 @@ import { drizzle as drizzleBun } from "drizzle-orm/bun-sqlite";
 import { createClient } from "@libsql/client";
 import * as schema from "./schema";
 import { Environment } from "#soundy/config";
-import { mkdir } from "fs/promises";
+import { mkdir } from "node:fs/promises";
 
 const logger = new Logger({
 	name: "[Database]",
