@@ -5,7 +5,7 @@ import { eq, and, desc, gt, sql } from "drizzle-orm";
 import { drizzle as drizzleBun } from "drizzle-orm/bun-sqlite";
 import { createClient } from "@libsql/client";
 import * as schema from "./schema";
-import { Environment } from "#rinn/config";
+import { Environment } from "#soundy/config";
 import { mkdir } from "fs/promises";
 
 const logger = new Logger({
@@ -48,7 +48,7 @@ export class BunDatabase {
 			// Ensure data directory exists first
 			await this.ensureDataDirectory();
 			
-			this.bunClient = new Database("./data/rinn-bun.db");
+			this.bunClient = new Database("./data/soundy-bun.db");
 			this.bunDb = drizzleBun(this.bunClient, { schema });
 
 			const tursoClient = createClient({
