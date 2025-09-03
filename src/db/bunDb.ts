@@ -5,7 +5,8 @@ import { eq, and, desc, gt, sql } from "drizzle-orm";
 import { drizzle as drizzleBun } from "drizzle-orm/bun-sqlite";
 import { createClient } from "@libsql/client";
 import * as schema from "./schema";
-import { Environment } from "#soundy/config";
+import { Environment } from "#rinn/config";
+import { mkdir } from "fs/promises";
 
 const logger = new Logger({
 	name: "[Database]",
@@ -27,11 +28,27 @@ export class BunDatabase {
 	}
 
 	/**
+	 * Ensure data directory exists
+	 */
+	private async ensureDataDirectory(): Promise<void> {
+		try {
+			await mkdir("./data", { recursive: true });
+			logger.info("[Database] Data directory ensured");
+		} catch (error) {
+			logger.error("[Database] Failed to create data directory:", error);
+			throw error;
+		}
+	}
+
+	/**
 	 * Initialize both Bun and Turso database connections
 	 */
 	private async initializeDatabases(): Promise<void> {
 		try {
-			this.bunClient = new Database("./data/soundy-bun.db");
+			// Ensure data directory exists first
+			await this.ensureDataDirectory();
+			
+			this.bunClient = new Database("./data/rinn-bun.db");
 			this.bunDb = drizzleBun(this.bunClient, { schema });
 
 			const tursoClient = createClient({
@@ -53,71 +70,94 @@ export class BunDatabase {
 
 	/**
 	 * Initialize Bun SQLite schema manually
+	 * Updated to match the schema.ts definitions
 	 */
 	private async initializeBunSchema(): Promise<void> {
 		try {
 			const createQueries = [
+				// Guild table
 				`CREATE TABLE IF NOT EXISTS guild (
 					id TEXT PRIMARY KEY,
-					locale TEXT DEFAULT 'en-US',
-					defaultVolume INTEGER DEFAULT 100,
-					updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+					locale TEXT,
+					prefix TEXT,
+					default_volume INTEGER,
+					enabled_247 INTEGER NOT NULL DEFAULT 0,
+					channel_247_id TEXT,
+					text_247_id TEXT,
+					setup_channel_id TEXT,
+					setup_text_id TEXT,
+					voice_status INTEGER NOT NULL DEFAULT 1,
+					created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+					updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 				)`,
-				`CREATE TABLE IF NOT EXISTS likedSongs (
+
+				// Liked songs table
+				`CREATE TABLE IF NOT EXISTS liked_songs (
 					id TEXT PRIMARY KEY,
-					userId TEXT NOT NULL,
-					trackId TEXT NOT NULL,
+					user_id TEXT NOT NULL,
+					track_id TEXT NOT NULL,
 					title TEXT NOT NULL,
 					author TEXT NOT NULL,
 					uri TEXT NOT NULL,
 					artwork TEXT,
 					length INTEGER,
-					isStream BOOLEAN DEFAULT FALSE,
-					likedAt TEXT DEFAULT CURRENT_TIMESTAMP,
-					UNIQUE(userId, trackId)
+					is_stream INTEGER DEFAULT 0,
+					liked_at TEXT DEFAULT CURRENT_TIMESTAMP,
+					UNIQUE(user_id, track_id)
 				)`,
+
+				// Playlist table
 				`CREATE TABLE IF NOT EXISTS playlist (
 					id TEXT PRIMARY KEY,
-					userId TEXT NOT NULL,
+					user_id TEXT NOT NULL,
 					name TEXT NOT NULL,
-					createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+					created_at TEXT DEFAULT CURRENT_TIMESTAMP
 				)`,
-				`CREATE TABLE IF NOT EXISTS playlistTrack (
+
+				// Playlist track table
+				`CREATE TABLE IF NOT EXISTS playlist_track (
 					id TEXT PRIMARY KEY,
-					playlistId TEXT NOT NULL,
-					trackId TEXT NOT NULL,
+					url TEXT NOT NULL,
+					playlist_id TEXT NOT NULL,
+					info TEXT,
+					FOREIGN KEY (playlist_id) REFERENCES playlist(id) ON DELETE CASCADE
+				)`,
+
+				// Track stats table
+				`CREATE TABLE IF NOT EXISTS track_stats (
+					id TEXT PRIMARY KEY,
+					track_id TEXT NOT NULL,
 					title TEXT NOT NULL,
 					author TEXT NOT NULL,
 					uri TEXT NOT NULL,
 					artwork TEXT,
 					length INTEGER,
-					addedAt TEXT DEFAULT CURRENT_TIMESTAMP,
-					FOREIGN KEY (playlistId) REFERENCES playlist(id) ON DELETE CASCADE
+					is_stream INTEGER DEFAULT 0,
+					user_id TEXT NOT NULL,
+					play_count INTEGER NOT NULL DEFAULT 1,
+					guild_id TEXT NOT NULL,
+					last_played TEXT DEFAULT CURRENT_TIMESTAMP,
+					created_at TEXT DEFAULT CURRENT_TIMESTAMP
 				)`,
-				`CREATE TABLE IF NOT EXISTS trackStats (
+
+				// User stats table
+				`CREATE TABLE IF NOT EXISTS user_stats (
 					id TEXT PRIMARY KEY,
-					guildId TEXT NOT NULL,
-					trackId TEXT NOT NULL,
-					title TEXT NOT NULL,
-					author TEXT NOT NULL,
-					playCount INTEGER DEFAULT 1,
-					lastPlayed TEXT DEFAULT CURRENT_TIMESTAMP
+					user_id TEXT NOT NULL,
+					guild_id TEXT NOT NULL,
+					play_count INTEGER NOT NULL DEFAULT 1,
+					last_played TEXT DEFAULT CURRENT_TIMESTAMP,
+					created_at TEXT DEFAULT CURRENT_TIMESTAMP
 				)`,
-				`CREATE TABLE IF NOT EXISTS userStats (
+
+				// User vote table
+				`CREATE TABLE IF NOT EXISTS user_vote (
 					id TEXT PRIMARY KEY,
-					userId TEXT NOT NULL,
-					guildId TEXT NOT NULL,
-					tracksPlayed INTEGER DEFAULT 0,
-					timeListened INTEGER DEFAULT 0,
-					lastActive TEXT DEFAULT CURRENT_TIMESTAMP
-				)`,
-				`CREATE TABLE IF NOT EXISTS userVote (
-					id TEXT PRIMARY KEY,
-					userId TEXT NOT NULL,
-					type TEXT NOT NULL CHECK (type IN ('vote', 'regular')),
-					expiresAt TEXT NOT NULL,
-					votedAt TEXT DEFAULT CURRENT_TIMESTAMP
-				)`,
+					user_id TEXT NOT NULL,
+					voted_at TEXT DEFAULT CURRENT_TIMESTAMP,
+					expires_at TEXT NOT NULL,
+					type TEXT NOT NULL DEFAULT 'vote'
+				)`
 			];
 
 			for (const query of createQueries) {
@@ -719,6 +759,7 @@ export class BunDatabase {
 
 	/**
 	 * Sync data from Turso to Bun SQLite (copy remote to local)
+	 * Updated to handle schema differences
 	 */
 	public async sync(): Promise<{
 		success: boolean;
@@ -742,12 +783,12 @@ export class BunDatabase {
 
 		const tables = [
 			{ name: "guild", schema: schema.guild },
-			{ name: "likedSongs", schema: schema.likedSongs },
+			{ name: "liked_songs", schema: schema.likedSongs },
 			{ name: "playlist", schema: schema.playlist },
-			{ name: "playlistTrack", schema: schema.playlistTrack },
-			{ name: "trackStats", schema: schema.trackStats },
-			{ name: "userStats", schema: schema.userStats },
-			{ name: "userVote", schema: schema.userVote },
+			{ name: "playlist_track", schema: schema.playlistTrack },
+			{ name: "track_stats", schema: schema.trackStats },
+			{ name: "user_stats", schema: schema.userStats },
+			{ name: "user_vote", schema: schema.userVote },
 		];
 
 		logger.info("Starting Turso -> Bun SQLite sync...");
@@ -763,9 +804,14 @@ export class BunDatabase {
 					continue;
 				}
 
-				await this.bunDb.delete(table.schema);
+				// Clear existing data in the table
+				try {
+					await this.bunDb.delete(table.schema);
+				} catch (error) {
+					logger.warn(`Could not clear table ${table.name}:`, error);
+				}
 
-				const batchSize = 100;
+				const batchSize = 50;
 				for (let i = 0; i < tursoData.length; i += batchSize) {
 					const batch = tursoData.slice(i, i + batchSize);
 
