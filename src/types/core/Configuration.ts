@@ -176,7 +176,7 @@ interface PermissionsConfig {
 	voicePermissions: PermissionStrings;
 }
 
-interface SoundyWebhooks {
+export interface SoundyWebhooks {
 	/** Discord webhook URL for node logs */
 	nodeLog: string;
 	/** Discord webhook URL for vote logs */

@@ -19,8 +19,8 @@ export const Configuration: SoundyConfiguration = {
 	},
 	topgg: {
 		enabled: false,
-		webhookAuth: "xxxx", // Replace with actual webhook auth token
-		token: "xxxx", // Replace with actual Top.gg token
+		webhookAuth: "xxx", // Replace with actual webhook auth token
+		token: "xxx", // Replace with actual Top.gg token
 	},
 	premium: {
 		enabled: false, // Enable or disable premium features
