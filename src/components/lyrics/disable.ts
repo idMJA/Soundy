@@ -30,7 +30,6 @@ export default class LyricsDisableComponent extends ComponentCommand {
 		await ctx.deferUpdate();
 		await ctx.deleteResponse().catch(() => null);
 
-		// Unsubscribe from lyrics and clear data
 		const lyricsEnabled = player.get<boolean | undefined>("lyricsEnabled");
 		if (lyricsEnabled) {
 			await player.unsubscribeLyrics();

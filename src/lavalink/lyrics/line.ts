@@ -24,7 +24,7 @@ export default createLavalinkEvent({
 		if (!lyricsId) return;
 
 		const locale = player.get<string>("localeString");
-		const { cmd } = client.t(locale).get();
+		const { cmd, component } = client.t(locale).get();
 
 		const message = await client.messages
 			.fetch(lyricsId, player.textChannelId)
@@ -68,7 +68,11 @@ export default createLavalinkEvent({
 					)
 					.addComponents(
 						new TextDisplay().setContent(
-							`# Lyrics for ${track?.info.title}\n\n${lines}\n\n-# ${String(cmd.powered_by({ provider: lyrics.provider }))}`,
+							`# ${String(
+								component.lyrics.title({
+									song: track?.info.title ?? "Unknown Title",
+								}),
+							)}\n\n${lines}\n\n-# ${String(cmd.powered_by({ provider: lyrics.provider }))}`,
 						),
 					),
 				new Separator(),

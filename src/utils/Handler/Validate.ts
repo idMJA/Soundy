@@ -24,7 +24,7 @@ export function validateEnv() {
 	if (!process.env.DATABASE_PASSWORD)
 		throw new InvalidEnvValue(createMessage("DATABASE_PASSWORD"));
 
-	return logger.info("All required environment variables are present.");
+	return logger.info("All environment variables are present.");
 }
 
 /**

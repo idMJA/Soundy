@@ -1,7 +1,7 @@
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "./schema";
-import { Configuration, Environment } from "#soundy/config";
+import { Environment } from "#soundy/config";
 import { eq, and, desc, gt, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { bunDatabase } from "./bunDb";
@@ -28,7 +28,12 @@ export class SoundyDatabase {
 
 	private cache = new Map<
 		string,
-		{ locale?: string; defaultVolume?: number }
+		{
+			locale?: string;
+			defaultVolume?: number;
+			setup?: ISetup | null;
+			prefix?: string;
+		}
 	>();
 
 	/**
@@ -82,37 +87,39 @@ export class SoundyDatabase {
 
 	/**
 	 * Get the prefix for a guild from the database, or return default if not found.
+	 * Uses Bun-first approach for ultra-fast performance.
 	 * @param guildId Guild ID
 	 * @returns prefix string
 	 */
 	public async getPrefix(guildId: string): Promise<string> {
-		const data = await this.db
-			.select()
-			.from(schema.guild)
-			.where(eq(schema.guild.id, guildId))
-			.get();
-		return data?.prefix ?? Configuration.defaultPrefix;
+		const cached = this.cache.get(guildId)?.prefix;
+		if (cached !== undefined) return cached;
+
+		const prefix = await bunDatabase.getPrefix(guildId);
+		this.cache.set(guildId, {
+			...this.cache.get(guildId),
+			prefix,
+		});
+
+		return prefix;
 	}
 
 	/**
 	 * Get the setup data for a guild
+	 * Uses Bun-first approach for ultra-fast performance.
 	 * @param guildId The guild ID
 	 */
 	public async getSetup(guildId: string): Promise<ISetup | null> {
-		const data = await this.db
-			.select()
-			.from(schema.guild)
-			.where(eq(schema.guild.id, guildId))
-			.get();
-		return data?.setupChannelId && data?.setupTextId
-			? {
-					id: data.id,
-					guildId: data.id,
-					channelId: data.setupChannelId,
-					messageId: data.setupTextId,
-					createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
-				}
-			: null;
+		const cached = this.cache.get(guildId)?.setup;
+		if (cached !== undefined) return cached;
+
+		const setup = await bunDatabase.getSetup(guildId);
+		this.cache.set(guildId, {
+			...this.cache.get(guildId),
+			setup,
+		});
+
+		return setup;
 	}
 
 	/**
@@ -127,35 +134,35 @@ export class SoundyDatabase {
 		channelId: string,
 		messageId: string,
 	): Promise<void> {
-		await bunDatabase
-			.getBunDb()
-			.insert(schema.guild)
-			.values({
-				id: guildId,
-				setupChannelId: channelId,
-				setupTextId: messageId,
-				updatedAt: new Date().toISOString(),
-			})
-			.onConflictDoUpdate({
-				target: schema.guild.id,
-				set: {
-					setupChannelId: channelId,
-					setupTextId: messageId,
-					updatedAt: new Date().toISOString(),
-				},
-			});
+		await bunDatabase.createSetup(guildId, channelId, messageId);
+
+		// Update cache with new setup data
+		const newSetup: ISetup = {
+			id: guildId,
+			guildId,
+			channelId,
+			messageId,
+			createdAt: new Date(),
+		};
+		this.cache.set(guildId, {
+			...this.cache.get(guildId),
+			setup: newSetup,
+		});
 	}
 
 	/**
 	 * Delete a setup for a guild
+	 * Uses Bun-first approach for better performance.
 	 * @param guildId The guild ID
 	 */
 	public async deleteSetup(guildId: string): Promise<void> {
-		await this.db
-			.update(schema.guild)
-			.set({ setupChannelId: null, setupTextId: null })
-			.where(eq(schema.guild.id, guildId))
-			.catch(() => null); // Ignore if not found
+		await bunDatabase.deleteSetup(guildId);
+
+		// Clear setup from cache
+		this.cache.set(guildId, {
+			...this.cache.get(guildId),
+			setup: null,
+		});
 	}
 
 	/**
@@ -943,32 +950,29 @@ export class SoundyDatabase {
 	 * @param prefix The prefix.
 	 */
 	public async setPrefix(guildId: string, prefix: string): Promise<void> {
-		await bunDatabase
-			.getBunDb()
-			.insert(schema.guild)
-			.values({
-				id: guildId,
-				prefix,
-				updatedAt: new Date().toISOString(),
-			})
-			.onConflictDoUpdate({
-				target: schema.guild.id,
-				set: { prefix, updatedAt: new Date().toISOString() },
-			});
+		await bunDatabase.setPrefix(guildId, prefix);
+
+		// Update cache with new prefix
+		this.cache.set(guildId, {
+			...this.cache.get(guildId),
+			prefix,
+		});
 	}
 
 	/**
 	 * Delete the guild prefix from the database (reset to default).
+	 * Uses Bun-first approach for better performance.
 	 * @param guildId The guild id.
 	 */
 	public async deletePrefix(guildId: string): Promise<void> {
-		await this.db
-			.insert(schema.guild)
-			.values({ id: guildId, prefix: null })
-			.onConflictDoUpdate({
-				target: schema.guild.id,
-				set: { prefix: null },
-			});
+		await bunDatabase.deletePrefix(guildId);
+
+		// Update cache to default prefix
+		const defaultPrefix = "s!"; // Default prefix from BunDatabase
+		this.cache.set(guildId, {
+			...this.cache.get(guildId),
+			prefix: defaultPrefix,
+		});
 	}
 
 	/**
@@ -1226,6 +1230,21 @@ export class SoundyDatabase {
 	 */
 	public isReady(): boolean {
 		return bunDatabase.isReady();
+	}
+
+	/**
+	 * Clear cache for a specific guild
+	 * @param guildId The guild ID
+	 */
+	public clearCache(guildId: string): void {
+		this.cache.delete(guildId);
+	}
+
+	/**
+	 * Clear all cache
+	 */
+	public clearAllCache(): void {
+		this.cache.clear();
 	}
 }
 

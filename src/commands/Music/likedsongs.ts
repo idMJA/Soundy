@@ -11,6 +11,7 @@ import { TimeFormat, EmbedPaginator } from "#soundy/utils";
 @Declare({
 	name: "likedsongs",
 	description: "Show your liked songs",
+	aliases: ["liked"],
 	integrationTypes: ["GuildInstall"],
 	contexts: ["Guild"],
 })

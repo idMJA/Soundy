@@ -110,7 +110,6 @@ export default class LyricsEnableComponent extends ComponentCommand {
 			true,
 		);
 
-		// subscribe to lyrics if not already enabled
 		const isEnabled: boolean = !!player.get<boolean | undefined>(
 			"lyricsEnabled",
 		);

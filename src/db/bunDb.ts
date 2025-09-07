@@ -447,6 +447,196 @@ export class BunDatabase {
 	}
 
 	/**
+	 * Get guild prefix with Bun-first approach
+	 */
+	public async getPrefix(guildId: string): Promise<string> {
+		return this.executeWithFallback(
+			() =>
+				this.bunDb
+					.select()
+					.from(schema.guild)
+					.where(eq(schema.guild.id, guildId))
+					.get(),
+			() =>
+				this.tursoDb
+					.select()
+					.from(schema.guild)
+					.where(eq(schema.guild.id, guildId))
+					.get(),
+			`getPrefix(${guildId})`,
+		).then((data) => data?.prefix || "s!");
+	}
+
+	/**
+	 * Set guild prefix with Bun-first approach
+	 */
+	public async setPrefix(guildId: string, prefix: string): Promise<void> {
+		const values = {
+			id: guildId,
+			prefix,
+			updatedAt: new Date().toISOString(),
+		};
+
+		return this.executeWriteWithSync(
+			async () => {
+				await this.bunDb
+					.insert(schema.guild)
+					.values(values)
+					.onConflictDoUpdate({
+						target: schema.guild.id,
+						set: { prefix, updatedAt: values.updatedAt },
+					});
+			},
+			async () => {
+				await this.tursoDb
+					.insert(schema.guild)
+					.values(values)
+					.onConflictDoUpdate({
+						target: schema.guild.id,
+						set: { prefix, updatedAt: values.updatedAt },
+					});
+			},
+			`setPrefix(${guildId}, ${prefix})`,
+		);
+	}
+
+	/**
+	 * Delete guild prefix with Bun-first approach
+	 */
+	public async deletePrefix(guildId: string): Promise<void> {
+		const values = {
+			prefix: null,
+			updatedAt: new Date().toISOString(),
+		};
+
+		return this.executeWriteWithSync(
+			async () => {
+				await this.bunDb
+					.update(schema.guild)
+					.set(values)
+					.where(eq(schema.guild.id, guildId));
+			},
+			async () => {
+				await this.tursoDb
+					.update(schema.guild)
+					.set(values)
+					.where(eq(schema.guild.id, guildId));
+			},
+			`deletePrefix(${guildId})`,
+		);
+	}
+
+	/**
+	 * Get setup data for a guild with Bun-first approach
+	 */
+	public async getSetup(guildId: string): Promise<{
+		id: string;
+		guildId: string;
+		channelId: string;
+		messageId: string;
+		createdAt: Date;
+	} | null> {
+		return this.executeWithFallback(
+			() =>
+				this.bunDb
+					.select()
+					.from(schema.guild)
+					.where(eq(schema.guild.id, guildId))
+					.get(),
+			() =>
+				this.tursoDb
+					.select()
+					.from(schema.guild)
+					.where(eq(schema.guild.id, guildId))
+					.get(),
+			`getSetup(${guildId})`,
+		).then((data) =>
+			data?.setupChannelId && data?.setupTextId
+				? {
+						id: data.id,
+						guildId: data.id,
+						channelId: data.setupChannelId,
+						messageId: data.setupTextId,
+						createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+					}
+				: null,
+		);
+	}
+
+	/**
+	 * Create setup for a guild with Bun-first approach
+	 */
+	public async createSetup(
+		guildId: string,
+		channelId: string,
+		messageId: string,
+	): Promise<void> {
+		const values = {
+			id: guildId,
+			setupChannelId: channelId,
+			setupTextId: messageId,
+			updatedAt: new Date().toISOString(),
+		};
+
+		return this.executeWriteWithSync(
+			async () => {
+				await this.bunDb
+					.insert(schema.guild)
+					.values(values)
+					.onConflictDoUpdate({
+						target: schema.guild.id,
+						set: {
+							setupChannelId: channelId,
+							setupTextId: messageId,
+							updatedAt: values.updatedAt,
+						},
+					});
+			},
+			async () => {
+				await this.tursoDb
+					.insert(schema.guild)
+					.values(values)
+					.onConflictDoUpdate({
+						target: schema.guild.id,
+						set: {
+							setupChannelId: channelId,
+							setupTextId: messageId,
+							updatedAt: values.updatedAt,
+						},
+					});
+			},
+			`createSetup(${guildId}, ${channelId}, ${messageId})`,
+		);
+	}
+
+	/**
+	 * Delete setup for a guild with Bun-first approach
+	 */
+	public async deleteSetup(guildId: string): Promise<void> {
+		const values = {
+			setupChannelId: null,
+			setupTextId: null,
+			updatedAt: new Date().toISOString(),
+		};
+
+		return this.executeWriteWithSync(
+			async () => {
+				await this.bunDb
+					.update(schema.guild)
+					.set(values)
+					.where(eq(schema.guild.id, guildId));
+			},
+			async () => {
+				await this.tursoDb
+					.update(schema.guild)
+					.set(values)
+					.where(eq(schema.guild.id, guildId));
+			},
+			`deleteSetup(${guildId})`,
+		);
+	}
+
+	/**
 	 * Get liked songs with Bun-first approach
 	 */
 	public async getLikedSongs(
@@ -861,9 +1051,9 @@ export class BunDatabase {
 	public cleanup(): void {
 		try {
 			this.bunClient.close();
-			logger.info("✅ Bun-First Database cleanup completed");
+			logger.info("Bun-First Database cleanup completed");
 		} catch (error) {
-			logger.error("❌ Error during cleanup:", error);
+			logger.error("Error during cleanup:", error);
 		}
 	}
 }
