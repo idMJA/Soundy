@@ -1,7 +1,7 @@
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "./schema";
-import { Environment } from "#soundy/config";
+import { Configuration, Environment } from "#soundy/config";
 import { eq, and, desc, gt, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { bunDatabase } from "./bunDb";
@@ -967,11 +967,9 @@ export class SoundyDatabase {
 	public async deletePrefix(guildId: string): Promise<void> {
 		await bunDatabase.deletePrefix(guildId);
 
-		// Update cache to default prefix
-		const defaultPrefix = "s!"; // Default prefix from BunDatabase
 		this.cache.set(guildId, {
 			...this.cache.get(guildId),
-			prefix: defaultPrefix,
+			prefix: Configuration.defaultPrefix,
 		});
 	}
 

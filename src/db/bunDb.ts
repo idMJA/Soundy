@@ -6,7 +6,7 @@ import { eq, and, desc, gt, sql } from "drizzle-orm";
 import { drizzle as drizzleBun } from "drizzle-orm/bun-sqlite";
 import { createClient } from "@libsql/client";
 import * as schema from "./schema";
-import { Environment } from "#soundy/config";
+import { Configuration, Environment } from "#soundy/config";
 
 const logger = new Logger({
 	name: "[Database]",
@@ -464,7 +464,7 @@ export class BunDatabase {
 					.where(eq(schema.guild.id, guildId))
 					.get(),
 			`getPrefix(${guildId})`,
-		).then((data) => data?.prefix || "s!");
+		).then((data) => data?.prefix || Configuration.defaultPrefix);
 	}
 
 	/**
