@@ -83,7 +83,7 @@
    > **📌 Important:** You need to set up a Turso database first before configuring the bot.
 
    <details>
-   <summary><b>🔧 How to get Turso Database URL & Password</b></summary>
+   <summary><h3 style="display:inline;margin:0;padding:0;">🔧 How to get Turso Database URL & Password [CLICK HERE]</h3></summary>
    
    ### Step 1: Create a Turso Account
    1. Go to [turso.tech](https://turso.tech/)
@@ -128,7 +128,21 @@
    LASTFM_API_KEY=your_lastfm_api_key # You can add multiple keys separated by commas for load balancing
    ```
 
-5. **🔧 Configure Bot Settings**
+5. **🔒 Encrypt environment & initialize database**
+
+   After you fill in `.env`, run the following commands to encrypt environment variables (recommended for production) and apply the database schema to Turso:
+
+   ```bash
+   # encrypt environment variables (optional but recommended)
+   bun encrypt
+
+   # push local database schema to the remote Turso database
+   bun db:push
+   ```
+
+   Running these ensures secrets are handled securely and the remote database is prepared before starting the bot.
+
+6. **🔧 Configure Bot Settings**
    
    **a.** Update `src/config/config.ts` with your bot configuration
    
@@ -136,7 +150,7 @@
    
    **c.** Set up custom emojis in `src/config/emoji.ts`
 
-6. **🚀 Start the Bot**
+7. **🚀 Start the Bot**
    ```bash
    bun start
    ```
@@ -179,6 +193,12 @@
 <img src="assets/help.png" alt="Help Command" width="400" style="border-radius: 10px; margin: 10px;">
 
 *Comprehensive help system with command categories*
+
+### 📝 Live Lyrics
+
+<img src="assets/lyrics.gif" alt="Live Lyrics" width="400" style="border-radius: 10px; margin: 10px;">
+
+*Live lyrics with synchronized scrolling and karaoke-style highlights*
 
 </div>
 
