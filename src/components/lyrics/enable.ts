@@ -56,7 +56,7 @@ export default class LyricsEnableComponent extends ComponentCommand {
 				})
 				.catch(() => null));
 
-		if (!lyrics)
+		if (!lyrics || !Array.isArray(lyrics.lines) || lyrics.lines.length === 0)
 			return ctx.editOrReply({
 				flags: MessageFlags.Ephemeral,
 				embeds: [
