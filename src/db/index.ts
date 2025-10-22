@@ -617,6 +617,7 @@ export class SoundyDatabase {
 
 	/**
 	 * Add regular premium access for a user
+	 * Uses Bun-first approach for better performance.
 	 * @param userId The user ID
 	 * @param durationMs Duration in milliseconds
 	 */
@@ -624,20 +625,12 @@ export class SoundyDatabase {
 		userId: string,
 		durationMs: number,
 	): Promise<void> {
-		const expiresAt = new Date(Date.now() + durationMs);
-		const now = new Date().toISOString();
-
-		await this.db.insert(schema.userVote).values({
-			id: randomUUID(),
-			userId,
-			expiresAt: expiresAt.toISOString(),
-			type: "regular",
-			votedAt: now,
-		});
+		await this.bunDb.addRegularPremium(userId, durationMs);
 	}
 
 	/**
 	 * Add premium (vote or regular) for a user
+	 * Uses Bun-first approach for better performance.
 	 * @param userId The user ID
 	 * @param type 'vote' or 'regular'
 	 * @param durationMs Duration in milliseconds (for 'regular'), ignored for 'vote'
@@ -647,23 +640,7 @@ export class SoundyDatabase {
 		type: "vote" | "regular",
 		durationMs?: number,
 	): Promise<void> {
-		const now = new Date().toISOString();
-		let expiresAt: string;
-		if (type === "regular") {
-			if (!durationMs)
-				throw new Error("durationMs is required for regular premium");
-			expiresAt = new Date(Date.now() + durationMs).toISOString();
-		} else {
-			// vote premium: 12 hours
-			expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
-		}
-		await this.db.insert(schema.userVote).values({
-			id: randomUUID(),
-			userId,
-			expiresAt,
-			type,
-			votedAt: now,
-		});
+		await this.bunDb.addPremium(userId, type, durationMs);
 	}
 
 	/**
@@ -760,17 +737,11 @@ export class SoundyDatabase {
 
 	/**
 	 * Clear premium data for a specific user
+	 * Uses Bun-first approach for better performance.
 	 * @param userId The user ID
 	 */
 	public async clearPremiumData(userId: string): Promise<void> {
-		await this.db
-			.delete(schema.userVote)
-			.where(
-				and(
-					eq(schema.userVote.userId, userId),
-					eq(schema.userVote.type, "regular"),
-				),
-			);
+		await this.bunDb.clearPremiumData(userId);
 	}
 
 	/**
@@ -854,78 +825,11 @@ export class SoundyDatabase {
 
 	/**
 	 * Get premium statistics
+	 * Uses Bun-first approach for ultra-fast performance.
 	 * @param userId Optional user ID for specific user stats
 	 */
 	public async getPremiumStats(userId?: string) {
-		const now = new Date().toISOString();
-		if (userId) {
-			// Check for regular premium first
-			let premium = await this.db
-				.select()
-				.from(schema.userVote)
-				.where(
-					and(
-						eq(schema.userVote.userId, userId),
-						eq(schema.userVote.type, "regular"),
-						gt(schema.userVote.expiresAt, now),
-					),
-				)
-				.orderBy(desc(schema.userVote.expiresAt))
-				.get();
-
-			// If no regular premium, check for vote premium
-			if (!premium) {
-				premium = await this.db
-					.select()
-					.from(schema.userVote)
-					.where(
-						and(
-							eq(schema.userVote.userId, userId),
-							eq(schema.userVote.type, "vote"),
-							gt(schema.userVote.expiresAt, now),
-						),
-					)
-					.orderBy(desc(schema.userVote.expiresAt))
-					.get();
-			}
-
-			return {
-				active: !!premium,
-				expiresAt: premium ? new Date(premium.expiresAt) : null,
-				type: premium ? premium.type : null,
-			};
-		}
-
-		// Get count of unique users with active premium
-		const activeRegularUsers = await this.db
-			.select()
-			.from(schema.userVote)
-			.where(
-				and(
-					eq(schema.userVote.type, "regular"),
-					gt(schema.userVote.expiresAt, now),
-				),
-			)
-			.groupBy(schema.userVote.userId)
-			.all();
-
-		const activeVoteUsers = await this.db
-			.select()
-			.from(schema.userVote)
-			.where(
-				and(
-					eq(schema.userVote.type, "vote"),
-					gt(schema.userVote.expiresAt, now),
-				),
-			)
-			.groupBy(schema.userVote.userId)
-			.all();
-
-		return {
-			activeRegularUsers: activeRegularUsers.length,
-			activeVoteUsers: activeVoteUsers.length,
-			totalActiveUsers: activeRegularUsers.length + activeVoteUsers.length,
-		};
+		return await this.bunDb.getPremiumStats(userId);
 	}
 
 	/**

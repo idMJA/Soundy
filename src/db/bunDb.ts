@@ -308,8 +308,9 @@ export class BunDatabase {
 		const now = new Date().toISOString();
 
 		return this.executeWithFallback(
-			async () => {
-				let vote = this.bunDb
+			() => {
+				
+				const regular = this.bunDb
 					.select()
 					.from(schema.userVote)
 					.where(
@@ -322,25 +323,26 @@ export class BunDatabase {
 					.orderBy(desc(schema.userVote.expiresAt))
 					.get();
 
-				if (!vote) {
-					vote = this.bunDb
-						.select()
-						.from(schema.userVote)
-						.where(
-							and(
-								eq(schema.userVote.userId, userId),
-								eq(schema.userVote.type, "vote"),
-								gt(schema.userVote.expiresAt, now),
-							),
-						)
-						.orderBy(desc(schema.userVote.expiresAt))
-						.get();
+				if (regular) {
+					return regular;
 				}
 
-				return vote;
+				
+				return this.bunDb
+					.select()
+					.from(schema.userVote)
+					.where(
+						and(
+							eq(schema.userVote.userId, userId),
+							eq(schema.userVote.type, "vote"),
+							gt(schema.userVote.expiresAt, now),
+						),
+					)
+					.orderBy(desc(schema.userVote.expiresAt))
+					.get();
 			},
-			async () => {
-				let vote = await this.tursoDb
+			() =>
+				this.tursoDb
 					.select()
 					.from(schema.userVote)
 					.where(
@@ -351,25 +353,22 @@ export class BunDatabase {
 						),
 					)
 					.orderBy(desc(schema.userVote.expiresAt))
-					.get();
-
-				if (!vote) {
-					vote = await this.tursoDb
-						.select()
-						.from(schema.userVote)
-						.where(
-							and(
-								eq(schema.userVote.userId, userId),
-								eq(schema.userVote.type, "vote"),
-								gt(schema.userVote.expiresAt, now),
-							),
-						)
-						.orderBy(desc(schema.userVote.expiresAt))
-						.get();
-				}
-
-				return vote;
-			},
+					.get()
+					.then((result) => {
+						if (result) return result;
+						return this.tursoDb
+							.select()
+							.from(schema.userVote)
+							.where(
+								and(
+									eq(schema.userVote.userId, userId),
+									eq(schema.userVote.type, "vote"),
+									gt(schema.userVote.expiresAt, now),
+								),
+							)
+							.orderBy(desc(schema.userVote.expiresAt))
+							.get();
+					}),
 			`getPremiumStatus(${userId})`,
 		).then((vote) => {
 			if (!vote) return null;
@@ -443,6 +442,244 @@ export class BunDatabase {
 				}
 			},
 			`addUserVote(${userId})`,
+		);
+	}
+
+	/**
+	 * Add regular premium access for a user with Bun-first approach
+	 */
+	public async addRegularPremium(
+		userId: string,
+		durationMs: number,
+	): Promise<void> {
+		const expiresAt = new Date(Date.now() + durationMs).toISOString();
+		const now = new Date().toISOString();
+		const id = crypto.randomUUID();
+
+		const values = {
+			id,
+			userId,
+			expiresAt,
+			type: "regular" as const,
+			votedAt: now,
+		};
+
+		return this.executeWriteWithSync(
+			async () => {
+				await this.bunDb.insert(schema.userVote).values(values);
+			},
+			async () => {
+				await this.tursoDb.insert(schema.userVote).values(values);
+			},
+			`addRegularPremium(${userId}, ${durationMs})`,
+		);
+	}
+
+	/**
+	 * Add premium (vote or regular) for a user with Bun-first approach
+	 * @param userId The user ID
+	 * @param type 'vote' or 'regular'
+	 * @param durationMs Duration in milliseconds (for 'regular'), ignored for 'vote'
+	 */
+	public async addPremium(
+		userId: string,
+		type: "vote" | "regular",
+		durationMs?: number,
+	): Promise<void> {
+		const now = new Date().toISOString();
+		let expiresAt: string;
+
+		if (type === "regular") {
+			if (!durationMs)
+				throw new Error("durationMs is required for regular premium");
+			expiresAt = new Date(Date.now() + durationMs).toISOString();
+		} else {
+			
+			expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
+		}
+
+		const id = crypto.randomUUID();
+		const values = {
+			id,
+			userId,
+			expiresAt,
+			type,
+			votedAt: now,
+		};
+
+		return this.executeWriteWithSync(
+			async () => {
+				await this.bunDb.insert(schema.userVote).values(values);
+			},
+			async () => {
+				await this.tursoDb.insert(schema.userVote).values(values);
+			},
+			`addPremium(${userId}, ${type}, ${durationMs})`,
+		);
+	}
+
+	/**
+	 * Clear premium data for a user with Bun-first approach
+	 * Removes ALL premium entries (both regular and vote) for the user
+	 */
+	public async clearPremiumData(userId: string): Promise<void> {
+		return this.executeWriteWithSync(
+			async () => {
+				await this.bunDb
+					.delete(schema.userVote)
+					.where(eq(schema.userVote.userId, userId));
+			},
+			async () => {
+				await this.tursoDb
+					.delete(schema.userVote)
+					.where(eq(schema.userVote.userId, userId));
+			},
+			`clearPremiumData(${userId})`,
+		);
+	}
+
+	/**
+	 * Get premium statistics with Bun-first approach
+	 */
+	public async getPremiumStats(userId?: string) {
+		const now = new Date().toISOString();
+
+		if (userId) {
+			return this.executeWithFallback(
+				() => {
+					
+					let premium = this.bunDb
+						.select()
+						.from(schema.userVote)
+						.where(
+							and(
+								eq(schema.userVote.userId, userId),
+								eq(schema.userVote.type, "regular"),
+								gt(schema.userVote.expiresAt, now),
+							),
+						)
+						.orderBy(desc(schema.userVote.expiresAt))
+						.get();
+
+					
+					if (!premium) {
+						premium = this.bunDb
+							.select()
+							.from(schema.userVote)
+							.where(
+								and(
+									eq(schema.userVote.userId, userId),
+									eq(schema.userVote.type, "vote"),
+									gt(schema.userVote.expiresAt, now),
+								),
+							)
+							.orderBy(desc(schema.userVote.expiresAt))
+							.get();
+					}
+
+					return premium;
+				},
+				() =>
+					this.tursoDb
+						.select()
+						.from(schema.userVote)
+						.where(
+							and(
+								eq(schema.userVote.userId, userId),
+								eq(schema.userVote.type, "regular"),
+								gt(schema.userVote.expiresAt, now),
+							),
+						)
+						.orderBy(desc(schema.userVote.expiresAt))
+						.get()
+						.then((result) => {
+							if (result) return result;
+							return this.tursoDb
+								.select()
+								.from(schema.userVote)
+								.where(
+									and(
+										eq(schema.userVote.userId, userId),
+										eq(schema.userVote.type, "vote"),
+										gt(schema.userVote.expiresAt, now),
+									),
+								)
+								.orderBy(desc(schema.userVote.expiresAt))
+								.get();
+						}),
+				`getPremiumStats(${userId})`,
+			).then((premium) => ({
+				active: !!premium,
+				expiresAt: premium ? new Date(premium.expiresAt) : null,
+				type: premium ? premium.type : null,
+			}));
+		}
+
+		
+		return this.executeWithFallback(
+			() => {
+				const activeRegularUsers = this.bunDb
+					.select()
+					.from(schema.userVote)
+					.where(
+						and(
+							eq(schema.userVote.type, "regular"),
+							gt(schema.userVote.expiresAt, now),
+						),
+					)
+					.groupBy(schema.userVote.userId)
+					.all();
+
+				const activeVoteUsers = this.bunDb
+					.select()
+					.from(schema.userVote)
+					.where(
+						and(
+							eq(schema.userVote.type, "vote"),
+							gt(schema.userVote.expiresAt, now),
+						),
+					)
+					.groupBy(schema.userVote.userId)
+					.all();
+
+				return {
+					activeRegularUsers: activeRegularUsers.length,
+					activeVoteUsers: activeVoteUsers.length,
+					totalActiveUsers: activeRegularUsers.length + activeVoteUsers.length,
+				};
+			},
+			async () => {
+				const activeRegularUsers = await this.tursoDb
+					.select()
+					.from(schema.userVote)
+					.where(
+						and(
+							eq(schema.userVote.type, "regular"),
+							gt(schema.userVote.expiresAt, now),
+						),
+					)
+					.groupBy(schema.userVote.userId)
+					.all();
+
+				const activeVoteUsers = await this.tursoDb
+					.select()
+					.from(schema.userVote)
+					.where(
+						and(
+							eq(schema.userVote.type, "vote"),
+							gt(schema.userVote.expiresAt, now),
+						),
+					)
+					.groupBy(schema.userVote.userId)
+					.all();
+
+				return {
+					activeRegularUsers: activeRegularUsers.length,
+					activeVoteUsers: activeVoteUsers.length,
+					totalActiveUsers: activeRegularUsers.length + activeVoteUsers.length,
+				};
+			},
+			"getPremiumStats()",
 		);
 	}
 
