@@ -1,13 +1,13 @@
 import {
 	Command,
 	type CommandContext,
+	createStringOption,
 	Declare,
 	LocalesT,
 	Options,
-	createStringOption,
 } from "seyfert";
-import { SoundyOptions } from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
+import { SoundyOptions } from "#soundy/utils";
 
 const option = {
 	prefix: createStringOption({

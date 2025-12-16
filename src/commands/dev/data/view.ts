@@ -1,13 +1,17 @@
 import {
 	type CommandContext,
+	createStringOption,
 	Declare,
 	Options,
 	SubCommand,
-	createStringOption,
 } from "seyfert";
 import { MessageFlags } from "seyfert/lib/types";
-import { SoundyOptions } from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
+import {
+	isGlobalPremiumStats,
+	isUserPremiumStats,
+	SoundyOptions,
+} from "#soundy/utils";
 
 const options = {
 	type: createStringOption({
@@ -73,26 +77,30 @@ export default class ViewDatabaseCommand extends SubCommand {
 				}
 
 				case "premium": {
-					const premiumStats = await client.database.getPremiumStats(userId);
 					if (userId) {
-						if (premiumStats.active) {
+						const userStats = await client.database.getPremiumStats(userId);
+						if (isUserPremiumStats(userStats) && userStats.active) {
 							stats.push("Premium Status: Active");
 							stats.push(
-								`Expires At: ${premiumStats.expiresAt?.toLocaleString()}`,
+								`Expires At: ${userStats.expiresAt?.toLocaleString()}`,
 							);
 						} else {
 							stats.push("Premium Status: Inactive");
 						}
 					} else {
-						stats.push(
-							`Active Premium Users: ${premiumStats.totalActiveUsers}`,
-						);
-						stats.push(`- Regular Premium: ${premiumStats.activeRegularUsers}`);
-						stats.push(`- Vote Premium: ${premiumStats.activeVoteUsers}`);
+						const globalStats = await client.database.getPremiumStats();
+						if (isGlobalPremiumStats(globalStats)) {
+							stats.push(
+								`Active Premium Users: ${globalStats.totalActiveUsers}`,
+							);
+							stats.push(
+								`- Regular Premium: ${globalStats.activeRegularUsers}`,
+							);
+							stats.push(`- Vote Premium: ${globalStats.activeVoteUsers}`);
+						}
 					}
 					break;
 				}
-
 				case "stats": {
 					const generalStats = await client.database.getGeneralStats();
 					stats.push(`Track Statistics Records: ${generalStats.trackStats}`);

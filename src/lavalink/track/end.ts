@@ -1,7 +1,7 @@
 // filepath: e:/Projects/Soundy v3.3.5/src/lavalink/trackEndEvent.ts
-import { PlayerSaver } from "#soundy/utils";
+
 import { LavalinkEventTypes } from "#soundy/types";
-import { createLavalinkEvent } from "#soundy/utils";
+import { createLavalinkEvent, PlayerSaver } from "#soundy/utils";
 
 export default createLavalinkEvent({
 	name: "trackEnd",

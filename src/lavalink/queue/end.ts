@@ -1,6 +1,9 @@
-import { PlayerSaver } from "#soundy/utils";
 import { LavalinkEventTypes } from "#soundy/types";
-import { createLavalinkEvent, createNullEmbed } from "#soundy/utils";
+import {
+	createLavalinkEvent,
+	createNullEmbed,
+	PlayerSaver,
+} from "#soundy/utils";
 
 export default createLavalinkEvent({
 	name: "queueEnd",

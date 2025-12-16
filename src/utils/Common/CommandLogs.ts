@@ -1,5 +1,5 @@
-import { Embed } from "seyfert";
 import type { UsingClient } from "seyfert";
+import { Embed } from "seyfert";
 
 /**
  * Send command log to webhook

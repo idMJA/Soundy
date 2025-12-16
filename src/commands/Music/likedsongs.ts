@@ -6,7 +6,7 @@ import {
 	Middlewares,
 } from "seyfert";
 import { MessageFlags } from "seyfert/lib/types";
-import { TimeFormat, EmbedPaginator } from "#soundy/utils";
+import { EmbedPaginator, TimeFormat } from "#soundy/utils";
 
 @Declare({
 	name: "likedsongs",

@@ -1,4 +1,4 @@
-import { SubCommand, type CommandContext, Declare, Embed } from "seyfert";
+import { type CommandContext, Declare, Embed, SubCommand } from "seyfert";
 import { SoundyOptions } from "#soundy/utils";
 
 @Declare({

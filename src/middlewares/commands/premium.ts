@@ -1,4 +1,4 @@
-import { ActionRow, Button, Embed, createMiddleware } from "seyfert";
+import { ActionRow, Button, createMiddleware, Embed } from "seyfert";
 import { ButtonStyle } from "seyfert/lib/types";
 import { SoundyCategory } from "#soundy/types";
 

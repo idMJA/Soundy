@@ -1,4 +1,4 @@
-import { ActionRow, Button, Embed, createEvent } from "seyfert";
+import { ActionRow, Button, createEvent, Embed } from "seyfert";
 import { ButtonStyle } from "seyfert/lib/types";
 
 export default createEvent({

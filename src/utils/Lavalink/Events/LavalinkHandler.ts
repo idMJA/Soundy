@@ -1,9 +1,9 @@
-import { pathToFileURL } from "node:url";
 import { readdirSync, statSync } from "node:fs";
-import { join, extname } from "node:path";
-import type { Lavalink } from "#soundy/utils";
+import { extname, join } from "node:path";
+import { pathToFileURL } from "node:url";
 import type { LavalinkManagerEvents, NodeManagerEvents } from "lavalink-client";
 import type Soundy from "#soundy/client";
+import type { Lavalink } from "#soundy/utils";
 
 export class LavalinkHandler {
 	// Map event name ke { event, filepath, run }

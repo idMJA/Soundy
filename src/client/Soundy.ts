@@ -1,22 +1,21 @@
 import { Client, LimitedCollection } from "seyfert";
-import { ActivityType, PresenceUpdateStatus } from "seyfert/lib/types";
 import { HandleCommand } from "seyfert/lib/commands/handle";
+import { ActivityType, PresenceUpdateStatus } from "seyfert/lib/types";
 import { Yuna } from "yunaforseyfert";
-
-import type { SoundyConfiguration } from "#soundy/types";
-import { SoundyMiddlewares } from "#soundy/middlewares";
 import { Configuration } from "#soundy/config";
+import { SoundyDatabase } from "#soundy/db";
+import { SoundyMiddlewares } from "#soundy/middlewares";
+import type { SoundyConfiguration } from "#soundy/types";
 import {
-	SoundyContext,
+	DEBUG_MODE,
 	getWatermark,
 	handleMention,
 	isBotMention,
 	onRunError,
+	SoundyContext,
 	sendCommandLog,
 	THINK_MESSAGES,
-	DEBUG_MODE,
 } from "#soundy/utils";
-import { SoundyDatabase } from "#soundy/db";
 import { SoundyManager } from "./modules/Manager";
 
 /**

@@ -1,6 +1,6 @@
-import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { jwt } from "@elysiajs/jwt";
+import { Elysia } from "elysia";
 import type { UsingClient } from "seyfert";
 import type { MusicPlayerStatus } from "#soundy/api";
 

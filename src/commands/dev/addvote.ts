@@ -1,10 +1,10 @@
 import {
 	Command,
 	type CommandContext,
-	Declare,
-	Options,
 	createStringOption,
 	createUserOption,
+	Declare,
+	Options,
 } from "seyfert";
 import { EmbedColors } from "seyfert/lib/common";
 import { SoundyOptions } from "#soundy/utils";

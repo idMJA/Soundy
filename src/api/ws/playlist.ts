@@ -1,5 +1,4 @@
-import type { WSHandler } from "./types";
-import { getRequesterId } from "./types";
+import { getRequesterId, type WSHandler } from "./types";
 
 export const handleLoadPlaylist: WSHandler = async (ws, msg, client) => {
 	if (

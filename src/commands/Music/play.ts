@@ -1,21 +1,21 @@
 import {
 	Command,
+	type CommandContext,
+	createStringOption,
 	Declare,
 	Embed,
 	LocalesT,
 	Middlewares,
 	Options,
-	createStringOption,
-	type CommandContext,
 } from "seyfert";
 import { MessageFlags } from "seyfert/lib/types";
+import { SoundyCategory } from "#soundy/types";
 import {
-	SoundyOptions,
-	TimeFormat,
 	getAllTopTracks,
 	type RecommendationTrack,
+	SoundyOptions,
+	TimeFormat,
 } from "#soundy/utils";
-import { SoundyCategory } from "#soundy/types";
 
 const option = {
 	query: createStringOption({

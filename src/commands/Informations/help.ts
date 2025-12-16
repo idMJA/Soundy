@@ -3,17 +3,17 @@ import {
 	Command,
 	type CommandContext,
 	ContextMenuCommand,
+	createStringOption,
 	Declare,
 	Embed,
 	LocalesT,
 	Options,
 	StringSelectOption,
 	SubCommand,
-	createStringOption,
 } from "seyfert";
 import { MessageFlags } from "seyfert/lib/types";
-import { SoundyOptions, EmbedPaginator, SoundyStringMenu } from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
+import { EmbedPaginator, SoundyOptions, SoundyStringMenu } from "#soundy/utils";
 
 const option = {
 	command: createStringOption({

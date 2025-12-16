@@ -1,5 +1,5 @@
-import type { WSHandler } from "./types";
 import type { PlayerSaver } from "#soundy/utils";
+import type { WSHandler } from "./types";
 
 export const handleUserStatus: WSHandler = async (ws, msg, client) => {
 	if (msg.type === "user-status" && msg.userId) {

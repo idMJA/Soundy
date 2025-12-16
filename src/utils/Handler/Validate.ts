@@ -1,7 +1,7 @@
 import { Logger } from "seyfert";
 import { Configuration } from "#soundy/config";
-import { InvalidEnvValue } from "#soundy/utils";
 import type { SoundyWebhooks } from "#soundy/types";
+import { InvalidEnvValue } from "#soundy/utils";
 
 const logger = new Logger({
 	name: "[ENV]",

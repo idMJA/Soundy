@@ -1,14 +1,13 @@
 import {
 	Command,
 	type CommandContext,
+	createStringOption,
 	Declare,
 	type Guild,
 	Options,
-	createStringOption,
 } from "seyfert";
-import { SoundyOptions } from "#soundy/utils";
-
 import { MessageFlags } from "seyfert/lib/types";
+import { SoundyOptions } from "#soundy/utils";
 
 const option = {
 	event: createStringOption({

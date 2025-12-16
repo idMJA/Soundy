@@ -1,40 +1,36 @@
-import type { Elysia } from "elysia";
 import type { UsingClient } from "seyfert";
+import type { ElysiaApp, SoundyWS, WSMessage } from "#soundy/api";
 import type { PlayerSaver } from "#soundy/utils";
-import type { SoundyWS, WSMessage } from "#soundy/api";
-import { serializePlayerState, getContext, getRequesterId } from "./types";
-
+import { handleRepeat, handleShuffle, handleVolume } from "./controls";
 import {
-	handleStatus,
-	handlePause,
-	handleResume,
-	handleSkip,
-	handleStop,
-	handleSeek,
-	handlePrevious,
-} from "./player";
-import { handleVolume, handleShuffle, handleRepeat } from "./controls";
-import { handleQueue, handleClear, handleRemove, handlePlay } from "./queue";
-import { handleLoadPlaylist, handleUserPlaylists } from "./playlist";
-import {
-	handleUserConnect,
 	handleGetPlaylist,
 	handleGetPlaylists,
+	handleUserConnect,
 	handleUserStatus,
 } from "./misc";
+import {
+	handlePause,
+	handlePrevious,
+	handleResume,
+	handleSeek,
+	handleSkip,
+	handleStatus,
+	handleStop,
+} from "./player";
+import { handleLoadPlaylist, handleUserPlaylists } from "./playlist";
+import { handleClear, handlePlay, handleQueue, handleRemove } from "./queue";
+import { getContext, getRequesterId, serializePlayerState } from "./types";
 
 interface WSWithInterval extends SoundyWS {
 	updateInterval?: NodeJS.Timeout;
 }
 
 export function setupSoundyWebSocket(
-	app: Elysia,
+	app: ElysiaApp,
 	client: UsingClient,
 	playerSaver: PlayerSaver,
-) {
-	(app as unknown as { client: UsingClient }).client = client;
-
-	return app.ws("/ws", {
+): void {
+	app.ws("/ws", {
 		message: async (ws: SoundyWS, data: unknown) => {
 			let msg: WSMessage;
 			try {
@@ -45,6 +41,7 @@ export function setupSoundyWebSocket(
 			}
 
 			if (!ws.store) ws.store = {};
+			if (!ws.data) ws.data = ws.store;
 
 			await handleStatus(ws, msg, client);
 			await handlePause(ws, msg, client);
@@ -99,8 +96,9 @@ export function setupSoundyWebSocket(
 
 			const updateInterval = setInterval(() => {
 				try {
-					if (ws.store?.guildId) {
-						const player = client.manager.getPlayer(ws.store.guildId);
+					const guildId = ws.store?.guildId ?? ws.data?.guildId;
+					if (guildId) {
+						const player = client.manager.getPlayer(guildId);
 						if (player?.connected && player.playing) {
 							const state = serializePlayerState(player);
 							ws.send(
@@ -131,9 +129,9 @@ export function setupSoundyWebSocket(
 
 export { serializePlayerState, getContext, getRequesterId };
 export {
+	broadcastPlayerDisconnection,
+	broadcastPlayerEvent,
+	broadcastPlayerUpdate,
 	setGlobalAppInstance,
 	stopAutoUpdate,
-	broadcastPlayerUpdate,
-	broadcastPlayerEvent,
-	broadcastPlayerDisconnection,
 } from "./broadcast";

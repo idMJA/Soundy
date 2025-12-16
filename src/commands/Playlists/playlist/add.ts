@@ -1,17 +1,17 @@
 import {
 	type CommandContext,
+	createStringOption,
 	Declare,
 	LocalesT,
 	Middlewares,
 	Options,
 	SubCommand,
-	createStringOption,
 } from "seyfert";
 import { MessageFlags } from "seyfert/lib/types";
 import {
-	TimeFormat,
 	getAllTopTracks,
 	type RecommendationTrack,
+	TimeFormat,
 } from "#soundy/utils";
 
 const option = {

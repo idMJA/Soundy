@@ -1,6 +1,6 @@
 import type { AnyContext } from "seyfert";
-import { MessageFlags } from "seyfert/lib/types";
 import { EmbedColors } from "seyfert/lib/common";
+import { MessageFlags } from "seyfert/lib/types";
 
 /**
  *

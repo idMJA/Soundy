@@ -1,9 +1,8 @@
-import { createEvent } from "seyfert";
 import { join } from "node:path";
 import { cwd } from "node:process";
 import { Api } from "@top-gg/sdk";
-import { BOT_VERSION } from "#soundy/utils";
-import { changePresence } from "#soundy/utils";
+import { createEvent } from "seyfert";
+import { BOT_VERSION, changePresence } from "#soundy/utils";
 
 export default createEvent({
 	data: { once: true, name: "ready" },

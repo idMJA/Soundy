@@ -1,7 +1,6 @@
 import { createMiddleware } from "seyfert";
-import { getCollectionKey } from "#soundy/utils";
-
 import { MessageFlags } from "seyfert/lib/types";
+import { getCollectionKey } from "#soundy/utils";
 
 export const checkCooldown = createMiddleware<void>(
 	async ({ context, next, pass }) => {

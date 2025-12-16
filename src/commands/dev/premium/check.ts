@@ -1,14 +1,14 @@
 import {
 	type CommandContext,
+	createStringOption,
+	createUserOption,
 	Declare,
 	Options,
 	SubCommand,
-	createStringOption,
-	createUserOption,
 } from "seyfert";
 import { EmbedColors } from "seyfert/lib/common";
-import { SoundyOptions } from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
+import { isUserPremiumStats, SoundyOptions } from "#soundy/utils";
 
 const options = {
 	user: createUserOption({
@@ -68,7 +68,12 @@ export default class CheckPremiumCommand extends SubCommand {
 				targetUser.id,
 			);
 
-			if (!(premiumStatus || premiumStats.active)) {
+			if (
+				!(
+					premiumStatus ||
+					(isUserPremiumStats(premiumStats) && premiumStats.active)
+				)
+			) {
 				await ctx.editOrReply({
 					embeds: [
 						{
@@ -84,7 +89,8 @@ export default class CheckPremiumCommand extends SubCommand {
 			// Format remaining time in a readable format
 			let formattedTime = "Unknown";
 			const premiumType =
-				premiumStats.type || (premiumStatus ? premiumStatus.type : "Unknown");
+				(isUserPremiumStats(premiumStats) ? premiumStats.type : null) ||
+				(premiumStatus ? premiumStatus.type : "Unknown");
 
 			if (premiumStatus) {
 				const ms = premiumStatus.timeRemaining;
@@ -98,9 +104,10 @@ export default class CheckPremiumCommand extends SubCommand {
 				formattedTime = `${days} days, ${hours} hours, ${minutes} minutes`;
 			}
 
-			const expiryDate = premiumStats.expiresAt
-				? premiumStats.expiresAt.toLocaleString()
-				: "Unknown";
+			const expiryDate =
+				isUserPremiumStats(premiumStats) && premiumStats.expiresAt
+					? premiumStats.expiresAt.toLocaleString()
+					: "Unknown";
 
 			await ctx.editOrReply({
 				embeds: [

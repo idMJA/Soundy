@@ -1,9 +1,9 @@
 import type { UsingClient } from "seyfert";
 import {
-	PresenceUpdateStatus,
 	type GatewayActivityUpdateData,
+	PresenceUpdateStatus,
 } from "seyfert/lib/types";
-import { BOT_VERSION, BOT_ACTIVITIES } from "#soundy/utils";
+import { BOT_ACTIVITIES, BOT_VERSION } from "#soundy/utils";
 
 /**
  * Periodically update bot presence with dynamic stats and random activity.

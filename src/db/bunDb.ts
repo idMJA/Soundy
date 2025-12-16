@@ -1,12 +1,12 @@
 import { Database } from "bun:sqlite";
-import { Logger } from "seyfert";
 import { mkdir } from "node:fs/promises";
-import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
-import { eq, and, desc, gt, sql } from "drizzle-orm";
-import { drizzle as drizzleBun } from "drizzle-orm/bun-sqlite";
 import { createClient } from "@libsql/client";
-import * as schema from "./schema";
+import { and, desc, eq, gt, sql } from "drizzle-orm";
+import { drizzle as drizzleBun } from "drizzle-orm/bun-sqlite";
+import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
+import { Logger } from "seyfert";
 import { Configuration, Environment } from "#soundy/config";
+import * as schema from "./schema";
 
 const logger = new Logger({
 	name: "[Database]",
@@ -309,7 +309,6 @@ export class BunDatabase {
 
 		return this.executeWithFallback(
 			() => {
-				
 				const regular = this.bunDb
 					.select()
 					.from(schema.userVote)
@@ -327,7 +326,6 @@ export class BunDatabase {
 					return regular;
 				}
 
-				
 				return this.bunDb
 					.select()
 					.from(schema.userVote)
@@ -494,7 +492,6 @@ export class BunDatabase {
 				throw new Error("durationMs is required for regular premium");
 			expiresAt = new Date(Date.now() + durationMs).toISOString();
 		} else {
-			
 			expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
 		}
 
@@ -547,7 +544,6 @@ export class BunDatabase {
 		if (userId) {
 			return this.executeWithFallback(
 				() => {
-					
 					let premium = this.bunDb
 						.select()
 						.from(schema.userVote)
@@ -561,7 +557,6 @@ export class BunDatabase {
 						.orderBy(desc(schema.userVote.expiresAt))
 						.get();
 
-					
 					if (!premium) {
 						premium = this.bunDb
 							.select()
@@ -615,7 +610,6 @@ export class BunDatabase {
 			}));
 		}
 
-		
 		return this.executeWithFallback(
 			() => {
 				const activeRegularUsers = this.bunDb

@@ -1,27 +1,27 @@
 import {
 	ActionRow,
-	Button,
-	StringSelectMenu,
 	type AnyContext,
+	Button,
 	type ButtonInteraction,
 	type Embed,
 	type Message,
+	StringSelectMenu,
 	type StringSelectMenuInteraction,
 	type WebhookMessage,
 } from "seyfert";
 import {
-	ButtonStyle,
-	MessageFlags,
-	type APIActionRowComponent,
-	type APIButtonComponentWithCustomId,
-	type APIMessageActionRowComponent,
-} from "seyfert/lib/types";
-import {
-	EmbedColors,
 	type Awaitable,
+	EmbedColors,
 	type InteractionCreateBodyRequest,
 	type InteractionMessageUpdateBodyRequest,
 } from "seyfert/lib/common";
+import {
+	type APIActionRowComponent,
+	type APIButtonComponentWithCustomId,
+	type APIMessageActionRowComponent,
+	ButtonStyle,
+	MessageFlags,
+} from "seyfert/lib/types";
 import {
 	InvalidComponentRun,
 	InvalidEmbedsLength,

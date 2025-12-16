@@ -1,9 +1,9 @@
-import type Soundy from "./client/Soundy";
 import type { LavalinkManager } from "lavalink-client";
 import type { ParseClient, ParseLocales, ParseMiddlewares } from "seyfert";
 import type { SoundyMiddlewares } from "#soundy/middlewares";
-import type { SoundyContext } from "#soundy/utils";
 import type { Options } from "#soundy/types";
+import type { SoundyContext } from "#soundy/utils";
+import type Soundy from "./client/Soundy";
 import type English from "./locales/en-US";
 
 declare module "seyfert" {

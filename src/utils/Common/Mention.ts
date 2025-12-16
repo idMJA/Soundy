@@ -1,5 +1,5 @@
-import { ActionRow, Button, Embed, type Message } from "seyfert";
 import type { UsingClient } from "seyfert";
+import { ActionRow, Button, Embed, type Message } from "seyfert";
 import { ButtonStyle } from "seyfert/lib/types";
 
 /**

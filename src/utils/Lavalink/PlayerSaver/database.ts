@@ -1,5 +1,5 @@
-import type { Logger } from "seyfert";
 import type { Low } from "lowdb";
+import type { Logger } from "seyfert";
 import type { DatabaseSchema } from "#soundy/types";
 
 /**

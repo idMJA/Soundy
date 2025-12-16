@@ -1,11 +1,12 @@
 // src/lavalink/events.ts
+
+import type { User } from "seyfert";
+import { LavalinkEventTypes } from "#soundy/types";
 import {
 	createLavalinkEvent,
-	PlayerSaver,
 	createNowPlayingEmbed,
+	PlayerSaver,
 } from "#soundy/utils";
-import { LavalinkEventTypes } from "#soundy/types";
-import type { User } from "seyfert";
 
 export default createLavalinkEvent({
 	name: "trackStart",

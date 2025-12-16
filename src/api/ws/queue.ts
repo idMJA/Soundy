@@ -1,5 +1,4 @@
-import type { WSHandler } from "./types";
-import { getContext, getRequesterId } from "./types";
+import { getContext, getRequesterId, type WSHandler } from "./types";
 
 export const handleQueue: WSHandler = async (ws, msg, client) => {
 	if (msg.type === "queue" && msg.guildId) {

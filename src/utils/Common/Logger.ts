@@ -2,9 +2,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Logger } from "seyfert";
 import {
-	LogLevels,
 	gray,
 	italic,
+	LogLevels,
 	red,
 	rgb24,
 	yellow,

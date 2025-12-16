@@ -1,6 +1,6 @@
-import type { SoundyWS, WSMessage } from "#soundy/api";
-import type { UsingClient } from "seyfert";
 import type { Player } from "lavalink-client";
+import type { UsingClient } from "seyfert";
+import type { SoundyWS, WSMessage } from "#soundy/api";
 
 export interface WebSocketServerWithClients {
 	clients?: Set<{ readyState: number; send: (msg: string) => void }>;

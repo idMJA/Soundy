@@ -1,12 +1,12 @@
 import {
 	type CommandContext,
+	createStringOption,
 	Declare,
 	Embed,
 	LocalesT,
 	Middlewares,
 	Options,
 	SubCommand,
-	createStringOption,
 } from "seyfert";
 import { MessageFlags } from "seyfert/lib/types";
 import { EmbedPaginator, TimeFormat } from "#soundy/utils";

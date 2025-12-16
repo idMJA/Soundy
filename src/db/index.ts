@@ -1,10 +1,11 @@
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
-import * as schema from "./schema";
-import { Configuration, Environment } from "#soundy/config";
-import { eq, and, desc, gt, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
+import { createClient } from "@libsql/client";
+import { and, desc, eq, gt, sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/libsql";
+import { Configuration, Environment } from "#soundy/config";
+import type { GuildPlayerSettings, ISetup } from "#soundy/types";
 import { bunDatabase } from "./bunDb";
+import * as schema from "./schema";
 
 const client = createClient({
 	url:
@@ -13,14 +14,6 @@ const client = createClient({
 });
 
 export const db = drizzle(client);
-
-export interface ISetup {
-	id: string;
-	guildId: string;
-	channelId: string;
-	messageId: string;
-	createdAt: Date;
-}
 
 export class SoundyDatabase {
 	public db = db;
@@ -60,7 +53,7 @@ export class SoundyDatabase {
 	 * Uses Bun-first approach for ultra-fast performance.
 	 * @param guildId The guild id.
 	 */
-	public async getPlayer(guildId: string): Promise<{ defaultVolume: number }> {
+	public async getPlayer(guildId: string): Promise<GuildPlayerSettings> {
 		const cached = this.cache.get(guildId)?.defaultVolume;
 		if (cached !== undefined) {
 			return { defaultVolume: cached };

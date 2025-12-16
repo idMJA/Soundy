@@ -1,7 +1,6 @@
-import { PlayerSaver } from "#soundy/utils";
-import { LavalinkEventTypes } from "#soundy/types";
-import { createLavalinkEvent } from "#soundy/utils";
 import type { Player } from "lavalink-client";
+import { LavalinkEventTypes } from "#soundy/types";
+import { createLavalinkEvent, PlayerSaver } from "#soundy/utils";
 
 export default createLavalinkEvent({
 	name: "playerDestroy",

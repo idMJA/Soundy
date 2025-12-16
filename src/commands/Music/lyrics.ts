@@ -2,20 +2,20 @@ import { Client as Genius } from "genius-lyrics";
 import {
 	Command,
 	type CommandContext,
+	createStringOption,
 	Declare,
 	Embed,
 	LocalesT,
 	Middlewares,
 	Options,
-	createStringOption,
 } from "seyfert";
-import {
-	SoundyOptions,
-	getAllTopTracks,
-	TimeFormat,
-	type RecommendationTrack,
-} from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
+import {
+	getAllTopTracks,
+	type RecommendationTrack,
+	SoundyOptions,
+	TimeFormat,
+} from "#soundy/utils";
 
 // Initialize Genius client
 const geniusClient = new Genius();

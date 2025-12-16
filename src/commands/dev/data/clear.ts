@@ -3,14 +3,14 @@ import {
 	Button,
 	type CommandContext,
 	type ComponentInteraction,
+	createStringOption,
 	Declare,
 	Options,
 	SubCommand,
-	createStringOption,
 } from "seyfert";
 import { ButtonStyle, MessageFlags } from "seyfert/lib/types";
-import { SoundyOptions } from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
+import { SoundyOptions } from "#soundy/utils";
 
 const options = {
 	type: createStringOption({

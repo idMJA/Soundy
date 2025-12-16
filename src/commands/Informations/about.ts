@@ -10,8 +10,8 @@ import {
 	type Message,
 } from "seyfert";
 import { ButtonStyle, MessageFlags } from "seyfert/lib/types";
-import { SoundyOptions } from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
+import { SoundyOptions } from "#soundy/utils";
 
 @Declare({
 	name: "about",

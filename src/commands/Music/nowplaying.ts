@@ -7,7 +7,7 @@ import {
 	type User,
 } from "seyfert";
 import { SoundyCategory } from "#soundy/types";
-import { SoundyOptions, TimeFormat, getSourceIcon } from "#soundy/utils";
+import { getSourceIcon, SoundyOptions, TimeFormat } from "#soundy/utils";
 
 @Declare({
 	name: "nowplaying",

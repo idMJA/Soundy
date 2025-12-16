@@ -1,5 +1,5 @@
 import { LavalinkEventTypes } from "#soundy/types";
-import { createLavalinkEvent, sendNodeLog, getDepth } from "#soundy/utils";
+import { createLavalinkEvent, getDepth, sendNodeLog } from "#soundy/utils";
 
 export default createLavalinkEvent({
 	name: "trackError",

@@ -1,8 +1,8 @@
 import "@dotenvx/dotenvx/config";
-import Soundy from "#soundy/client";
 import { Logger } from "seyfert";
-import { SoundyLogger, validateEnv, validateConfig } from "#soundy/utils";
 import { APIServer } from "#soundy/api";
+import Soundy from "#soundy/client";
+import { SoundyLogger, validateConfig, validateEnv } from "#soundy/utils";
 
 Logger.customize(SoundyLogger);
 

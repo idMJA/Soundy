@@ -1,3 +1,4 @@
+import type { User } from "seyfert";
 import {
 	Command,
 	type CommandContext,
@@ -6,9 +7,8 @@ import {
 	LocalesT,
 	Middlewares,
 } from "seyfert";
-import type { User } from "seyfert";
 import { SoundyCategory } from "#soundy/types";
-import { SoundyOptions, TimeFormat, EmbedPaginator } from "#soundy/utils";
+import { EmbedPaginator, SoundyOptions, TimeFormat } from "#soundy/utils";
 
 @Declare({
 	name: "queue",

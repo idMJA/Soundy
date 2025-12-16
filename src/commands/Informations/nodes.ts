@@ -10,8 +10,8 @@ import {
 	StringSelectOption,
 } from "seyfert";
 import { EmbedColors } from "seyfert/lib/common";
-import { SoundyOptions, TimeFormat, formatBytes } from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
+import { formatBytes, SoundyOptions, TimeFormat } from "#soundy/utils";
 
 @Declare({
 	name: "nodes",

@@ -1,6 +1,6 @@
+import type { Track } from "lavalink-client";
 import type { Logger } from "seyfert";
 import type { PlayerData, QueueTrack } from "#soundy/types";
-import type { Track } from "lavalink-client";
 
 /**
  * Helper functions for PlayerSaver

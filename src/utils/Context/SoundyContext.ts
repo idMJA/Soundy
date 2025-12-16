@@ -1,4 +1,4 @@
-import { extendContext, type DefaultLocale } from "seyfert";
+import { type DefaultLocale, extendContext } from "seyfert";
 import type { LocaleString } from "seyfert/lib/types";
 
 /**

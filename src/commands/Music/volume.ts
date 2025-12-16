@@ -1,14 +1,14 @@
 import {
 	Command,
 	type CommandContext,
+	createIntegerOption,
 	Declare,
 	LocalesT,
 	Middlewares,
 	Options,
-	createIntegerOption,
 } from "seyfert";
-import { SoundyOptions } from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
+import { SoundyOptions } from "#soundy/utils";
 
 const option = {
 	volume: createIntegerOption({

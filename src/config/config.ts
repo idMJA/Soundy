@@ -60,5 +60,5 @@ export const Environment: SoundyEnvironment = {
 	DatabasePassword: DATABASE_PASSWORD,
 };
 
-export * from "./nodes";
 export * from "./emoji";
+export * from "./nodes";

@@ -1,10 +1,10 @@
 import {
-	SubCommand,
 	type CommandContext,
-	Declare,
-	Options,
 	createBooleanOption,
+	Declare,
 	Embed,
+	Options,
+	SubCommand,
 } from "seyfert";
 import { SoundyOptions } from "#soundy/utils";
 

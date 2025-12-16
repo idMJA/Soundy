@@ -1,15 +1,15 @@
 import {
 	type CommandContext,
-	Declare,
-	Options,
-	SubCommand,
 	createIntegerOption,
 	createStringOption,
 	createUserOption,
+	Declare,
+	Options,
+	SubCommand,
 } from "seyfert";
 import { EmbedColors } from "seyfert/lib/common";
-import { SoundyOptions } from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
+import { SoundyOptions } from "#soundy/utils";
 
 const option = {
 	user: createUserOption({

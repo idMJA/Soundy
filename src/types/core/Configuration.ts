@@ -1,6 +1,6 @@
+import type { SearchPlatform } from "lavalink-client";
 import type { PermissionStrings } from "seyfert";
 import type { EmojiConfig } from "#soundy/config";
-import type { SearchPlatform } from "lavalink-client";
 
 /**
  * The colors configuration interface.

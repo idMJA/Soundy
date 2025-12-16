@@ -4,14 +4,14 @@ import {
 	type SearchResult,
 } from "lavalink-client";
 import { Logger } from "seyfert";
+import type Soundy from "#soundy/client";
 import { nodes } from "#soundy/config";
 import {
+	autoPlayFunction,
 	LavalinkHandler,
 	PlayerSaver,
-	autoPlayFunction,
 	SoundyQueueWatcher,
 } from "#soundy/utils";
-import type Soundy from "#soundy/client";
 
 const logger = new Logger({
 	name: "[Manager]",

@@ -1,8 +1,19 @@
+import type { Elysia } from "elysia";
 import type { UsingClient } from "seyfert";
 import type { PlayerData } from "#soundy/types";
 
 export interface SoundyWS {
 	send: (data: string) => void;
+	/**
+	 * Elysia >=1.4.19 exposes `ws.data` for per-connection state.
+	 * Keep `store` for backward compatibility with pre-1.4.19 code.
+	 */
+	data?: {
+		guildId?: string;
+		voiceChannelId?: string;
+		userId?: string;
+		[key: string]: unknown;
+	};
 	store?: {
 		guildId?: string;
 		voiceChannelId?: string;
@@ -56,12 +67,15 @@ export interface PlayerSaver {
 	getPlayer?: (guildId: string) => Promise<PlayerData | null>;
 }
 
-export interface ElysiaApp {
-	ws: (path: string, handlers: Record<string, unknown>) => void;
-	server?: { clients?: Set<unknown> };
+export type ElysiaApp = Elysia & {
 	client: UsingClient;
-	_client?: Client;
-}
+	server?: {
+		clients?: Set<{ readyState: number; send: (msg: string) => void }>;
+		ws?: {
+			clients?: Set<{ readyState: number; send: (msg: string) => void }>;
+		};
+	} & Record<string, unknown>;
+};
 
 export type SearchQuery =
 	| string

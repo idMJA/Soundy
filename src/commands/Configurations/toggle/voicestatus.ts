@@ -1,13 +1,13 @@
 import {
 	type CommandContext,
+	createBooleanOption,
 	Declare,
 	LocalesT,
 	Options,
 	SubCommand,
-	createBooleanOption,
 } from "seyfert";
-import { SoundyOptions } from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
+import { SoundyOptions } from "#soundy/utils";
 
 const option = {
 	enabled: createBooleanOption({

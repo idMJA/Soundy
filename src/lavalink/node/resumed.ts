@@ -1,12 +1,11 @@
-import { PlayerSaver } from "#soundy/utils";
-import { LavalinkEventTypes } from "#soundy/types";
-import { createLavalinkEvent } from "#soundy/utils";
 import type {
-	LavalinkNode,
 	InvalidLavalinkRestRequest,
+	LavalinkNode,
 	LavalinkPlayer,
 	Track,
 } from "lavalink-client";
+import { LavalinkEventTypes } from "#soundy/types";
+import { createLavalinkEvent, PlayerSaver } from "#soundy/utils";
 
 const resumingPlayers = new Set<string>();
 

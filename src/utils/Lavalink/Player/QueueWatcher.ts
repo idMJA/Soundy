@@ -1,6 +1,10 @@
-import type { QueueChangesWatcher, StoredQueue } from "lavalink-client";
+import type {
+	QueueChangesWatcher,
+	StoredQueue,
+	Track,
+	UnresolvedTrack,
+} from "lavalink-client";
 import type { Logger } from "seyfert";
-import type { UnresolvedTrack, Track } from "lavalink-client";
 import type Soundy from "#soundy/client";
 import { PlayerSaver } from "./Saver";
 

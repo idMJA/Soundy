@@ -1,25 +1,21 @@
-import type { Elysia } from "elysia";
-import type { UsingClient } from "seyfert";
 import type { Player } from "lavalink-client";
 import type { ElysiaApp } from "#soundy/api";
 import { serializePlayerState } from "./types";
 
-interface WebSocketServerWithClients {
-	clients?: Set<{ readyState: number; send: (msg: string) => void }>;
-}
-
-let globalAppInstance: ElysiaApp | Elysia | null = null;
+let globalAppInstance: ElysiaApp | null = null;
 let updateInterval: NodeJS.Timeout | null = null;
 
-function getWsClients(app: Elysia | ElysiaApp) {
-	const server = app.server as WebSocketServerWithClients;
-	if (!server || !server.clients) {
-		return null;
-	}
-	return server.clients;
+function getWsClients(app: ElysiaApp) {
+	const server = app.server;
+	if (server?.clients && server.clients.size >= 0) return server.clients;
+
+	const maybeWsServer = server?.ws;
+	if (maybeWsServer?.clients) return maybeWsServer.clients;
+
+	return null;
 }
 
-export function setGlobalAppInstance(app: ElysiaApp | Elysia) {
+export function setGlobalAppInstance(app: ElysiaApp): void {
 	globalAppInstance = app;
 	startAutoUpdate();
 }
@@ -35,8 +31,7 @@ function startAutoUpdate() {
 		const clients = getWsClients(globalAppInstance);
 		if (!clients || clients.size === 0) return;
 
-		const client = (globalAppInstance as unknown as { client?: UsingClient })
-			.client;
+		const client = globalAppInstance.client;
 		if (!client?.manager?.players) return;
 
 		for (const player of client.manager.players.values()) {
@@ -57,7 +52,7 @@ export function stopAutoUpdate() {
 function broadcastPlayerStatus(
 	guildId: string,
 	player: Player,
-	app: ElysiaApp | Elysia,
+	app: ElysiaApp,
 ) {
 	const clients = getWsClients(app);
 	if (!clients) return;

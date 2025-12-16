@@ -1,15 +1,15 @@
 import {
 	Command,
 	type CommandContext,
+	createChannelOption,
 	Declare,
 	LocalesT,
 	Middlewares,
 	Options,
-	createChannelOption,
 } from "seyfert";
 import { ChannelType } from "seyfert/lib/types";
-import { SoundyOptions } from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
+import { SoundyOptions } from "#soundy/utils";
 
 const option = {
 	voice: createChannelOption({

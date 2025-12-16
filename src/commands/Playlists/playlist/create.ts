@@ -1,11 +1,11 @@
 import {
 	type CommandContext,
+	createStringOption,
 	Declare,
 	LocalesT,
 	Middlewares,
 	Options,
 	SubCommand,
-	createStringOption,
 } from "seyfert";
 import { MessageFlags } from "seyfert/lib/types";
 

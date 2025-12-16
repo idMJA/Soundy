@@ -1,4 +1,4 @@
-import { Embed, createEvent } from "seyfert";
+import { createEvent, Embed } from "seyfert";
 
 export default createEvent({
 	data: { name: "guildDelete" },

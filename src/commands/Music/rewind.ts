@@ -1,6 +1,6 @@
 import { Command, type CommandContext, Declare, Middlewares } from "seyfert";
-import { SoundyOptions } from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
+import { SoundyOptions } from "#soundy/utils";
 
 @Declare({
 	name: "rewind",

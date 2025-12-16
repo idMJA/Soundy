@@ -1,28 +1,28 @@
 import {
 	Command,
 	type CommandContext,
+	createIntegerOption,
+	createStringOption,
 	Declare,
 	Embed,
 	type Message,
 	Options,
 	type WebhookMessage,
-	createIntegerOption,
-	createStringOption,
 } from "seyfert";
 import { EmbedColors, Formatter } from "seyfert/lib/common";
-import {
-	SoundyOptions,
-	SECRETS_MESSAGES,
-	getDepth,
-	ms,
-	sliceText,
-} from "#soundy/utils";
 import {
 	DeclareParserConfig,
 	ParserRecommendedConfig,
 	Watch,
 	Yuna,
 } from "yunaforseyfert";
+import {
+	getDepth,
+	ms,
+	SECRETS_MESSAGES,
+	SoundyOptions,
+	sliceText,
+} from "#soundy/utils";
 
 const secretsRegex =
 	/\b(?:client\.(?:config)|config|env|process\.(?:env|exit)|eval|atob|btoa)\b/;

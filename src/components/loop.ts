@@ -1,9 +1,9 @@
 import { ComponentCommand, type ComponentContext, Middlewares } from "seyfert";
-import { ComponentType, ButtonStyle } from "seyfert/lib/types";
 import type {
 	APIActionRowComponent,
 	APIMessageActionRowComponent,
 } from "seyfert/lib/types";
+import { ButtonStyle, ComponentType } from "seyfert/lib/types";
 import { PlayerSaver } from "#soundy/utils";
 
 @Middlewares([

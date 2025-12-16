@@ -4,13 +4,13 @@ import {
 	type CommandContext,
 	type ComponentInteraction,
 	Declare,
+	Embed,
 	LocalesT,
 	type Message,
 	Modal,
 	type ModalSubmitInteraction,
 	SubCommand,
 	TextInput,
-	Embed,
 } from "seyfert";
 import { Label } from "seyfert/lib/builders/Label";
 import { ButtonStyle, MessageFlags, TextInputStyle } from "seyfert/lib/types";
@@ -81,9 +81,8 @@ export default class BugReportCommand extends SubCommand {
 			])
 			.run(async (modalCtx: ModalSubmitInteraction) => {
 				const description =
-					modalCtx.data.components?.[0]?.components?.[0]?.value ?? "";
-				const steps =
-					modalCtx.data.components?.[1]?.components?.[0]?.value ?? "";
+					modalCtx.data.components?.[0]?.component?.value ?? "";
+				const steps = modalCtx.data.components?.[1]?.component?.value ?? "";
 				const reportId = Date.now().toString(36);
 
 				try {

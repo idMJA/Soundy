@@ -1,14 +1,14 @@
 import {
 	Command,
 	type CommandContext,
+	createStringOption,
 	Declare,
 	type DefaultLocale,
 	Options,
-	createStringOption,
 } from "seyfert";
-import { SoundyOptions } from "#soundy/utils";
 import { MessageFlags } from "seyfert/lib/types";
 import { SoundyCategory } from "#soundy/types";
+import { SoundyOptions } from "#soundy/utils";
 
 const option = {
 	locale: createStringOption({

@@ -5,8 +5,7 @@ import {
 	Middlewares,
 	type User,
 } from "seyfert";
-import { EmbedPaginator } from "#soundy/utils";
-import { TimeFormat } from "#soundy/utils";
+import { EmbedPaginator, TimeFormat } from "#soundy/utils";
 
 @Middlewares([
 	"checkNodes",

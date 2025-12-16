@@ -5,9 +5,8 @@ import {
 	LocalesT,
 	Middlewares,
 } from "seyfert";
-import { SoundyOptions } from "#soundy/utils";
 import { SoundyCategory } from "#soundy/types";
-import { PlayerSaver } from "#soundy/utils";
+import { PlayerSaver, SoundyOptions } from "#soundy/utils";
 
 @Declare({
 	name: "autoplay",

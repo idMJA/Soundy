@@ -1,5 +1,5 @@
-import type { WSHandler } from "./types";
 import type { PlayerSaver } from "#soundy/utils";
+import type { WSHandler } from "./types";
 
 export const handleVolume: WSHandler = async (ws, msg, client) => {
 	if (
@@ -93,7 +93,6 @@ export const handleRepeat: WSHandler = async (ws, msg, client, ...args) => {
 					client.logger.error("Failed to save repeatMode to PlayerSaver", e);
 				}
 			}
-
 			ws.send(
 				JSON.stringify({
 					type: "repeat",

@@ -1,5 +1,4 @@
-import type { WSHandler } from "./types";
-import { serializePlayerState } from "./types";
+import { serializePlayerState, type WSHandler } from "./types";
 
 export const handleStatus: WSHandler = async (ws, msg, client) => {
 	if (msg.type === "status" && msg.guildId) {
