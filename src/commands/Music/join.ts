@@ -37,13 +37,14 @@ export default class JoinCommand extends Command {
 		let player = client.manager.getPlayer(guild.id);
 
 		// If no player exists, create one and connect to the voice channel
-		if (player) {
+		if (!player) {
 			player = await client.manager.createPlayer({
 				guildId: guild.id,
 				voiceChannelId: voiceChannel,
 				textChannelId: ctx.channelId,
 				selfDeaf: true,
 			});
+			await player.connect();
 		}
 
 		await ctx.editOrReply({
