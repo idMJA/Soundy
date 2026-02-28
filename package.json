@@ -51,9 +51,9 @@
     "elysia": "^1.4.22",
     "genius-lyrics": "^4.4.7",
     "jsonwebtoken": "^9.0.3",
-    "lavalink-client": "^2.7.8",
+    "lavalink-client": "^2.9.6",
     "lowdb": "^7.0.1",
-    "seyfert": "^4.1.1-dev-21273578677.0",
+    "seyfert": "^4.2.3-dev-22289628969.0",
     "yunaforseyfert": "^1.1.3"
   },
   "devDependencies": {
