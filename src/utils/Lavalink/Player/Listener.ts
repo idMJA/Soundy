@@ -1,4 +1,4 @@
-import type { UsingClient, VoiceState } from "seyfert";
+import type { UsingClient, VoiceState, GuildMember } from "seyfert";
 
 const timeouts: Map<string, NodeJS.Timeout> = new Map();
 
@@ -69,23 +69,10 @@ export async function playerListener(
 		const channel = await client.channels.fetch(player.voiceChannelId);
 		if (!channel?.is(["GuildVoice", "GuildStageVoice"])) return;
 
-		const voiceStates = client.cache.voiceStates?.values(guildId) || [];
+		const vcMembers: GuildMember[] = await Promise.all(channel.states().map((c): Promise<GuildMember> => c.member() ));
+		
 
-		const channelVoiceStates = voiceStates.filter(
-			(state) => state.channelId === player.voiceChannelId,
-		);
-
-		let nonBotCount = 0;
-		for (const state of channelVoiceStates) {
-			try {
-				const member = await state.member();
-				if (!member.user.bot) {
-					nonBotCount++;
-				}
-			} catch {}
-		}
-
-		const isEmpty = nonBotCount === 0;
+		const isEmpty = !vcMembers.filter(({ user }): boolean => !user.bot).length;
 
 		const mode247 = await client.database.get247Mode(guildId);
 		const is247Enabled = mode247?.enabled ?? false;
