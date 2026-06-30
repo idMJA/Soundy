@@ -1,4 +1,5 @@
 import { Client as Genius } from "genius-lyrics";
+import type { Track, UnresolvedTrack } from "lavalink-client";
 import {
 	Command,
 	type CommandContext,
@@ -11,13 +12,25 @@ import {
 } from "seyfert";
 import { SoundyCategory } from "#soundy/types";
 import {
+	fetchMusixmatchFallback,
 	getAllTopTracks,
 	type RecommendationTrack,
 	SoundyOptions,
 	TimeFormat,
 } from "#soundy/utils";
 
-// Initialize Genius client
+interface LavalinkLyricsLine {
+	timestamp: number;
+	text: string;
+}
+
+interface LavalinkLyricsResponse {
+	text?: string;
+	lines?: LavalinkLyricsLine[];
+	providerName?: string;
+}
+
+
 const geniusClient = new Genius();
 
 const options = {
@@ -134,12 +147,14 @@ export default class LyricsCommand extends Command {
 
 		const { cmd, component } = await ctx.getLocale();
 
-		let searchQuery: string;
 		const player = client.manager.players.get(guildId);
 		const track = player?.queue.current;
 		const query = ctx.options.query;
 
-		// Handle different input scenarios
+		let resolvedTrack: Track | UnresolvedTrack | null = null;
+		let searchQuery = "";
+
+		
 		if (query) {
 			if (this.isValidUrl(query)) {
 				try {
@@ -148,11 +163,13 @@ export default class LyricsCommand extends Command {
 						{ ...ctx.author, tag: ctx.author.tag },
 					);
 
-					if (!result?.tracks?.length || !result.tracks[0]) {
+					const firstTrack = result?.tracks?.[0];
+					if (firstTrack) {
+						resolvedTrack = firstTrack;
+						searchQuery = `${firstTrack.info.title} ${firstTrack.info.author}`;
+					} else {
 						throw new Error(cmd.lyrics.run.no_tracks);
 					}
-
-					searchQuery = `${result.tracks[0].info.title} ${result.tracks[0].info.author}`;
 				} catch {
 					await ctx.editOrReply({
 						embeds: [
@@ -183,10 +200,85 @@ export default class LyricsCommand extends Command {
 			return;
 		}
 
-		// Search for the song on Genius
-		const searches = await geniusClient.songs.search(searchQuery);
+		let lyricsText: string | null = null;
+		let lyricsProvider = "Unknown";
+		let isSynced = false;
+		let songTitle = track ? track.info.title : (resolvedTrack ? resolvedTrack.info.title : searchQuery);
+		let songThumbnail = track?.info.artworkUrl ?? resolvedTrack?.info.artworkUrl ?? undefined;
+		let songUrl = track?.info.uri ?? resolvedTrack?.info.uri ?? undefined;
 
-		if (!searches.length || !searches[0]) {
+		const targetTrack = track || resolvedTrack;
+		let lavalinkSuccess = false;
+
+		
+		if (player && targetTrack) {
+			try {
+				client.logger.info(`[Lyrics] Requesting lyrics from Lavalink node for: ${targetTrack.info.title}`);
+				const response = (await player.node.request(`/v4/lyrics?track=${encodeURIComponent(targetTrack.encoded ?? "")}&skipTrackSource=true`)) as LavalinkLyricsResponse | null;
+				
+				if (response) {
+					if (response.lines && response.lines.length > 0) {
+						lyricsText = response.lines.map((line) => {
+							const totalMs = line.timestamp || 0;
+							const minutes = Math.floor(totalMs / 60000);
+							const seconds = Math.floor((totalMs % 60000) / 1000);
+							const minStr = minutes.toString().padStart(2, "0");
+							const secStr = seconds.toString().padStart(2, "0");
+							return `[${minStr}:${secStr}] ${line.text}`;
+						}).join("\n");
+						isSynced = true;
+					} else if (response.text) {
+						lyricsText = response.text;
+					}
+					
+					if (lyricsText) {
+						lyricsProvider = response.providerName || "Lavalink";
+						lavalinkSuccess = true;
+						client.logger.info(`[Lyrics] Successfully retrieved lyrics from Lavalink (${lyricsProvider}).`);
+					}
+				}
+			} catch (err) {
+				client.logger.warn(`[Lyrics] Lavalink query failed or timed out: ${err instanceof Error ? err.message : err}`);
+			}
+		}
+
+		
+		if (!lavalinkSuccess && targetTrack) {
+			client.logger.info(`[Lyrics] Lavalink failed. Trying Musixmatch fallback for: ${songTitle}`);
+			const fallbackResult = await fetchMusixmatchFallback(
+				ctx,
+				targetTrack.info.title ?? "",
+				targetTrack.info.author ?? "",
+				targetTrack.info.isrc ?? undefined
+			);
+
+			if (fallbackResult) {
+				lyricsText = fallbackResult.text || "";
+				isSynced = fallbackResult.lines.some(l => l.timestamp && l.timestamp > 0);
+				lyricsProvider = fallbackResult.provider || "Musixmatch";
+			}
+		}
+
+		
+		if (!lyricsText) {
+			client.logger.info(`[Lyrics] Lavalink and Musixmatch failed. Trying Genius fallback for: ${songTitle}`);
+			try {
+				const searches = await geniusClient.songs.search(searchQuery);
+				if (searches.length > 0 && searches[0]) {
+					const song = searches[0];
+					lyricsText = await song.lyrics();
+					lyricsProvider = "Genius";
+					songTitle = song.title;
+					songThumbnail = song.thumbnail;
+					songUrl = song.url;
+				}
+			} catch (err) {
+				client.logger.error(`[Lyrics] Genius fallback request failed: ${err instanceof Error ? err.message : err}`);
+			}
+		}
+
+		
+		if (!lyricsText) {
 			await ctx.editOrReply({
 				embeds: [
 					new Embed()
@@ -199,34 +291,31 @@ export default class LyricsCommand extends Command {
 			return;
 		}
 
-		// Get the first result and lyrics
-		const song = searches[0];
-		const lyrics = await song.lyrics();
+		
+		const lyricsChunks = this.splitLyrics(lyricsText);
 
-		// Split lyrics into chunks if too long
-		const lyricsChunks = this.splitLyrics(lyrics);
-
-		// Send first chunk
+		
 		const firstEmbed = new Embed()
 			.setColor(client.config.color.primary)
 			.setTitle(
-				`${client.config.emoji.list} ${component.lyrics.title({ song: song.title })}`,
+				`${client.config.emoji.list} ${component.lyrics.title({ song: songTitle })}`,
 			)
-			.setURL(song.url)
-			.setThumbnail(song.thumbnail)
-			.setDescription(lyricsChunks[0])
+			.setDescription(lyricsChunks[0] || "")
 			.setFooter({
-				text: `${cmd.requested_by({ user: ctx.author.username })} • ${cmd.powered_by({ provider: "Genius" })}`,
+				text: `${cmd.requested_by({ user: ctx.author.username })} • ${cmd.powered_by({ provider: lyricsProvider })}${isSynced ? " (Synced)" : ""}`,
 				iconUrl: ctx.author.avatarURL(),
 			});
 
+		if (songUrl) firstEmbed.setURL(songUrl ?? undefined);
+		if (songThumbnail) firstEmbed.setThumbnail(songThumbnail ?? undefined);
+
 		await ctx.editOrReply({ embeds: [firstEmbed] });
 
-		// Send additional chunks if any
+		
 		for (let i = 1; i < lyricsChunks.length; i++) {
 			const embed = new Embed()
 				.setColor(client.config.color.primary)
-				.setDescription(lyricsChunks[i]);
+				.setDescription(lyricsChunks[i] || "");
 			await ctx.editOrReply({ embeds: [embed] });
 		}
 	}

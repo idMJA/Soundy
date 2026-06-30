@@ -17,13 +17,13 @@ export default createLavalinkEvent({
 	async run(client, player, track, payload): Promise<void> {
 		if (payload.skipped) return;
 
-		if (!player.get<boolean | undefined>("lyricsEnabled")) return;
+		if (!player.getData<boolean | undefined>("lyricsEnabled")) return;
 		if (!player.textChannelId) return;
 
-		const lyricsId = player.get<string | undefined>("lyricsId");
+		const lyricsId = player.getData<string | undefined>("lyricsId");
 		if (!lyricsId) return;
 
-		const locale = player.get<string>("localeString");
+		const locale = player.getData<string>("localeString");
 		const { cmd, component } = client.t(locale).get();
 
 		const message = await client.messages
@@ -31,12 +31,12 @@ export default createLavalinkEvent({
 			.catch(() => null);
 		if (!message) return;
 
-		const lyrics = player.get<LyricsResult | undefined>("lyrics");
+		const lyrics = player.getData<LyricsResult | undefined>("lyrics");
 		if (!lyrics) {
 			await message.delete().catch(() => null);
 
-			player.set("lyricsId", undefined);
-			player.set("lyrics", undefined);
+			player.deleteData("lyricsId");
+			player.deleteData("lyrics");
 
 			return;
 		}
@@ -79,7 +79,7 @@ export default createLavalinkEvent({
 				new Section()
 					.addComponents(
 						new TextDisplay().setContent(
-							`-# ${String(cmd.requested_by({ user: player.get<string>("lyricsRequester") || "Unknown" }))}`,
+							`-# ${String(cmd.requested_by({ user: player.getData<string>("lyricsRequester") || "Unknown" }))}`,
 						),
 					)
 					.setAccessory(

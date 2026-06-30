@@ -84,7 +84,7 @@ export function createMusicAPI(client: UsingClient) {
 							: player.repeatMode === "track"
 								? 1
 								: 2,
-					autoplay: player.get("enabledAutoplay") || false,
+					autoplay: player.getData("enabledAutoplay") || false,
 				};
 
 				return status;

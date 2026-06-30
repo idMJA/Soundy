@@ -15,7 +15,7 @@ export default createLavalinkEvent({
 		if (!(player.textChannelId && player.voiceChannelId)) return;
 		if (!track) return;
 		try {
-			player.set("me", {
+			player.setData("me", {
 				...client.me,
 				tag: client.me.username,
 			});
@@ -24,28 +24,37 @@ export default createLavalinkEvent({
 
 			// Store locale string for lyrics
 			const localeString = await client.database.getLocale(player.guildId);
-			player.set("localeString", localeString);
+			player.setData("localeString", localeString);
 
 			const lyricsData = await playerSaver.getLyricsData(player.guildId);
 			if (lyricsData) {
 				if (lyricsData.lyricsEnabled) {
-					player.set("lyricsEnabled", lyricsData.lyricsEnabled);
+					player.setData("lyricsEnabled", lyricsData.lyricsEnabled);
 				}
 				if (lyricsData.lyricsId) {
-					player.set("lyricsId", lyricsData.lyricsId);
+					player.setData("lyricsId", lyricsData.lyricsId);
 				}
 				if (lyricsData.lyrics) {
-					player.set("lyrics", lyricsData.lyrics);
+					player.setData("lyrics", lyricsData.lyrics);
 				}
 			}
 
 			// Clear disconnect timeout jika ada
-			const disconnectTimeout = player.get<NodeJS.Timeout | undefined>(
+			const disconnectTimeout = player.getData<NodeJS.Timeout | undefined>(
 				"disconnectTimeout",
 			);
 			if (disconnectTimeout) {
 				clearTimeout(disconnectTimeout);
-				player.set("disconnectTimeout", undefined);
+				player.deleteData("disconnectTimeout");
+			}
+
+			// Clear lyrics interval jika ada
+			const lyricsInterval = player.getData<NodeJS.Timeout | undefined>(
+				"lyricsInterval",
+			);
+			if (lyricsInterval) {
+				clearInterval(lyricsInterval);
+				player.deleteData("lyricsInterval");
 			}
 
 			await client.database.updateTrackStats(
@@ -124,7 +133,7 @@ export default createLavalinkEvent({
 				player.textChannelId,
 				nowPlaying,
 			);
-			player.set("messageId", sentMessage.id);
+			player.setData("messageId", sentMessage.id);
 
 			// Simpan messageId dan channelId ke database
 			await playerSaver.setLastNowPlayingMessage(

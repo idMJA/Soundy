@@ -18,7 +18,6 @@
 		"sourceMap": false,
 		"outDir": "./dist",
 		"noEmit": false,
-		"downlevelIteration": false,
 		"stripInternal": true,
 		"preserveConstEnums": true,
 
@@ -37,9 +36,6 @@
 		/* Completeness */
 		"skipLibCheck": true,
 		"noErrorTruncation": true,
-
-		/* Path Mapping */
-		"baseUrl": ".",
 		"rootDir": "./src",
 		"paths": {
 			"#soundy/client": ["./src/client/Soundy.ts"],

@@ -35,7 +35,7 @@ export function serializePlayerState(player: Player) {
 			: null,
 		repeatMode:
 			player.repeatMode === "off" ? 0 : player.repeatMode === "track" ? 1 : 2,
-		autoplay: player.get("enabledAutoplay") || false,
+		autoplay: player.getData("enabledAutoplay") || false,
 	};
 }
 

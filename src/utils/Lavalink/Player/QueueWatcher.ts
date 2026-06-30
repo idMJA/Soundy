@@ -83,7 +83,7 @@ export class SoundyQueueWatcher implements QueueChangesWatcher {
 				vcRegion: player.options?.vcRegion,
 			},
 			repeatMode: player.repeatMode || "off",
-			enabledAutoplay: player.get("enabledAutoplay") || false,
+			enabledAutoplay: player.getData("enabledAutoplay") || false,
 			track: player.queue.current
 				? this.convertTrackForSaving(player.queue.current)
 				: undefined,

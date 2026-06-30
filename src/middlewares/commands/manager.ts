@@ -83,7 +83,7 @@ export const checkQueue = createMiddleware<void>(
 			const player = client.manager.getPlayer(context.guildId);
 			if (!player) return pass();
 
-			const isAutoplay = !!player.get<boolean | undefined>("enabledAutoplay");
+			const isAutoplay = !!player.getData<boolean | undefined>("enabledAutoplay");
 			if (isAutoplay) {
 				return next();
 			}

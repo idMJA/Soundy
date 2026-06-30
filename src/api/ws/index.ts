@@ -77,7 +77,7 @@ export function setupSoundyWebSocket(
 						connected: player.connected,
 						playing: player.playing,
 						paused: player.paused,
-						autoplay: player.get("enabledAutoplay") || false,
+						autoplay: player.getData("enabledAutoplay") || false,
 					};
 					await playerSaver.savePlayer(player.guildId, playerData);
 				}

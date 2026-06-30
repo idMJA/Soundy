@@ -77,8 +77,8 @@ export async function playerSetup(message: Message, client: UsingClient) {
 
 			await player.connect();
 
-			player.set("me", { ...client.me, tag: client.me.username });
-			if (!player.get("localeString")) player.set("localeString", locale);
+			player.setData("me", { ...client.me, tag: client.me.username });
+			if (!player.getData("localeString")) player.setData("localeString", locale);
 
 			const bot = client.cache.voiceStates?.get(client.me.id, message.guildId);
 			if (voiceChannel.isStage() && bot?.suppress) await bot.setSuppress(false);
@@ -140,7 +140,7 @@ export async function playerSetup(message: Message, client: UsingClient) {
 				track.requester = { ...message.author, tag: message.author.tag };
 			}
 
-			if (player.get("enabledAutoplay"))
+			if (player.getData("enabledAutoplay"))
 				await player.queue.add(result.tracks, 0);
 			else await player.queue.add(result.tracks);
 
@@ -168,7 +168,7 @@ export async function playerSetup(message: Message, client: UsingClient) {
 			if (track) {
 				track.requester = { ...message.author, tag: message.author.tag };
 
-				if (player.get("enabledAutoplay")) await player.queue.add(track, 0);
+				if (player.getData("enabledAutoplay")) await player.queue.add(track, 0);
 				else await player.queue.add(track);
 			}
 

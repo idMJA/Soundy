@@ -89,13 +89,13 @@ export default createLavalinkEvent({
 					vcRegion: dataOfSaving.options?.vcRegion || undefined,
 				});
 
-				player.set("me", {
+				player.setData("me", {
 					...client.me,
 					tag: client.me.username,
 				});
 
 				if (dataOfSaving.localeString) {
-					player.set("localeString", dataOfSaving.localeString);
+					player.setData("localeString", dataOfSaving.localeString);
 				}
 
 				if (dataOfSaving.repeatMode) {
@@ -110,7 +110,7 @@ export default createLavalinkEvent({
 				}
 
 				if (typeof dataOfSaving.enabledAutoplay === "boolean") {
-					player.set("enabledAutoplay", dataOfSaving.enabledAutoplay);
+					player.setData("enabledAutoplay", dataOfSaving.enabledAutoplay);
 				}
 
 				await player.connect();
@@ -208,15 +208,15 @@ export default createLavalinkEvent({
 					const savedLyricsData = await playerSaver.getLyricsData(data.guildId);
 					if (savedLyricsData?.lyricsEnabled && player.queue.current) {
 						await player.subscribeLyrics();
-						player.set("lyricsEnabled", true);
+						player.setData("lyricsEnabled", true);
 						if (savedLyricsData.lyricsId) {
-							player.set("lyricsId", savedLyricsData.lyricsId);
+							player.setData("lyricsId", savedLyricsData.lyricsId);
 						}
 						if (savedLyricsData.lyricsRequester) {
-							player.set("lyricsRequester", savedLyricsData.lyricsRequester);
+							player.setData("lyricsRequester", savedLyricsData.lyricsRequester);
 						}
 						if (savedLyricsData.lyrics) {
-							player.set("lyrics", savedLyricsData.lyrics);
+							player.setData("lyrics", savedLyricsData.lyrics);
 						}
 						client.logger.info(
 							`[Music] Re-subscribed lyrics for guild ${data.guildId}`,

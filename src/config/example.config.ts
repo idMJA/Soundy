@@ -1,3 +1,5 @@
+// RENAME MEEEEEE TO config.ts AND UPDATE THE CONFIGURATION ACCORDINGLY
+
 import type { SoundyConfiguration, SoundyEnvironment } from "#soundy/types";
 import { emoji } from "./emoji";
 

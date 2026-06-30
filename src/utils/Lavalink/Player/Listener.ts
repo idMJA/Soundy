@@ -24,7 +24,7 @@ export async function playerListener(
 
 		const botId = client.me.id;
 
-		const locale = player.get<string>("localeString");
+		const locale = player.getData<string | undefined>("localeString") || client.config.defaultLocale;
 		const { event } = client.t(locale).get();
 
 		if (

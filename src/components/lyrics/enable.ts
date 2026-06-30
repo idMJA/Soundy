@@ -13,7 +13,7 @@ import {
 } from "seyfert";
 import { EmbedColors } from "seyfert/lib/common";
 import { ButtonStyle, MessageFlags } from "seyfert/lib/types";
-import { PlayerSaver } from "#soundy/utils";
+import { fetchMusixmatchFallback, PlayerSaver, updateLyricsEmbed } from "#soundy/utils";
 
 @Middlewares([
 	"checkNodes",
@@ -36,25 +36,37 @@ export default class LyricsEnableComponent extends ComponentCommand {
 
 		const track = player.queue.current;
 		if (!track) return;
-
 		const { cmd, component } = await ctx.getLocale();
 
 		await ctx.deferReply();
 
-		const lyrics: LyricsResult | null =
-			player.get<LyricsResult | undefined>("lyrics") ??
-			(await player
-				.getCurrentLyrics()
-				.then((lyrics) => {
-					if (!lyrics) return null;
+		let lyrics: LyricsResult | null =
+			player.getData<LyricsResult | undefined>("lyrics") ?? null;
 
-					if (typeof lyrics.provider !== "string") lyrics.provider = "Unknown";
+		if (!lyrics) {
+			try {
+				client.logger.info(`[Lyrics Component] Requesting lyrics from Lavalink node for: ${track.info.title}`);
+				const lavalinkLyrics = await player.getCurrentLyrics();
+				if (lavalinkLyrics && (lavalinkLyrics.text || (Array.isArray(lavalinkLyrics.lines) && lavalinkLyrics.lines.length > 0))) {
+					if (typeof lavalinkLyrics.provider !== "string") lavalinkLyrics.provider = "Unknown";
+					lavalinkLyrics.provider = lavalinkLyrics.provider.replace("Source:", "").trim();
+					lyrics = lavalinkLyrics;
+					client.logger.info(`[Lyrics Component] Successfully retrieved lyrics from Lavalink (${lyrics.provider}).`);
+				}
+			} catch (err) {
+				client.logger.warn(`[Lyrics Component] Lavalink query failed: ${err instanceof Error ? err.message : err}`);
+			}
+		}
 
-					lyrics.provider = lyrics.provider.replace("Source:", "").trim();
-
-					return lyrics;
-				})
-				.catch(() => null));
+		if (!lyrics) {
+			client.logger.info(`[Lyrics Component] Lavalink failed. Trying Musixmatch fallback for: ${track.info.title}`);
+			lyrics = await fetchMusixmatchFallback(
+				ctx,
+				track.info.title ?? "",
+				track.info.author ?? "",
+				track.info.isrc ?? undefined
+			);
+		}
 
 		if (!lyrics || !Array.isArray(lyrics.lines) || lyrics.lines.length === 0)
 			return ctx.editOrReply({
@@ -110,18 +122,63 @@ export default class LyricsEnableComponent extends ComponentCommand {
 			true,
 		);
 
-		const isEnabled: boolean = !!player.get<boolean | undefined>(
+		const isEnabled: boolean = !!player.getData<boolean | undefined>(
 			"lyricsEnabled",
 		);
 		if (!isEnabled) {
 			await player.subscribeLyrics();
 
-			player.set("lyricsEnabled", true);
+			player.setData("lyricsEnabled", true);
 		}
 
-		player.set("lyrics", lyrics);
-		player.set("lyricsId", message.id);
-		player.set("lyricsRequester", ctx.author);
+		player.setData("lyrics", lyrics);
+		player.setData("lyricsId", message.id);
+		player.setData("lyricsRequester", ctx.author);
+
+		
+		const oldInterval = player.getData<NodeJS.Timeout | undefined>("lyricsInterval");
+		if (oldInterval) {
+			clearInterval(oldInterval);
+			player.deleteData("lyricsInterval");
+		}
+
+		
+		if (lyrics.provider === "Musixmatch") {
+			let lastIndex = -1;
+			const intervalId = setInterval(async () => {
+				
+				if (!player.getData("lyricsEnabled") || player.getData("lyricsId") !== message.id) {
+					clearInterval(intervalId);
+					player.deleteData("lyricsInterval");
+					return;
+				}
+
+				const currentTrack = player.queue.current;
+				if (!currentTrack || currentTrack.info.uri !== track.info.uri) {
+					clearInterval(intervalId);
+					player.deleteData("lyricsInterval");
+					return;
+				}
+
+				const currentPosition = player.position; 
+				let currentIndex = -1;
+				for (let i = 0; i < lyrics.lines.length; i++) {
+					const l = lyrics.lines[i];
+					if (l && typeof l.timestamp === "number" && l.timestamp <= currentPosition) {
+						currentIndex = i;
+					} else {
+						break;
+					}
+				}
+
+				if (currentIndex !== lastIndex && currentIndex !== -1) {
+					lastIndex = currentIndex;
+					await updateLyricsEmbed(client, player, currentTrack, currentIndex);
+				}
+			}, 1000); 
+
+			player.setData("lyricsInterval", intervalId);
+		}
 
 		const playerSaver = new PlayerSaver(client.logger);
 		await playerSaver.saveLyricsData(ctx.guildId, {

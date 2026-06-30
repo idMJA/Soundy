@@ -1,3 +1,5 @@
+// RENAME MEEEEEE TO nodes.ts AND UPDATE THE CONFIGURATION ACCORDINGLY
+
 import type { LavalinkNodeOptions } from "lavalink-client";
 
 export const nodes: LavalinkNodeOptions[] = [

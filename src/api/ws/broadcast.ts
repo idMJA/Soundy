@@ -97,7 +97,7 @@ function broadcastPlayerStatus(
 		paused: player.paused,
 		playing: player.playing,
 		repeatMode: player.repeatMode,
-		autoplay: player.get("enabledAutoplay") || false,
+		autoplay: player.getData("enabledAutoplay") || false,
 		connected: player.connected ?? false,
 	});
 

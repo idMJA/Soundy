@@ -30,14 +30,20 @@ export default class LyricsDisableComponent extends ComponentCommand {
 		await ctx.deferUpdate();
 		await ctx.deleteResponse().catch(() => null);
 
-		const lyricsEnabled = player.get<boolean | undefined>("lyricsEnabled");
+		const lyricsEnabled = player.getData<boolean | undefined>("lyricsEnabled");
 		if (lyricsEnabled) {
 			await player.unsubscribeLyrics();
-			player.set("lyricsEnabled", false);
+			player.setData("lyricsEnabled", false);
 		}
 
-		player.set("lyrics", undefined);
-		player.set("lyricsId", undefined);
+		const intervalId = player.getData<NodeJS.Timeout | undefined>("lyricsInterval");
+		if (intervalId) {
+			clearInterval(intervalId);
+			player.deleteData("lyricsInterval");
+		}
+
+		player.deleteData("lyrics");
+		player.deleteData("lyricsId");
 
 		const playerSaver = new PlayerSaver(client.logger);
 		await playerSaver.clearLyricsData(ctx.guildId);

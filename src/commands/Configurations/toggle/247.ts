@@ -68,7 +68,7 @@ export default class Command247 extends SubCommand {
 			});
 
 			// Set player metadata
-			player.set("me", {
+			player.setData("me", {
 				...client.me,
 				tag: client.me.username,
 			});

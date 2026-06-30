@@ -20,7 +20,7 @@ export default createLavalinkEvent({
 		}
 
 		const playerSaver = new PlayerSaver(client.logger);
-		let messageId = player.get("messageId");
+		let messageId = player.getData("messageId");
 		let channelId = "";
 		const rawChannel = player.textChannelId;
 		if (
@@ -46,7 +46,7 @@ export default createLavalinkEvent({
 		if (messageId && channelId) {
 			try {
 				await client.messages.delete(messageId as string, channelId);
-				player.set("messageId", undefined);
+				player.deleteData("messageId");
 				await playerSaver.clearLastNowPlayingMessage(player.guildId);
 			} catch {
 				// Silently fail if message deletion fails
@@ -63,8 +63,8 @@ export default createLavalinkEvent({
 			);
 		}
 
-		const lyricsId = player.get<string | undefined>("lyricsId");
-		const lyricsEnabled = player.get<boolean | undefined>("lyricsEnabled");
+		const lyricsId = player.getData<string | undefined>("lyricsId");
+		const lyricsEnabled = player.getData<boolean | undefined>("lyricsEnabled");
 
 		if (lyricsEnabled) {
 			try {
@@ -94,10 +94,10 @@ export default createLavalinkEvent({
 			}
 		}
 
-		player.set("lyricsEnabled", false);
-		player.set("lyrics", undefined);
-		player.set("lyricsId", undefined);
-		player.set("lyricsRequester", undefined);
+		player.setData("lyricsEnabled", false);
+		player.deleteData("lyrics");
+		player.deleteData("lyricsId");
+		player.deleteData("lyricsRequester");
 
 		await playerSaver.clearLyricsData(player.guildId);
 	},

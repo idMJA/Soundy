@@ -151,13 +151,13 @@ export default class PlayCommand extends Command {
 			volume: client.config.defaultVolume,
 		});
 
-		player.set("me", {
+		player.setData("me", {
 			...client.me,
 			tag: client.me.username,
 		});
 
-		if (!player.get("localeString"))
-			player.set("localeString", await ctx.getLocaleString());
+		if (!player.getData("localeString"))
+			player.setData("localeString", await ctx.getLocaleString());
 
 		if (!player.connected) {
 			await player.connect();

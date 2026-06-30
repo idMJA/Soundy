@@ -24,7 +24,7 @@ export default class SkipComponent extends ComponentCommand {
 
 		const { component } = await ctx.getLocale();
 
-		const isAutoplay = player.get("enabledAutoplay");
+		const isAutoplay = player.getData("enabledAutoplay");
 		const hasNextTrack = player.queue.tracks.length > 0;
 
 		await player.skip(undefined, !isAutoplay);

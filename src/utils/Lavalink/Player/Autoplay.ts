@@ -95,7 +95,7 @@ export async function autoPlayFunction(
 	lastTrack?: Track,
 ): Promise<void> {
 	if (!lastTrack) return;
-	if (!player.get("enabledAutoplay")) return;
+	if (!player.getData("enabledAutoplay")) return;
 
 	if (
 		!player.queue.previous.some(
@@ -106,7 +106,7 @@ export async function autoPlayFunction(
 		await player.queue.utils.save();
 	}
 
-	const me = player.get<ClientUser | undefined>("me");
+	const me = player.getData<ClientUser | undefined>("me");
 	if (!me) return;
 
 	// Use Last.fm if API key is available, otherwise fallback to Spotify

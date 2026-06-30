@@ -1,5 +1,6 @@
 import {
 	LavalinkManager,
+	NodeType,
 	type SearchPlatform,
 	type SearchResult,
 } from "lavalink-client";
@@ -38,6 +39,9 @@ export class SoundyManager extends LavalinkManager {
 	constructor(client: Soundy) {
 		super({
 			nodes,
+			httpHeaders: {
+				"x-bot-name": "Soundy",
+			},
 			autoSkip: true,
 			autoMove: true,
 			autoSkipOnResolveError: true,
@@ -80,10 +84,8 @@ export class SoundyManager extends LavalinkManager {
 	 * @returns
 	 */
 	public search(query: string, source?: SearchPlatform): Promise<SearchResult> {
-		const nodes = this.nodeManager.leastUsedNodes();
-		if (!nodes.length) throw new Error("No available Lavalink nodes");
-		const node = nodes[Math.floor(Math.random() * nodes.length)];
-		if (!node) throw new Error("No available Lavalink node for search");
+		const node = this.nodeManager.getNode(NodeType.Lavalink);
+		if (!node) throw new Error("No available connected Lavalink nodes");
 		return node.search({ query, source }, null, false);
 	}
 

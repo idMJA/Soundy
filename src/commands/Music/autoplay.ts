@@ -38,9 +38,9 @@ export default class AutoplayCommand extends Command {
 		const player = client.manager.getPlayer(guildId);
 		if (!player) return;
 
-		player.set("enabledAutoplay", !player.get("enabledAutoplay"));
+		player.setData("enabledAutoplay", !player.getData("enabledAutoplay"));
 
-		const isAutoplay = player.get<boolean>("enabledAutoplay");
+		const isAutoplay = player.getData<boolean>("enabledAutoplay");
 
 		// Persist autoplay state
 		try {
