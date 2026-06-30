@@ -127,7 +127,6 @@ export function setupSoundyWebSocket(
 	});
 }
 
-export { serializePlayerState, getContext, getRequesterId };
 export {
 	broadcastPlayerDisconnection,
 	broadcastPlayerEvent,
@@ -135,3 +134,4 @@ export {
 	setGlobalAppInstance,
 	stopAutoUpdate,
 } from "./broadcast";
+export { getContext, getRequesterId, serializePlayerState };

@@ -20,29 +20,34 @@ export async function sendNodeLog(
 	node: LavalinkNode,
 	data?: Error | TrackExceptionEvent,
 ): Promise<Response> {
-	// Define color based on the type
-	let color = 0x00ff00; // Green for connected
-	if (type === "disconnected" || type === "error" || type === "track-error")
-		color = 0xff0000; // Red for errors
-	if (type === "reconnecting") color = 0xffff00; // Yellow for reconnecting
+	const nodeType = node.isNodeLink() ? "NodeLink" : "Lavalink";
 
-	// Create embed
+	let color = 0x00ff00;
+	if (type === "disconnected" || type === "error" || type === "track-error")
+		color = 0xff0000;
+	if (type === "reconnecting") color = 0xffff00;
+
 	const embed = new Embed().setColor(color).setTimestamp();
 
-	// Set title and description based on type
 	switch (type) {
 		case "connected":
-			embed.setTitle("🟢 Node Connected");
-			embed.setDescription(`Node **${node.id}** has successfully connected.`);
+			embed.setTitle(`🟢 Node Connected (${nodeType})`);
+			embed.setDescription(
+				`Node **${node.id}** (${nodeType}) has successfully connected.`,
+			);
 			break;
 		case "disconnected":
-			embed.setTitle("🔴 Node Disconnected");
-			embed.setDescription(`Node **${node.id}** has disconnected.`);
+			embed.setTitle(`🔴 Node Disconnected (${nodeType})`);
+			embed.setDescription(
+				`Node **${node.id}** (${nodeType}) has disconnected.`,
+			);
 			break;
 		case "error":
-			embed.setTitle("❌ Node Error");
-			embed.setDescription(`Node **${node.id}** encountered an error.`);
-			// Add error details if available
+			embed.setTitle(`❌ Node Error (${nodeType})`);
+			embed.setDescription(
+				`Node **${node.id}** (${nodeType}) encountered an error.`,
+			);
+
 			if (data && data instanceof Error) {
 				embed.addFields([
 					{
@@ -68,17 +73,20 @@ export async function sendNodeLog(
 			}
 			break;
 		case "reconnecting":
-			embed.setTitle("🟡 Node Reconnecting");
-			embed.setDescription(`Node **${node.id}** is attempting to reconnect.`);
+			embed.setTitle(`🟡 Node Reconnecting (${nodeType})`);
+			embed.setDescription(
+				`Node **${node.id}** (${nodeType}) is attempting to reconnect.`,
+			);
 			break;
 		case "track-error":
-			embed.setTitle("❌ Track Error");
-			embed.setDescription(`A track error occurred in server **${node.id}**.`);
+			embed.setTitle(`❌ Track Error (${nodeType})`);
+			embed.setDescription(
+				`A track error occurred in server **${node.id}** (${nodeType}).`,
+			);
 			if (data && "exception" in data && "track" in data) {
 				const trackData = data.track as LavalinkTrack;
 				const exception = data.exception;
 
-				// Format track details
 				const trackInfo = [
 					`**Track**: ${trackData.info.title || "Unknown"}`,
 					`**Author**: ${trackData.info.author || "Unknown"}`,
@@ -87,7 +95,6 @@ export async function sendNodeLog(
 
 				embed.setDescription(trackInfo.join("\n"));
 
-				// Add detailed track info field
 				embed.addFields([
 					{
 						name: "Track Details",
@@ -101,7 +108,6 @@ export async function sendNodeLog(
 					},
 				]);
 
-				// Add server ID as footer
 				embed.setFooter({
 					text: `Server ID: ${node.id} | Track ID: ${trackData.info.identifier || "unknown"}`,
 				});
@@ -109,9 +115,13 @@ export async function sendNodeLog(
 			break;
 	}
 
-	// Add Node details for non-track errors
 	if (type !== "track-error") {
 		embed.addFields([
+			{
+				name: "Type",
+				value: nodeType,
+				inline: true,
+			},
 			{
 				name: "Host",
 				value: `\`${node.options.host}\``,

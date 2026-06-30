@@ -30,7 +30,7 @@ export class NowPlayingManager {
 		try {
 			await this.dbOps.ensureReady();
 
-			if (!this.db.data || !this.db.data.players[guildId]) return null;
+			if (!this.db.data?.players[guildId]) return null;
 
 			const player = this.db.data.players[guildId];
 			return {
@@ -79,7 +79,7 @@ export class NowPlayingManager {
 		try {
 			await this.dbOps.ensureReady();
 
-			if (!this.db.data || !this.db.data.players[guildId]) return;
+			if (!this.db.data?.players[guildId]) return;
 
 			this.db.data.players[guildId].messageId = undefined;
 			await this.dbOps.writeChanges();

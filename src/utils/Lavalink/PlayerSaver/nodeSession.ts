@@ -29,7 +29,7 @@ export class NodeSessionManager {
 		try {
 			await this.dbOps.ensureReady();
 
-			if (!this.db.data || !this.db.data.sessions) {
+			if (!this.db.data?.sessions) {
 				return;
 			}
 
@@ -110,7 +110,7 @@ export class NodeSessionManager {
 		try {
 			await this.dbOps.ensureReady();
 
-			if (!this.db.data || !this.db.data.sessions) {
+			if (!this.db.data?.sessions) {
 				return null;
 			}
 

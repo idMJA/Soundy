@@ -135,7 +135,8 @@ export default createLavalinkEvent({
 			}, 60000);
 			player.setData("disconnectTimeout", disconnectTimeout);
 		} else {
-			const existingTimeout = player.getData<NodeJS.Timeout>("disconnectTimeout");
+			const existingTimeout =
+				player.getData<NodeJS.Timeout>("disconnectTimeout");
 			if (existingTimeout) {
 				clearTimeout(existingTimeout);
 				player.deleteData("disconnectTimeout");

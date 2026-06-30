@@ -35,8 +35,7 @@ export class DatabaseOperations {
 				err &&
 				err.code === "ENOENT" &&
 				err.syscall === "rename" &&
-				err.path &&
-				err.path.includes(".sessions.json.tmp")
+				err.path?.includes(".sessions.json.tmp")
 			) {
 				return;
 			}
@@ -72,8 +71,7 @@ export class DatabaseOperations {
 				err &&
 				err.code === "ENOENT" &&
 				err.syscall === "rename" &&
-				err.path &&
-				err.path.includes(".sessions.json.tmp")
+				err.path?.includes(".sessions.json.tmp")
 			) {
 				return;
 			}

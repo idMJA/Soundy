@@ -50,7 +50,7 @@ export class PlayerDataManager {
 		try {
 			await this.dbOps.ensureReady();
 
-			if (!this.db.data || !this.db.data.players) {
+			if (!this.db.data?.players) {
 				return null;
 			}
 
@@ -71,7 +71,7 @@ export class PlayerDataManager {
 		try {
 			await this.dbOps.ensureReady();
 
-			if (!this.db.data || !this.db.data.players) {
+			if (!this.db.data?.players) {
 				return;
 			}
 

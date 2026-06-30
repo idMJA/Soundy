@@ -13,3 +13,6 @@ package-lock.json
 sessions.json
 .fuse_*
 data
+
+src/config/config.ts
+src/config/nodes.ts

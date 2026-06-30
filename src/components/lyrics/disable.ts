@@ -36,7 +36,9 @@ export default class LyricsDisableComponent extends ComponentCommand {
 			player.setData("lyricsEnabled", false);
 		}
 
-		const intervalId = player.getData<NodeJS.Timeout | undefined>("lyricsInterval");
+		const intervalId = player.getData<NodeJS.Timeout | undefined>(
+			"lyricsInterval",
+		);
 		if (intervalId) {
 			clearInterval(intervalId);
 			player.deleteData("lyricsInterval");

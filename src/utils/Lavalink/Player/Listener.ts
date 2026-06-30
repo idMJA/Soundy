@@ -1,4 +1,4 @@
-import type { UsingClient, VoiceState, GuildMember } from "seyfert";
+import type { GuildMember, UsingClient, VoiceState } from "seyfert";
 
 const timeouts: Map<string, NodeJS.Timeout> = new Map();
 
@@ -24,7 +24,9 @@ export async function playerListener(
 
 		const botId = client.me.id;
 
-		const locale = player.getData<string | undefined>("localeString") || client.config.defaultLocale;
+		const locale =
+			player.getData<string | undefined>("localeString") ||
+			client.config.defaultLocale;
 		const { event } = client.t(locale).get();
 
 		if (
@@ -69,8 +71,9 @@ export async function playerListener(
 		const channel = await client.channels.fetch(player.voiceChannelId);
 		if (!channel?.is(["GuildVoice", "GuildStageVoice"])) return;
 
-		const vcMembers: GuildMember[] = await Promise.all(channel.states().map((c): Promise<GuildMember> => c.member() ));
-		
+		const vcMembers: GuildMember[] = await Promise.all(
+			channel.states().map((c): Promise<GuildMember> => c.member()),
+		);
 
 		const isEmpty = !vcMembers.filter(({ user }): boolean => !user.bot).length;
 

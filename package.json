@@ -1,6 +1,6 @@
 {
   "name": "soundy",
-  "version": "3.5.0",
+  "version": "3.6.0",
   "description": "A powerful music bot built with Seyfert and lavalink-client to play high quality music in your Discord server for free.",
   "author": {
     "name": "Kiyomi Fujiwara",
@@ -22,18 +22,16 @@
     "bun": ">=1.2.0"
   },
   "scripts": {
-    "start": "dotenvx run -- bun run src/index.ts",
-    "dev": "dotenvx run -- bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.ts",
     "encrypt": "dotenvx encrypt",
     "build": "tsup",
     "format": "biome check --write ./src",
-    "lint": "tsc --noEmit && biome lint --write ./src",
+    "lint": "tsc --noEmit && biome check --write ./src",
     "db:generate": "dotenvx run -- drizzle-kit generate",
     "db:migrate": "dotenvx run -- drizzle-kit migrate",
     "db:studio": "dotenvx run -- drizzle-kit studio",
-    "db:push": "dotenvx run -- drizzle-kit push",
-    "db:local:generate": "drizzle-kit generate --config=drizzle.config.local.ts",
-    "db:local:push": "drizzle-kit push --config=drizzle.config.local.ts"
+    "db:push": "dotenvx run -- drizzle-kit push"
   },
   "lint-staged": {
     "*.ts": [
@@ -45,11 +43,12 @@
     "@elysiajs/cors": "^1.4.2",
     "@elysiajs/jwt": "^1.4.2",
     "@elysiajs/openapi": "^1.4.15",
-    "@libsql/client": "^0.17.4",
     "@mjba/lyrics": "^1.2.1",
     "@top-gg/sdk": "^3.1.6",
+    "@tursodatabase/database": "^0.6.1",
+    "@tursodatabase/sync": "^0.6.1",
     "axios": "^1.18.1",
-    "drizzle-orm": "^0.45.2",
+    "drizzle-orm": "^1.0.0-rc.4",
     "elysia": "^1.4.29",
     "genius-lyrics": "^4.4.7",
     "jsonwebtoken": "^9.0.3",
@@ -63,7 +62,7 @@
     "@types/bun": "^1.3.14",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.0.1",
-    "drizzle-kit": "^0.31.10",
+    "drizzle-kit": "^1.0.0-rc.4",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.8",
     "tsup": "^8.5.1",

@@ -5,7 +5,8 @@ export default createLavalinkEvent({
 	name: "connect",
 	type: LavalinkEventTypes.Node,
 	async run(client, node) {
-		client.logger.info(`[Music] Node ${node.id} Connected`);
+		const nodeType = node.isNodeLink() ? "NodeLink" : "Lavalink";
+		client.logger.info(`[Music] Node ${node.id} (${nodeType}) Connected`);
 
 		if (!node.sessionId) return;
 		try {

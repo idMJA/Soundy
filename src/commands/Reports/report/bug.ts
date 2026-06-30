@@ -80,7 +80,10 @@ export default class BugReportCommand extends SubCommand {
 					.setComponent(stepsInput),
 			])
 			.run(async (modalCtx: ModalSubmitInteraction) => {
-				const descriptionValue = modalCtx.getInputValue("bug-description", true);
+				const descriptionValue = modalCtx.getInputValue(
+					"bug-description",
+					true,
+				);
 				const stepsValue = modalCtx.getInputValue("bug-steps", true);
 				const description = Array.isArray(descriptionValue)
 					? descriptionValue.join("\n")

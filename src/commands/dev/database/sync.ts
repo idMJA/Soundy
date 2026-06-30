@@ -3,7 +3,7 @@ import { SoundyOptions } from "#soundy/utils";
 
 @Declare({
 	name: "sync",
-	description: "Sync data from Turso to Bun database",
+	description: "Sync local database replica with remote Turso database",
 	defaultMemberPermissions: ["Administrator"],
 	integrationTypes: ["GuildInstall"],
 	contexts: ["Guild"],
@@ -15,13 +15,13 @@ export default class DbSyncCommand extends SubCommand {
 
 		const embed = new Embed()
 			.setColor(client.config.color.warn)
-			.setDescription("🔄 Starting sync from Turso to Bun database...");
+			.setDescription("🔄 Syncing local replica with remote Turso database...");
 
 		await ctx.editOrReply({ embeds: [embed] });
 
 		try {
 			const startTime = Date.now();
-			console.log("Starting database sync from Turso to Bun");
+			console.log("Starting database sync from Turso remote to local replica");
 
 			const result = await client.database.sync();
 			const duration = ((Date.now() - startTime) / 1000).toFixed(2);

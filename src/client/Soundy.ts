@@ -3,7 +3,7 @@ import { HandleCommand } from "seyfert/lib/commands/handle";
 import { ActivityType, PresenceUpdateStatus } from "seyfert/lib/types";
 import { Yuna } from "yunaforseyfert";
 import { Configuration } from "#soundy/config";
-import { SoundyDatabase } from "#soundy/db";
+import { initDatabase, SoundyDatabase } from "#soundy/db";
 import { SoundyMiddlewares } from "#soundy/middlewares";
 import type { SoundyConfiguration } from "#soundy/types";
 import {
@@ -179,6 +179,7 @@ export default class Soundy extends Client<true> {
 	 * Start the main Soundy process.
 	 */
 	private async run(): Promise<"🥘"> {
+		await initDatabase();
 		this.setupProcessListeners();
 
 		getWatermark();

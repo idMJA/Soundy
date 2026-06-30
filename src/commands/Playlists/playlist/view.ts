@@ -129,7 +129,7 @@ export default class ViewPlaylistCommand extends SubCommand {
 				.setDescription(
 					currentTracks
 						.map((track, i) => {
-							if (!track || !track.info)
+							if (!track?.info)
 								return `${start + i + 1}. ${cmd.playlist.sub.view.run.failed}`;
 							const duration = track.info.isStream
 								? "LIVE"

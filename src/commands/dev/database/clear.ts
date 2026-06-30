@@ -59,13 +59,13 @@ export default class DbClearCommand extends SubCommand {
 			const bunDb = client.database.getBunDb();
 
 			// Clear all tables from Bun database
-			bunDb.run("DELETE FROM guild");
-			bunDb.run("DELETE FROM liked_songs");
-			bunDb.run("DELETE FROM playlist");
-			bunDb.run("DELETE FROM playlist_track");
-			bunDb.run("DELETE FROM track_stats");
-			bunDb.run("DELETE FROM user_stats");
-			bunDb.run("DELETE FROM user_vote");
+			await bunDb.exec("DELETE FROM guild");
+			await bunDb.exec("DELETE FROM liked_songs");
+			await bunDb.exec("DELETE FROM playlist");
+			await bunDb.exec("DELETE FROM playlist_track");
+			await bunDb.exec("DELETE FROM track_stats");
+			await bunDb.exec("DELETE FROM user_stats");
+			await bunDb.exec("DELETE FROM user_vote");
 
 			const duration = Date.now() - startTime;
 
@@ -74,7 +74,7 @@ export default class DbClearCommand extends SubCommand {
 					new Embed()
 						.setColor(client.config.color.yes)
 						.setDescription(
-							`${client.config.emoji.yes} Bun database cleared successfully in ${duration}ms! Turso database remains intact for backup.`,
+							`${client.config.emoji.yes} Local replica database cleared successfully in ${duration}ms! Changes will replicate to remote Turso database.`,
 						),
 				],
 			});

@@ -52,46 +52,48 @@ export default class DbPerfCommand extends SubCommand {
 					: "N/A";
 
 			const embed = new Embed()
-				.setTitle("⚡ Bun vs Turso Performance Test")
+				.setTitle("⚡ Embedded Replica Performance Test")
 				.setColor(client.config.color.yes)
 				.addFields([
 					{
-						name: "💾 Bun SQLite",
+						name: "💾 Local SQLite Replica",
 						value: `${performance.bunLatency}ms`,
 						inline: true,
 					},
 					{
-						name: "🌐 Turso Database",
+						name: "🌐 Remote Turso Database",
 						value: `${performance.tursoLatency}ms`,
 						inline: true,
 					},
 					{
-						name: "⚡ Bun-First Method",
+						name: "⚡ Direct Query Method",
 						value: `${bunFirstDuration}ms`,
 						inline: true,
 					},
 					{
 						name: "📊 Speed Improvement",
-						value: `**${speedImprovement}x faster** with Bun SQLite`,
+						value: `**${speedImprovement}x faster** with Local Replica`,
 						inline: false,
 					},
 					{
 						name: "💡 Performance Analysis",
 						value: [
-							`🔥 Bun vs Turso: **${bunVsTurso}x faster**`,
-							`📈 Local cache advantage: **Ultra-fast reads**`,
-							`🛡️ Fallback protection: **Turso backup ready**`,
+							`🔥 Local vs Remote: **${bunVsTurso}x faster**`,
+							`📈 Local replica advantage: **Ultra-fast reads**`,
+							`🛡️ Synchronization: **Auto replication active**`,
 						].join("\n"),
 						inline: false,
 					},
 					{
 						name: "🏆 Strategy",
 						value:
-							"Bun-first with Turso fallback provides the best of both worlds",
+							"Turso Embedded Replicas natively replicate data to a local SQLite database for fast access.",
 						inline: false,
 					},
 				])
-				.setFooter({ text: "Bun SQLite delivers ultra-fast local performance" })
+				.setFooter({
+					text: "Embedded Replicas deliver local performance with global backup",
+				})
 				.setTimestamp();
 
 			await ctx.editOrReply({

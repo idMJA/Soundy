@@ -1,5 +1,11 @@
 import { lyricsClient } from "@mjba/lyrics";
-import type { LyricsLine, LyricsResult, Player, PluginInfo, Track } from "lavalink-client";
+import type {
+	LyricsLine,
+	LyricsResult,
+	Player,
+	PluginInfo,
+	Track,
+} from "lavalink-client";
 import {
 	Button,
 	type CommandContext,
@@ -48,9 +54,13 @@ export async function fetchMusixmatchFallback(
 ): Promise<LyricsResult | null> {
 	try {
 		if (isrc) {
-			ctx.client.logger.info(`Fetching fallback lyrics via ISRC (${isrc}) from Musixmatch...`);
+			ctx.client.logger.info(
+				`Fetching fallback lyrics via ISRC (${isrc}) from Musixmatch...`,
+			);
 		} else {
-			ctx.client.logger.info(`Fetching fallback lyrics via query ("${trackTitle} ${trackArtist}") from Musixmatch...`);
+			ctx.client.logger.info(
+				`Fetching fallback lyrics via query ("${trackTitle} ${trackArtist}") from Musixmatch...`,
+			);
 		}
 
 		const response = isrc
@@ -65,7 +75,10 @@ export async function fetchMusixmatchFallback(
 
 			if (result.hasTimestamps && result.syncedLyrics) {
 				lines = result.syncedLyrics.map((lyric) => {
-					const totalMs = lyric.time.minutes * 60000 + lyric.time.seconds * 1000 + lyric.time.ms;
+					const totalMs =
+						lyric.time.minutes * 60000 +
+						lyric.time.seconds * 1000 +
+						lyric.time.ms;
 					return {
 						timestamp: totalMs,
 						line: lyric.text || "...",
@@ -73,11 +86,13 @@ export async function fetchMusixmatchFallback(
 						plugin: {} as unknown as PluginInfo,
 					};
 				});
-				plainText = result.syncedLyrics.map((lyric) => {
-					const min = lyric.time.minutes.toString().padStart(2, '0');
-					const sec = lyric.time.seconds.toString().padStart(2, '0');
-					return `[${min}:${sec}] ${lyric.text}`;
-				}).join('\n');
+				plainText = result.syncedLyrics
+					.map((lyric) => {
+						const min = lyric.time.minutes.toString().padStart(2, "0");
+						const sec = lyric.time.seconds.toString().padStart(2, "0");
+						return `[${min}:${sec}] ${lyric.text}`;
+					})
+					.join("\n");
 			} else if (result.lyrics) {
 				plainText = result.lyrics;
 				lines = result.lyrics.split("\n").map((line) => ({
@@ -100,7 +115,9 @@ export async function fetchMusixmatchFallback(
 		}
 	} catch (e) {
 		const errorMessage = e instanceof Error ? e.message : String(e);
-		ctx.client.logger.error(`Failed to fetch fallback lyrics from Musixmatch: ${errorMessage}`);
+		ctx.client.logger.error(
+			`Failed to fetch fallback lyrics from Musixmatch: ${errorMessage}`,
+		);
 	}
 	return null;
 }
@@ -129,7 +146,8 @@ export async function updateLyricsEmbed(
 			.catch(() => null);
 		if (!message) return;
 
-		const locale = player.getData<string | undefined>("localeString") || "en-US";
+		const locale =
+			player.getData<string | undefined>("localeString") || "en-US";
 		const { cmd, component } = client.t(locale).get();
 
 		const totalLines = client.config.lyricsLines + 1;
@@ -179,11 +197,15 @@ export async function updateLyricsEmbed(
 				),
 		);
 
-		await message.edit({
-			components: [components],
-			flags: MessageFlags.IsComponentsV2,
-		}).catch(() => null);
+		await message
+			.edit({
+				components: [components],
+				flags: MessageFlags.IsComponentsV2,
+			})
+			.catch(() => null);
 	} catch (err) {
-		client.logger.error(`Error updating lyrics embed: ${err instanceof Error ? err.message : err}`);
+		client.logger.error(
+			`Error updating lyrics embed: ${err instanceof Error ? err.message : err}`,
+		);
 	}
 }

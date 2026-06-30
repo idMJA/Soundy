@@ -22,8 +22,9 @@ export default createLavalinkEvent({
 			client.logger.error("[Music] Players is not an array", players);
 			return;
 		}
+		const nodeType = node.isNodeLink() ? "NodeLink" : "Lavalink";
 		client.logger.info(
-			`[Music] Node ${node.id} resumed session with ${players.length} players`,
+			`[Music] Node ${node.id} (${nodeType}) resumed session with ${players.length} players`,
 		);
 
 		if (payload.sessionId) {
@@ -213,7 +214,10 @@ export default createLavalinkEvent({
 							player.setData("lyricsId", savedLyricsData.lyricsId);
 						}
 						if (savedLyricsData.lyricsRequester) {
-							player.setData("lyricsRequester", savedLyricsData.lyricsRequester);
+							player.setData(
+								"lyricsRequester",
+								savedLyricsData.lyricsRequester,
+							);
 						}
 						if (savedLyricsData.lyrics) {
 							player.setData("lyrics", savedLyricsData.lyrics);

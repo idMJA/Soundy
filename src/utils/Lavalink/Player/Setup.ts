@@ -78,7 +78,8 @@ export async function playerSetup(message: Message, client: UsingClient) {
 			await player.connect();
 
 			player.setData("me", { ...client.me, tag: client.me.username });
-			if (!player.getData("localeString")) player.setData("localeString", locale);
+			if (!player.getData("localeString"))
+				player.setData("localeString", locale);
 
 			const bot = client.cache.voiceStates?.get(client.me.id, message.guildId);
 			if (voiceChannel.isStage() && bot?.suppress) await bot.setSuppress(false);

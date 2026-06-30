@@ -17,7 +17,7 @@ export default class DbStatusCommand extends SubCommand {
 		const isReady = client.database.isReady();
 
 		const embed = new Embed()
-			.setTitle("⚙️ Bun-First Database Status")
+			.setTitle("⚙️ Turso Embedded Replica Status")
 			.setColor(
 				isReady && connections.bun
 					? ctx.client.config.color.yes
@@ -30,22 +30,22 @@ export default class DbStatusCommand extends SubCommand {
 					inline: true,
 				},
 				{
-					name: "💾 Bun SQLite",
+					name: "💾 Local SQLite Replica",
 					value: connections.bun ? "✅ Connected" : "❌ Disconnected",
 					inline: true,
 				},
 				{
-					name: "🌐 Turso (Fallback)",
+					name: "🌐 Remote Turso Database",
 					value: connections.turso ? "✅ Connected" : "❌ Disconnected",
 					inline: true,
 				},
 				{
-					name: "⚡ Bun Latency",
+					name: "⚡ Local Latency",
 					value: `${performance.bunLatency}ms`,
 					inline: true,
 				},
 				{
-					name: "🔄 Turso Latency",
+					name: "🔄 Remote Latency",
 					value: `${performance.tursoLatency}ms`,
 					inline: true,
 				},
@@ -55,13 +55,13 @@ export default class DbStatusCommand extends SubCommand {
 					inline: true,
 				},
 				{
-					name: "💾 Local Database",
+					name: "💾 Local Database File",
 					value: "`./data/soundy-bun.db`",
 					inline: true,
 				},
 				{
 					name: "💡 Strategy",
-					value: "Bun-first with Turso fallback",
+					value: "Turso Embedded Replicas (Local-First)",
 					inline: true,
 				},
 				{
@@ -71,7 +71,7 @@ export default class DbStatusCommand extends SubCommand {
 				},
 			])
 			.setFooter({
-				text: "Bun SQLite provides ultra-fast local operations with remote backup",
+				text: "Turso Embedded Replicas provide ultra-fast local reads with native auto-syncing",
 			})
 			.setTimestamp();
 

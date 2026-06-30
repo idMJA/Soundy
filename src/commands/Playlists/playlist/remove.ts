@@ -109,7 +109,7 @@ export default class RemovePlaylistCommand extends SubCommand {
 			}
 
 			const trackToRemove = tracks[trackIndex];
-			if (!trackToRemove || !trackToRemove.id) {
+			if (!trackToRemove?.id) {
 				return ctx.editOrReply({
 					embeds: [
 						{

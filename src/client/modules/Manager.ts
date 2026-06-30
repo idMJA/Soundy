@@ -1,6 +1,5 @@
 import {
 	LavalinkManager,
-	NodeType,
 	type SearchPlatform,
 	type SearchResult,
 } from "lavalink-client";
@@ -84,8 +83,10 @@ export class SoundyManager extends LavalinkManager {
 	 * @returns
 	 */
 	public search(query: string, source?: SearchPlatform): Promise<SearchResult> {
-		const node = this.nodeManager.getNode(NodeType.Lavalink);
-		if (!node) throw new Error("No available connected Lavalink nodes");
+		const node = Array.from(this.nodeManager.nodes.values()).find(
+			(n) => n.connected,
+		);
+		if (!node) throw new Error("No available connected music nodes");
 		return node.search({ query, source }, null, false);
 	}
 

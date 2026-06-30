@@ -90,7 +90,7 @@ export default class EvalCommand extends Command {
 
 		await client.channels.typing(channelId);
 
-		if (!code || !code.length)
+		if (!code?.length)
 			return ctx.editOrReply({
 				embeds: [
 					{
