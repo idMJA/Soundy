@@ -45,7 +45,7 @@ export class SoundyManager extends LavalinkManager {
 			autoMove: true,
 			autoSkipOnResolveError: true,
 			sendToShard: (guildId, payload) =>
-				client.gateway.send(client.gateway.calculateShardId(guildId), payload),
+				client.gateway.send(client.gateway.calculateShardId(guildId, client.gateway.totalShards), payload),
 			queueOptions: {
 				maxPreviousTracks: 25,
 				queueChangesWatcher: new SoundyQueueWatcher(client),
