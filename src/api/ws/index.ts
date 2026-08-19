@@ -48,7 +48,12 @@ export function setupSoundyWebSocket(
 			} else {
 				ws.data.msgCount = (ws.data.msgCount || 0) + 1;
 				if (ws.data.msgCount > 15) {
-					ws.send(JSON.stringify({ type: "error", message: "Rate limit exceeded. Please slow down." }));
+					ws.send(
+						JSON.stringify({
+							type: "error",
+							message: "Rate limit exceeded. Please slow down.",
+						}),
+					);
 					return;
 				}
 			}
