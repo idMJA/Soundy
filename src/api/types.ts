@@ -13,6 +13,8 @@ export interface SoundyWS {
 		guildId?: string;
 		voiceChannelId?: string;
 		userId?: string;
+		msgCount?: number;
+		msgWindowStart?: number;
 		[key: string]: unknown;
 	};
 	store?: {
