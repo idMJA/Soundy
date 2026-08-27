@@ -183,7 +183,7 @@ export default class PlayCommand extends Command {
 			await player.connect();
 		}
 
-		const result = await player.search(query, { requester: ctx.author });
+		const result = await player.search(query, ctx.author);
 
 		switch (result.loadType) {
 			case "empty":

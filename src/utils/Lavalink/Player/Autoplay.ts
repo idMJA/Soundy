@@ -133,7 +133,7 @@ async function handleSpotifyRecommendations(
 	const { author, title } = lastTrack.info;
 	const searchQuery = `${author} ${title}`;
 
-	const res = await player.search({ query: searchQuery }, { requester: me });
+	const res = await player.search({ query: searchQuery }, me);
 
 	if (res.tracks.length >= 4) {
 		// Filter tracks by artist limit
@@ -209,10 +209,7 @@ async function handleLastFmRecommendations(
 		}
 
 		const searchQuery = `${similarTrack.artist.name} - ${similarTrack.name}`;
-		const searchResult = await player.search(
-			{ query: searchQuery },
-			{ requester: me },
-		);
+		const searchResult = await player.search({ query: searchQuery }, me);
 
 		if (searchResult.tracks.length) {
 			const filteredTracks = filterTracks(

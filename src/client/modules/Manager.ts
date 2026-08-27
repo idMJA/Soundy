@@ -8,9 +8,11 @@ import type Soundy from "#soundy/client";
 import { nodes } from "#soundy/config";
 import {
 	autoPlayFunction,
+	BOT_VERSION,
 	LavalinkHandler,
 	PlayerSaver,
 	SoundyQueueWatcher,
+	transformRequester,
 } from "#soundy/utils";
 
 const logger = new Logger({
@@ -40,6 +42,7 @@ export class SoundyManager extends LavalinkManager {
 			nodes,
 			httpHeaders: {
 				"x-bot-name": "Soundy",
+				"x-bot-version": BOT_VERSION,
 			},
 			autoSkip: true,
 			autoMove: true,
@@ -52,6 +55,7 @@ export class SoundyManager extends LavalinkManager {
 			},
 			playerOptions: {
 				defaultSearchPlatform: client.config.defaultSearchPlatform,
+				requesterTransformer: transformRequester,
 				onDisconnect: {
 					autoReconnect: true,
 				},

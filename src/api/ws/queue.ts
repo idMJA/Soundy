@@ -210,7 +210,7 @@ export const handlePlay: WSHandler = async (ws, msg, client) => {
 
 		try {
 			const result = await player.search(String(msg.query), {
-				requester: { id: requesterId },
+				id: requesterId,
 			});
 			if (
 				["track", "search"].includes(result.loadType) &&
