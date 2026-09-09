@@ -48,6 +48,11 @@ export interface SoundyConfiguration {
 	 */
 	defaultSearchPlatform: SearchPlatform;
 	/**
+	 * The fallback player search engine when default platform gets rate limited or errors.
+	 * @type {string}
+	 */
+	fallbackSearchPlatform?: SearchPlatform;
+	/**
 	 * The default player volume.
 	 * @type {number}
 	 */

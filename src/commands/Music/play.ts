@@ -46,61 +46,56 @@ const option = {
 
 			const query = interaction.getInput();
 			if (!query) {
-				const allTopTracks = await getAllTopTracks();
-				const recommendedTracks: string[] = allTopTracks.flatMap(
-					({ tracks }: { tracks: RecommendationTrack[] }) =>
-						tracks.map(
-							(track: RecommendationTrack) => `${track.name} ${track.artist}`,
-						),
-				);
-				const allTracks = await Promise.all(
-					recommendedTracks.slice(0, 10).map(async (trackQuery: string) => {
-						const { tracks } = await client.manager.search(
-							trackQuery,
-							client.config.defaultSearchPlatform,
-						);
-						return tracks.slice(0, 2);
-					}),
-				);
-				const flatTracks = allTracks.flat();
-				// Remove undefined tracks before shuffling
-				const filteredTracks = flatTracks.filter(
-					(t): t is Exclude<(typeof flatTracks)[number], undefined> =>
-						t !== undefined,
-				);
-				for (let i = filteredTracks.length - 1; i > 0; i--) {
-					const j = Math.floor(Math.random() * (i + 1));
-					const temp = filteredTracks[i];
-					filteredTracks[i] = filteredTracks[j] as Exclude<
-						(typeof flatTracks)[number],
-						undefined
-					>;
-					filteredTracks[j] = temp as Exclude<
-						(typeof flatTracks)[number],
-						undefined
-					>;
-				}
-				return interaction.respond(
-					filteredTracks
-						.filter((t) => Boolean(t?.info?.title && t?.info?.uri))
-						.slice(0, 10)
-						.map((track) => {
-							const duration = track.info.isStream
-								? "LIVE"
-								: (TimeFormat.toDotted(track.info.duration) ?? "Unknown");
-							const title = track.info.title || "Track";
-							const author = track.info.author || "Artist";
-							const name =
-								`${title.slice(0, 40)} (${duration}) - ${author.slice(0, 30)}`.slice(
-									0,
-									100,
+				try {
+					const allTopTracks = await getAllTopTracks();
+					const recommendedTracks = allTopTracks.flatMap(
+						({ tracks }: { tracks: RecommendationTrack[] }) =>
+							tracks.map((track) => `${track.name} ${track.artist}`),
+					);
+
+					const selectedQueries = recommendedTracks
+						.sort(() => Math.random() - 0.5)
+						.slice(0, 5);
+
+					const allTracks = await Promise.all(
+						selectedQueries.map(async (trackQuery) => {
+							try {
+								const { tracks } = await client.manager.search(
+									trackQuery,
+									client.config.defaultSearchPlatform,
 								);
-							return {
-								name: name || "Track",
-								value: (track.info.uri || track.info.title).slice(0, 100),
-							};
+								return tracks.slice(0, 2);
+							} catch {
+								return [];
+							}
 						}),
-				);
+					);
+
+					const flatTracks = allTracks.flat();
+					return interaction.respond(
+						flatTracks
+							.filter((t) => Boolean(t?.info?.title && t?.info?.uri))
+							.slice(0, 10)
+							.map((track) => {
+								const duration = track.info.isStream
+									? "LIVE"
+									: (TimeFormat.toDotted(track.info.duration) ?? "Unknown");
+								const title = track.info.title || "Track";
+								const author = track.info.author || "Artist";
+								const name =
+									`${title.slice(0, 40)} (${duration}) - ${author.slice(0, 30)}`.slice(
+										0,
+										100,
+									);
+								return {
+									name: name || "Track",
+									value: (track.info.uri || track.info.title).slice(0, 100),
+								};
+							}),
+					);
+				} catch {
+					return interaction.respond([]);
+				}
 			}
 			const { tracks } = await client.manager.search(
 				query,

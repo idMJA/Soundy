@@ -9,8 +9,10 @@ import { nodes } from "#soundy/config";
 import {
 	autoPlayFunction,
 	BOT_VERSION,
+	isRateLimitOrRecoverableSearchError,
 	LavalinkHandler,
 	PlayerSaver,
+	SoundyPlayer,
 	SoundyQueueWatcher,
 	transformRequester,
 } from "#soundy/utils";
@@ -22,7 +24,13 @@ const logger = new Logger({
 /**
  * Main music manager class.
  */
-export class SoundyManager extends LavalinkManager {
+export class SoundyManager extends LavalinkManager<SoundyPlayer> {
+	/**
+	 * Client instance.
+	 * @type {Soundy}
+	 */
+	public readonly client: Soundy;
+
 	/**
 	 * Lavalink handler instance.
 	 * This handles all Lavalink events and interactions.
@@ -40,6 +48,7 @@ export class SoundyManager extends LavalinkManager {
 	constructor(client: Soundy) {
 		super({
 			nodes,
+			playerClass: SoundyPlayer,
 			httpHeaders: {
 				"x-bot-name": "Soundy",
 				"x-bot-version": BOT_VERSION,
@@ -65,6 +74,7 @@ export class SoundyManager extends LavalinkManager {
 				useUnresolvedData: true,
 			},
 		});
+		this.client = client;
 		this.playerSaver = new PlayerSaver(client.logger);
 		this.lavalinkHandler = new LavalinkHandler(client);
 
@@ -101,14 +111,55 @@ export class SoundyManager extends LavalinkManager {
 	 *
 	 * Search tracks.
 	 * @param query The query.
+	 * @param source The search platform.
 	 * @returns
 	 */
-	public search(query: string, source?: SearchPlatform): Promise<SearchResult> {
+	public async search(
+		query: string,
+		source?: SearchPlatform,
+	): Promise<SearchResult> {
 		const node = Array.from(this.nodeManager.nodes.values()).find(
 			(n) => n.connected,
 		);
 		if (!node) throw new Error("No available connected music nodes");
-		return node.search({ query, source }, null, false);
+
+		const isUrl = /^https?:\/\//.test(query);
+		const initialSource = source || this.client?.config.defaultSearchPlatform;
+		const fallbackPlatform = this.client?.config.fallbackSearchPlatform;
+
+		if (isUrl || !fallbackPlatform || initialSource === fallbackPlatform) {
+			return node.search({ query, source }, null, false);
+		}
+
+		try {
+			const result = await node.search({ query, source }, null, false);
+
+			if (isRateLimitOrRecoverableSearchError(result)) {
+				this.client?.logger.warn(
+					`[Manager Search Fallback] Primary platform '${initialSource}' failed (loadType: ${result.loadType}${result.exception?.message ? `, message: ${result.exception.message}` : ""}). Falling back to '${fallbackPlatform}' for query: "${query}"`,
+				);
+				return await node.search(
+					{ query, source: fallbackPlatform },
+					null,
+					false,
+				);
+			}
+
+			return result;
+		} catch (error) {
+			if (isRateLimitOrRecoverableSearchError(undefined, error)) {
+				this.client?.logger.warn(
+					`[Manager Search Fallback] Primary platform '${initialSource}' threw error (${error instanceof Error ? error.message : String(error)}). Falling back to '${fallbackPlatform}' for query: "${query}"`,
+				);
+				return await node.search(
+					{ query, source: fallbackPlatform },
+					null,
+					false,
+				);
+			}
+
+			throw error;
+		}
 	}
 
 	/**

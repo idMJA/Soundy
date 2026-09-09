@@ -39,12 +39,195 @@ export interface MusixmatchResponse {
 	error?: string;
 }
 
+import ky, { type HTTPError } from "ky";
+
+export interface LrclibResponse {
+	id?: number;
+	name?: string;
+	trackName?: string;
+	artistName?: string;
+	albumName?: string;
+	duration?: number;
+	instrumental?: boolean;
+	plainLyrics?: string;
+	syncedLyrics?: string;
+}
+
 /**
- * Fallback helper function to fetch directly from Musixmatch using @mjba/lyrics.
+ * Fetch lyrics from LRCLIB.
  * @param ctx The command or component context.
- * @param trackTitle The track title.
- * @param trackArtist The track artist.
- * @param isrc The ISRC code.
+ * @param trackTitle The title of the track.
+ * @param trackArtist The artist of the track.
+ * @param durationMs Optional duration in milliseconds for exact matching.
+ */
+export async function fetchLrclibFallback(
+	ctx: CommandContext | GuildComponentContext<"Button">,
+	trackTitle: string,
+	trackArtist: string,
+	durationMs?: number,
+): Promise<LyricsResult | null> {
+	const logger = ctx.client.logger;
+	const userAgent = "Soundy/3.6.0 (https://github.com/idMJA/Soundy)";
+	const timeout = 3500;
+
+	const parseLrclibResult = (res: LrclibResponse): LyricsResult | null => {
+		if (res.syncedLyrics && res.syncedLyrics.trim().length > 0) {
+			const regex = /^\[(\d{2}):(\d{2})\.(\d{2,3})\]\s*(.*)$/;
+			const lines: LyricsLine[] = [];
+			const plainLines: string[] = [];
+
+			for (const rawLine of res.syncedLyrics.split("\n")) {
+				const trimmed = rawLine.trim();
+				const match = trimmed.match(regex);
+				if (match?.[1] && match[2] && match[3]) {
+					const minStr = match[1];
+					const secStr = match[2];
+					const msStr = match[3];
+					const min = parseInt(minStr, 10);
+					const sec = parseInt(secStr, 10);
+					const ms =
+						msStr.length === 2 ? parseInt(msStr, 10) * 10 : parseInt(msStr, 10);
+					const timestamp = min * 60000 + sec * 1000 + ms;
+					const text = match[4] || "";
+
+					lines.push({
+						timestamp,
+						line: text || "...",
+						duration: 0,
+						plugin: {} as unknown as PluginInfo,
+					});
+					plainLines.push(`[${match[1]}:${match[2]}] ${text}`);
+				}
+			}
+
+			if (lines.length > 0) {
+				return {
+					provider: "LRCLIB",
+					text: plainLines.join("\n"),
+					lines,
+					sourceName: "lrclib",
+					plugin: {} as unknown as PluginInfo,
+				};
+			}
+		}
+
+		if (res.plainLyrics && res.plainLyrics.trim().length > 0) {
+			const lines = res.plainLyrics.split("\n").map((line) => ({
+				timestamp: 0,
+				line: line || "...",
+				duration: 0,
+				plugin: {} as unknown as PluginInfo,
+			}));
+
+			return {
+				provider: "LRCLIB",
+				text: res.plainLyrics,
+				lines,
+				sourceName: "lrclib",
+				plugin: {} as unknown as PluginInfo,
+			};
+		}
+
+		return null;
+	};
+
+	try {
+		logger.info(
+			`[Lyrics] Fetching fallback lyrics from LRCLIB for: "${trackTitle}" by "${trackArtist}"`,
+		);
+
+		const searchParams: Record<string, string | number> = {
+			track_name: trackTitle,
+			artist_name: trackArtist,
+		};
+		if (durationMs && durationMs > 0) {
+			searchParams.duration = Math.round(durationMs / 1000);
+		}
+
+		try {
+			const res = await ky
+				.get("https://lrclib.net/api/get", {
+					searchParams,
+					timeout,
+					headers: { "User-Agent": userAgent },
+				})
+				.json<LrclibResponse>();
+
+			const parsed = parseLrclibResult(res);
+			if (parsed) return parsed;
+		} catch (getErr) {
+			const status = (getErr as HTTPError)?.response?.status;
+			if (status !== 404) {
+				logger.warn(
+					`[Lyrics] LRCLIB get error: ${getErr instanceof Error ? getErr.message : getErr}`,
+				);
+			}
+		}
+
+		if (searchParams.duration) {
+			delete searchParams.duration;
+			try {
+				const res = await ky
+					.get("https://lrclib.net/api/get", {
+						searchParams,
+						timeout,
+						headers: { "User-Agent": userAgent },
+					})
+					.json<LrclibResponse>();
+
+				const parsed = parseLrclibResult(res);
+				if (parsed) return parsed;
+			} catch (retryErr) {
+				const status = (retryErr as HTTPError)?.response?.status;
+				if (status !== 404) {
+					logger.warn(
+						`[Lyrics] LRCLIB get (no duration) error: ${retryErr instanceof Error ? retryErr.message : retryErr}`,
+					);
+				}
+			}
+		}
+
+		try {
+			const searchRes = await ky
+				.get("https://lrclib.net/api/search", {
+					searchParams: {
+						q: `${trackTitle} ${trackArtist}`.trim(),
+					},
+					timeout,
+					headers: { "User-Agent": userAgent },
+				})
+				.json<LrclibResponse[]>();
+
+			if (Array.isArray(searchRes) && searchRes.length > 0) {
+				const withSynced = searchRes.find(
+					(item) => item.syncedLyrics && item.syncedLyrics.trim().length > 0,
+				);
+				const candidate = withSynced || searchRes[0];
+				if (candidate) {
+					const parsed = parseLrclibResult(candidate);
+					if (parsed) return parsed;
+				}
+			}
+		} catch (searchErr) {
+			logger.warn(
+				`[Lyrics] LRCLIB search error: ${searchErr instanceof Error ? searchErr.message : searchErr}`,
+			);
+		}
+	} catch (e) {
+		logger.error(
+			`[Lyrics] Failed to fetch from LRCLIB: ${e instanceof Error ? e.message : e}`,
+		);
+	}
+
+	return null;
+}
+
+/**
+ * Fetch lyrics from Musixmatch.
+ * @param ctx The command or component context.
+ * @param trackTitle The title of the track.
+ * @param trackArtist The artist of the track.
+ * @param isrc Optional ISRC code of the track.
  */
 export async function fetchMusixmatchFallback(
 	ctx: CommandContext | GuildComponentContext<"Button">,

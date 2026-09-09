@@ -14,6 +14,7 @@ import {
 import { EmbedColors } from "seyfert/lib/common";
 import { ButtonStyle, MessageFlags } from "seyfert/lib/types";
 import {
+	fetchLrclibFallback,
 	fetchMusixmatchFallback,
 	PlayerSaver,
 	updateLyricsEmbed,
@@ -42,7 +43,14 @@ export default class LyricsEnableComponent extends ComponentCommand {
 		if (!track) return;
 		const { cmd, component } = await ctx.getLocale();
 
-		await ctx.deferReply();
+		try {
+			await ctx.deferReply();
+		} catch (deferErr) {
+			client.logger.warn(
+				`[Lyrics Component] Failed to deferReply: ${deferErr instanceof Error ? deferErr.message : deferErr}`,
+			);
+			return;
+		}
 
 		let lyrics: LyricsResult | null =
 			player.getData<LyricsResult | undefined>("lyrics") ?? null;
@@ -77,8 +85,17 @@ export default class LyricsEnableComponent extends ComponentCommand {
 		}
 
 		if (!lyrics) {
+			lyrics = await fetchLrclibFallback(
+				ctx,
+				track.info.title ?? "",
+				track.info.author ?? "",
+				track.info.duration ?? undefined,
+			);
+		}
+
+		if (!lyrics) {
 			client.logger.info(
-				`[Lyrics Component] Lavalink failed. Trying Musixmatch fallback for: ${track.info.title}`,
+				`[Lyrics Component] Lavalink & LRCLIB failed. Trying Musixmatch fallback for: ${track.info.title}`,
 			);
 			lyrics = await fetchMusixmatchFallback(
 				ctx,
@@ -88,16 +105,20 @@ export default class LyricsEnableComponent extends ComponentCommand {
 			);
 		}
 
-		if (!lyrics || !Array.isArray(lyrics.lines) || lyrics.lines.length === 0)
-			return ctx.editOrReply({
-				flags: MessageFlags.Ephemeral,
-				embeds: [
-					{
-						color: EmbedColors.Red,
-						description: `${client.config.emoji.no} ${component.lyrics.no_lyrics}`,
-					},
-				],
-			});
+		if (!lyrics || !Array.isArray(lyrics.lines) || lyrics.lines.length === 0) {
+			await ctx
+				.editOrReply({
+					flags: MessageFlags.Ephemeral,
+					embeds: [
+						{
+							color: EmbedColors.Red,
+							description: `${client.config.emoji.no} ${component.lyrics.no_lyrics}`,
+						},
+					],
+				})
+				.catch(() => null);
+			return;
+		}
 
 		const lines: string = lyrics.lines
 			.slice(0, client.config.lyricsLines)
@@ -134,13 +155,21 @@ export default class LyricsEnableComponent extends ComponentCommand {
 				),
 		);
 
-		const message: WebhookMessage = await ctx.editOrReply(
-			{
-				components: [components],
-				flags: MessageFlags.IsComponentsV2,
-			},
-			true,
-		);
+		let message: WebhookMessage;
+		try {
+			message = await ctx.editOrReply(
+				{
+					components: [components],
+					flags: MessageFlags.IsComponentsV2,
+				},
+				true,
+			);
+		} catch (err) {
+			client.logger.warn(
+				`[Lyrics Component] Failed to reply lyrics embed: ${err instanceof Error ? err.message : err}`,
+			);
+			return;
+		}
 
 		const isEnabled: boolean = !!player.getData<boolean | undefined>(
 			"lyricsEnabled",
@@ -163,7 +192,10 @@ export default class LyricsEnableComponent extends ComponentCommand {
 			player.deleteData("lyricsInterval");
 		}
 
-		if (lyrics.provider === "Musixmatch") {
+		const hasTimestamps = lyrics.lines.some(
+			(l) => typeof l.timestamp === "number" && l.timestamp > 0,
+		);
+		if (hasTimestamps) {
 			let lastIndex = -1;
 			const intervalId = setInterval(async () => {
 				if (

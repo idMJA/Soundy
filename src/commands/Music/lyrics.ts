@@ -12,6 +12,7 @@ import {
 } from "seyfert";
 import { SoundyCategory } from "#soundy/types";
 import {
+	fetchLrclibFallback,
 	fetchMusixmatchFallback,
 	getAllTopTracks,
 	type RecommendationTrack,
@@ -257,22 +258,39 @@ export default class LyricsCommand extends Command {
 		}
 
 		if (!lavalinkSuccess && targetTrack) {
-			client.logger.info(
-				`[Lyrics] Lavalink failed. Trying Musixmatch fallback for: ${songTitle}`,
-			);
-			const fallbackResult = await fetchMusixmatchFallback(
+			const lrclibResult = await fetchLrclibFallback(
 				ctx,
 				targetTrack.info.title ?? "",
 				targetTrack.info.author ?? "",
-				targetTrack.info.isrc ?? undefined,
+				targetTrack.info.duration ?? undefined,
 			);
 
-			if (fallbackResult) {
-				lyricsText = fallbackResult.text || "";
-				isSynced = fallbackResult.lines.some(
+			if (lrclibResult) {
+				lyricsText = lrclibResult.text || "";
+				isSynced = lrclibResult.lines.some(
 					(l) => l.timestamp && l.timestamp > 0,
 				);
-				lyricsProvider = fallbackResult.provider || "Musixmatch";
+				lyricsProvider = lrclibResult.provider || "LRCLIB";
+			}
+
+			if (!lyricsText) {
+				client.logger.info(
+					`[Lyrics] LRCLIB failed. Trying Musixmatch fallback for: ${songTitle}`,
+				);
+				const fallbackResult = await fetchMusixmatchFallback(
+					ctx,
+					targetTrack.info.title ?? "",
+					targetTrack.info.author ?? "",
+					targetTrack.info.isrc ?? undefined,
+				);
+
+				if (fallbackResult) {
+					lyricsText = fallbackResult.text || "";
+					isSynced = fallbackResult.lines.some(
+						(l) => l.timestamp && l.timestamp > 0,
+					);
+					lyricsProvider = fallbackResult.provider || "Musixmatch";
+				}
 			}
 		}
 

@@ -29,6 +29,7 @@ export * from "./Lavalink/Events/NodeLog";
 export * from "./Lavalink/Player/Autoplay";
 export * from "./Lavalink/Player/Listener";
 export * from "./Lavalink/Player/Lyrics";
+export * from "./Lavalink/Player/Player";
 export * from "./Lavalink/Player/QueueWatcher";
 export * from "./Lavalink/Player/Requester";
 export * from "./Lavalink/Player/Saver";

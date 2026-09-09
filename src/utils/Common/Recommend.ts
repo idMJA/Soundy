@@ -70,15 +70,32 @@ export const getTopTrack = ["indonesia", "united states", "japan"].map(
 	}),
 );
 
+let topTracksCache:
+	| { country: string; tracks: RecommendationTrack[] }[]
+	| null = null;
+let topTracksCacheExpiry = 0;
+
 /**
  * Get all top tracks from all countries in getTopTrack
  * @returns Promise<{ country: string; tracks: RecommendationTrack[] }[]>
  */
 export async function getAllTopTracks() {
-	return Promise.all(
+	const now = Date.now();
+	if (topTracksCache && now < topTracksCacheExpiry) {
+		return topTracksCache;
+	}
+
+	const result = await Promise.all(
 		getTopTrack.map(async ({ country, getTracks }) => ({
 			country,
 			tracks: await getTracks(),
 		})),
 	);
+
+	if (result.some(({ tracks }) => tracks.length > 0)) {
+		topTracksCache = result;
+		topTracksCacheExpiry = now + 15 * 60 * 1000;
+	}
+
+	return result;
 }
