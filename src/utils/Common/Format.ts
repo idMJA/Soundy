@@ -52,3 +52,11 @@ export function formatBytes(bytes: number) {
 	const mb = bytes / 1024 / 1024;
 	return `${mb.toFixed(2)} MB`;
 }
+
+/**
+ * Escape markdown formatting characters in text
+ * @param text The text to escape
+ */
+export function escapeMarkdown(text: string): string {
+	return text.replace(/[*_~`|\\]/g, "\\$&");
+}

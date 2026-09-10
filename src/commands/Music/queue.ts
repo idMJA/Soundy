@@ -8,7 +8,12 @@ import {
 	Middlewares,
 } from "seyfert";
 import { SoundyCategory } from "#soundy/types";
-import { EmbedPaginator, SoundyOptions, TimeFormat } from "#soundy/utils";
+import {
+	EmbedPaginator,
+	escapeMarkdown,
+	SoundyOptions,
+	TimeFormat,
+} from "#soundy/utils";
 
 @Declare({
 	name: "queue",
@@ -61,7 +66,7 @@ export default class QueueCommand extends Command {
 			firstEmbed.addFields({
 				name: `${client.config.emoji.play} ${component.queue.now_playing}:`,
 				value:
-					`${component.queue.track({ track: `**[${currentTrack.info.title}](${currentTrack.info.uri})**`, author: `\`${author}\`` })} - \`${TimeFormat.toDotted(currentTrack.info.duration)}\`\n` +
+					`${component.queue.track({ track: `**[${escapeMarkdown(currentTrack.info.title)}](${currentTrack.info.uri})**`, author: `\`${author}\`` })} - \`${TimeFormat.toDotted(currentTrack.info.duration)}\`\n` +
 					`${component.queue.requested_by({ user: `<@${(currentTrack.requester as User).id}>` })}`,
 			});
 		}
@@ -79,7 +84,7 @@ export default class QueueCommand extends Command {
 						? `${track.info.title.slice(0, 42)}...`
 						: track.info.title;
 
-				return `${i + 1}. ${component.queue.track({ track: `**[${title}](${track.info.uri})**`, author: `\`${trackAuthor}\`` })}\n┗ \`${TimeFormat.toDotted(track.info.duration)}\` • <@${(track.requester as User).id}>`;
+				return `${i + 1}. ${component.queue.track({ track: `**[${escapeMarkdown(title)}](${track.info.uri})**`, author: `\`${trackAuthor}\`` })}\n┗ \`${TimeFormat.toDotted(track.info.duration)}\` • <@${(track.requester as User).id}>`;
 			});
 
 			if (trackListStrings.length > 0) {
@@ -109,7 +114,7 @@ export default class QueueCommand extends Command {
 				pageEmbed.addFields({
 					name: `${client.config.emoji.play} ${component.queue.now_playing}:`,
 					value:
-						`${component.queue.track({ track: `**[${currentTrack.info.title}](${currentTrack.info.uri})**`, author: `\`${author}\`` })} - \`${TimeFormat.toDotted(currentTrack.info.duration)}\`\n` +
+						`${component.queue.track({ track: `**[${escapeMarkdown(currentTrack.info.title)}](${currentTrack.info.uri})**`, author: `\`${author}\`` })} - \`${TimeFormat.toDotted(currentTrack.info.duration)}\`\n` +
 						`${component.queue.requested_by({ user: `<@${(currentTrack.requester as User).id}>` })}`,
 				});
 			}
@@ -125,7 +130,7 @@ export default class QueueCommand extends Command {
 						? `${track.info.title.slice(0, 42)}...`
 						: track.info.title;
 
-				return `${i + index + 1}. ${component.queue.track({ track: `**[${title}](${track.info.uri})**`, author: `\`${trackAuthor}\`` })}\n┗ \`${TimeFormat.toDotted(track.info.duration)}\` • <@${(track.requester as User).id}>`;
+				return `${i + index + 1}. ${component.queue.track({ track: `**[${escapeMarkdown(title)}](${track.info.uri})**`, author: `\`${trackAuthor}\`` })}\n┗ \`${TimeFormat.toDotted(track.info.duration)}\` • <@${(track.requester as User).id}>`;
 			});
 
 			if (trackListStrings.length > 0) {

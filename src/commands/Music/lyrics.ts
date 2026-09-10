@@ -45,87 +45,113 @@ const options = {
 			const { client, member, guildId } = interaction;
 			if (!guildId) return;
 
-			const { autocomplete } = client.t(
-				await client.database.getLocale(guildId),
-			);
-
-			if (!client.manager.useable)
-				return interaction.respond([
-					{ name: autocomplete.music.no_nodes.toString(), value: "noNodes" },
-				]);
-
-			const voice = client.cache.voiceStates?.get(member?.id ?? "", guildId);
-			if (!voice)
-				return interaction.respond([
-					{ name: autocomplete.music.no_voice.toString(), value: "noVoice" },
-				]);
-
-			const query = interaction.getInput();
-			if (!query) {
-				const allTopTracks = await getAllTopTracks();
-				const recommendedTracks: string[] = allTopTracks.flatMap(
-					({ tracks }: { tracks: RecommendationTrack[] }) =>
-						tracks.map(
-							(track: RecommendationTrack) => `${track.name} ${track.artist}`,
-						),
+			try {
+				const { autocomplete } = client.t(
+					await client.database.getLocale(guildId),
 				);
-				const allTracks = await Promise.all(
-					recommendedTracks.slice(0, 10).map(async (trackQuery: string) => {
-						const { tracks } = await client.manager.search(
-							trackQuery,
-							client.config.defaultSearchPlatform,
-						);
-						return tracks.slice(0, 2);
-					}),
-				);
-				const flatTracks = allTracks.flat();
-				const filteredTracks = flatTracks.filter(
-					(t): t is Exclude<(typeof flatTracks)[number], undefined> =>
-						t !== undefined,
-				);
-				for (let i = filteredTracks.length - 1; i > 0; i--) {
-					const j = Math.floor(Math.random() * (i + 1));
-					const temp = filteredTracks[i];
-					filteredTracks[i] = filteredTracks[j] as Exclude<
-						(typeof flatTracks)[number],
-						undefined
-					>;
-					filteredTracks[j] = temp as Exclude<
-						(typeof flatTracks)[number],
-						undefined
-					>;
+
+				if (!client.manager.useable) {
+					await interaction
+						.respond([
+							{
+								name: autocomplete.music.no_nodes.toString(),
+								value: "noNodes",
+							},
+						])
+						.catch(() => null);
+					return;
 				}
-				return interaction.respond(
-					filteredTracks.slice(0, 10).map((track) => {
-						const duration = track.info.isStream
-							? "LIVE"
-							: (TimeFormat.toDotted(track.info.duration) ?? "Unknown");
-						return {
-							name: `${track.info.title.slice(0, 20)} (${duration}) - ${track.info.author.slice(0, 30)}`,
-							value: track.info.uri ?? "",
-						};
-					}),
+
+				const voice = client.cache.voiceStates?.get(member?.id ?? "", guildId);
+				if (!voice) {
+					await interaction
+						.respond([
+							{
+								name: autocomplete.music.no_voice.toString(),
+								value: "noVoice",
+							},
+						])
+						.catch(() => null);
+					return;
+				}
+
+				const query = interaction.getInput();
+				if (!query) {
+					const allTopTracks = await getAllTopTracks();
+					const recommendedTracks: string[] = allTopTracks.flatMap(
+						({ tracks }: { tracks: RecommendationTrack[] }) =>
+							tracks.map(
+								(track: RecommendationTrack) => `${track.name} ${track.artist}`,
+							),
+					);
+					const allTracks = await Promise.all(
+						recommendedTracks.slice(0, 10).map(async (trackQuery: string) => {
+							const { tracks } = await client.manager.search(
+								trackQuery,
+								client.config.defaultSearchPlatform,
+							);
+							return tracks.slice(0, 2);
+						}),
+					);
+					const flatTracks = allTracks.flat();
+					const filteredTracks = flatTracks.filter(
+						(t): t is Exclude<(typeof flatTracks)[number], undefined> =>
+							t !== undefined,
+					);
+					for (let i = filteredTracks.length - 1; i > 0; i--) {
+						const j = Math.floor(Math.random() * (i + 1));
+						const temp = filteredTracks[i];
+						filteredTracks[i] = filteredTracks[j] as Exclude<
+							(typeof flatTracks)[number],
+							undefined
+						>;
+						filteredTracks[j] = temp as Exclude<
+							(typeof flatTracks)[number],
+							undefined
+						>;
+					}
+					await interaction
+						.respond(
+							filteredTracks.slice(0, 10).map((track) => {
+								const duration = track.info.isStream
+									? "LIVE"
+									: (TimeFormat.toDotted(track.info.duration) ?? "Unknown");
+								return {
+									name: `${track.info.title.slice(0, 20)} (${duration}) - ${track.info.author.slice(0, 30)}`,
+									value: track.info.uri ?? "",
+								};
+							}),
+						)
+						.catch(() => null);
+					return;
+				}
+				const { tracks } = await client.manager.search(
+					query,
+					client.config.defaultSearchPlatform,
 				);
+				if (!tracks.length) {
+					await interaction
+						.respond([{ name: "No tracks found", value: "noTracks" }])
+						.catch(() => null);
+					return;
+				}
+
+				await interaction
+					.respond(
+						tracks.slice(0, 25).map((track) => {
+							const duration = track.info.isStream
+								? "LIVE"
+								: (TimeFormat.toDotted(track.info.duration) ?? "Unknown");
+							return {
+								name: `${track.info.title.slice(0, 20)} (${duration}) - ${track.info.author.slice(0, 30)}`,
+								value: track.info.uri ?? "",
+							};
+						}),
+					)
+					.catch(() => null);
+			} catch {
+				// Silently ignore expired interactions
 			}
-			const { tracks } = await client.manager.search(
-				query,
-				client.config.defaultSearchPlatform,
-			);
-			if (!tracks.length)
-				return interaction.respond([
-					{ name: "No tracks found", value: "noTracks" },
-				]);
-			await interaction.respond(
-				tracks.slice(0, 25).map((track) => {
-					const duration = track.info.isStream
-						? "LIVE"
-						: (TimeFormat.toDotted(track.info.duration) ?? "Unknown");
-					return {
-						name: `${track.info.title.slice(0, 20)} (${duration}) - ${track.info.author.slice(0, 30)}`,
-						value: track.info.uri ?? "",
-					};
-				}),
-			);
 		},
 	}),
 };

@@ -6,6 +6,8 @@ export default createEvent({
 		name: "interactionCreate",
 	},
 	async run(interaction, client) {
+		if (!interaction.isChatInput?.()) return;
+
 		const commandInteraction = interaction as ChatInputCommandInteraction;
 		const { guildId } = commandInteraction;
 

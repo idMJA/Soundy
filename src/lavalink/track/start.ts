@@ -5,6 +5,7 @@ import { LavalinkEventTypes } from "#soundy/types";
 import {
 	createLavalinkEvent,
 	createNowPlayingEmbed,
+	escapeMarkdown,
 	PlayerSaver,
 } from "#soundy/utils";
 
@@ -93,7 +94,7 @@ export default createLavalinkEvent({
 				if (voiceStatusEnabled) {
 					await voice
 						.setVoiceStatus(
-							`♪ **${track.info.title}** by **${track.info.author}**`,
+							`♪ **${escapeMarkdown(track.info.title)}** by **${escapeMarkdown(track.info.author)}**`,
 						)
 						.catch(() => null);
 				}
