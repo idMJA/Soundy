@@ -34,6 +34,7 @@ export * from "./Lavalink/Player/QueueWatcher";
 export * from "./Lavalink/Player/Requester";
 export * from "./Lavalink/Player/Saver";
 export * from "./Lavalink/Player/Setup";
+export * from "./Lavalink/Player/Transitions";
 
 // UI utilities
 export * from "./UI/Paginator";

@@ -1,7 +1,11 @@
 import type { Player } from "lavalink-client";
 import { broadcastPlayerDisconnection } from "#soundy/api";
 import { LavalinkEventTypes } from "#soundy/types";
-import { createLavalinkEvent, PlayerSaver } from "#soundy/utils";
+import {
+	clearNextTrack,
+	createLavalinkEvent,
+	PlayerSaver,
+} from "#soundy/utils";
 
 export default createLavalinkEvent({
 	name: "playerDestroy",
@@ -103,6 +107,7 @@ export default createLavalinkEvent({
 		player.deleteData("lyricsRequester");
 
 		await playerSaver.clearLyricsData(player.guildId);
+		await clearNextTrack(client, player);
 
 		broadcastPlayerDisconnection(player.guildId);
 	},

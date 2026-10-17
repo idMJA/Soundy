@@ -7,6 +7,7 @@ import {
 	createNowPlayingEmbed,
 	escapeMarkdown,
 	PlayerSaver,
+	syncNextTrack,
 } from "#soundy/utils";
 
 export default createLavalinkEvent({
@@ -165,6 +166,12 @@ export default createLavalinkEvent({
 			client.logger.error(
 				"[Music] Failed to send trackStart message or save player state:",
 				err,
+			);
+		} finally {
+			syncNextTrack(client, player).catch((err) =>
+				client.logger.warn(
+					`[NodeLink Gapless] Failed to sync next track: ${err}`,
+				),
 			);
 		}
 	},

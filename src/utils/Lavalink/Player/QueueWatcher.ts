@@ -7,6 +7,7 @@ import type {
 import type { Logger } from "seyfert";
 import type Soundy from "#soundy/client";
 import { PlayerSaver } from "./Saver";
+import { syncNextTrack } from "./Transitions";
 
 /**
  * Custom Queue Watcher that saves queue changes to sessions.json
@@ -156,6 +157,20 @@ export class SoundyQueueWatcher implements QueueChangesWatcher {
 	}
 
 	/**
+	 * Trigger gapless track preloading if player is active.
+	 */
+	private syncGaplessIfPlaying(guildId: string, eventName: string): void {
+		const player = this.client.manager.getPlayer(guildId);
+		if (player?.playing) {
+			syncNextTrack(this.client, player).catch((error) => {
+				this.logger.debug(
+					`[QueueWatcher] Failed to sync next track after ${eventName} for guild ${guildId}: ${error}`,
+				);
+			});
+		}
+	}
+
+	/**
 	 * Called when queue is shuffled
 	 */
 	shuffled(
@@ -173,6 +188,8 @@ export class SoundyQueueWatcher implements QueueChangesWatcher {
 				error,
 			);
 		});
+
+		this.syncGaplessIfPlaying(guildId, "shuffle");
 	}
 
 	/**
@@ -194,22 +211,6 @@ export class SoundyQueueWatcher implements QueueChangesWatcher {
 			`[QueueWatcher] ${guildName}: ${tracks.length} track(s) added to queue at position #${position}. First 5: ${first5Titles}`,
 		);
 
-		// Add debug info about the queue state
-		// const player = this.client.manager.getPlayer(guildId);
-		// if (player) {
-		// 	this.logger.debug(
-		// 		`[QueueWatcher] Queue state - Current: ${player.queue.current?.info?.title || "None"}, Queue length: ${player.queue.tracks.length}, Total tracks: ${player.queue.tracks.length + (player.queue.current ? 1 : 0)}`,
-		// 	);
-
-		// Log raw queue structure for debugging PlayerSaver
-		// 	this.logger.debug(
-		// 		`[QueueWatcher] Raw queue state - Current: ${player.queue.current?.info?.title || "None"}, Queue tracks: ${player.queue.tracks.length}, Track names: [${player.queue.tracks
-		// 			.slice(0, 5)
-		// 			.map((t) => t.info?.title)
-		// 			.join(", ")}]`,
-		// 	);
-		// }
-
 		// Save queue state after adding tracks with a small delay to account for any async operations
 		setTimeout(() => {
 			this.savePlayerData(guildId).catch((error) => {
@@ -218,6 +219,8 @@ export class SoundyQueueWatcher implements QueueChangesWatcher {
 					error,
 				);
 			});
+
+			this.syncGaplessIfPlaying(guildId, "adding tracks");
 		}, 100);
 	}
 
@@ -246,5 +249,7 @@ export class SoundyQueueWatcher implements QueueChangesWatcher {
 				error,
 			);
 		});
+
+		this.syncGaplessIfPlaying(guildId, "removing tracks");
 	}
 }

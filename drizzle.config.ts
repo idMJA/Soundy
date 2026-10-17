@@ -1,5 +1,5 @@
-import { Environment } from "#soundy/config";
 import type { Config } from "drizzle-kit";
+import { Environment } from "#soundy/config";
 
 export default {
 	schema: "./src/db/schema.ts",
