@@ -1,10 +1,26 @@
-import type {
-	NodeLinkNode,
-	Player,
-	Track,
-	UnresolvedTrack,
-} from "lavalink-client";
+import type { Player, Track, UnresolvedTrack } from "lavalink-client";
 import type Soundy from "#soundy/client";
+
+/**
+ * Determine which track will play next according to queue state and repeatMode.
+ */
+function getExpectedNextTrack(
+	player: Player,
+): Track | UnresolvedTrack | undefined {
+	if (player.repeatMode === "track") {
+		return player.queue.current ?? undefined;
+	}
+
+	if (player.queue.tracks.length > 0) {
+		return player.queue.tracks[0];
+	}
+
+	if (player.repeatMode === "queue") {
+		return player.queue.current ?? undefined;
+	}
+
+	return undefined;
+}
 
 /**
  * Synchronize the upcoming track with NodeLink's gapless preload buffer.
@@ -20,6 +36,11 @@ export async function syncNextTrack(
 ): Promise<void> {
 	if (!player?.node?.isNodeLink()) return;
 
+	if (player.getData<boolean>("syncNextTrackInFlight")) {
+		return;
+	}
+	player.setData("syncNextTrackInFlight", true);
+
 	try {
 		const isGapless = await client.database.getGapless(player.guildId);
 		if (!isGapless) {
@@ -27,8 +48,14 @@ export async function syncNextTrack(
 			return;
 		}
 
-		const nextTrack = player.queue.tracks[0];
-		if (!nextTrack) {
+		// Live streams cannot transition gapless
+		if (player.queue.current?.info?.isStream) {
+			await clearNextTrack(client, player);
+			return;
+		}
+
+		const nextTrack = getExpectedNextTrack(player);
+		if (!nextTrack || nextTrack.info?.isStream) {
 			await clearNextTrack(client, player);
 			return;
 		}
@@ -58,11 +85,7 @@ export async function syncNextTrack(
 			return;
 		}
 
-		const node = player.node as NodeLinkNode;
-		await node.setNextTrackGapLess(
-			player,
-			nextTrack as Track | UnresolvedTrack,
-		);
+		await player.node.setNextTrackGapLess(player, nextTrack);
 		player.setData("lastPreloadedTrackEncoded", nextTrack.encoded);
 
 		client.logger.debug(
@@ -72,6 +95,8 @@ export async function syncNextTrack(
 		client.logger.warn(
 			`[NodeLink Gapless] Failed to sync next track for guild ${player.guildId}: ${error}`,
 		);
+	} finally {
+		player.deleteData("syncNextTrackInFlight");
 	}
 }
 
@@ -91,8 +116,7 @@ export async function clearNextTrack(
 		const lastPreloaded = player.getData<string>("lastPreloadedTrackEncoded");
 		if (!lastPreloaded) return;
 
-		const node = player.node as NodeLinkNode;
-		await node.removeNextTrackGapLess(player);
+		await player.node.removeNextTrackGapLess(player);
 		player.deleteData("lastPreloadedTrackEncoded");
 
 		client.logger.debug(

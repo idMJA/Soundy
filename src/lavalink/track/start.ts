@@ -131,11 +131,6 @@ export default createLavalinkEvent({
 						client.logger.info(
 							`[Music] Saved player for guild ${player.guildId}`,
 						);
-						syncNextTrack(client, player).catch((err) =>
-							client.logger.warn(
-								`[NodeLink Gapless] Failed to sync next track: ${err}`,
-							),
-						);
 						return;
 					}
 				} catch (error) {
@@ -167,15 +162,16 @@ export default createLavalinkEvent({
 			await playerSaver.savePlayer(player.guildId, safeData);
 			broadcastPlayerUpdate(player.guildId, player);
 			client.logger.info(`[Music] Saved player for guild ${player.guildId}`);
-			syncNextTrack(client, player).catch((err) =>
-				client.logger.warn(
-					`[NodeLink Gapless] Failed to sync next track: ${err}`,
-				),
-			);
 		} catch (err) {
 			client.logger.error(
 				"[Music] Failed to send trackStart message or save player state:",
 				err,
+			);
+		} finally {
+			syncNextTrack(client, player).catch((err) =>
+				client.logger.warn(
+					`[NodeLink Gapless] Failed to sync next track: ${err}`,
+				),
 			);
 		}
 	},
