@@ -89,6 +89,20 @@ export default {
 						disabled: "Voice status has been disabled for this server",
 					},
 				},
+				gapless: {
+					name: "gapless",
+					description: "Toggle gapless playback on this server",
+					options: {
+						enabled: {
+							name: "enabled",
+							description: "Enable or disable gapless playback for this server",
+						},
+					},
+					run: {
+						enabled: "Gapless playback has been enabled for this server",
+						disabled: "Gapless playback has been disabled for this server",
+					},
+				},
 			},
 		},
 		// Prefix Commands

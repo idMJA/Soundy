@@ -7,6 +7,7 @@ import type {
 import type { Logger } from "seyfert";
 import type Soundy from "#soundy/client";
 import { PlayerSaver } from "./Saver";
+import { syncNextTrack } from "./Transitions";
 
 /**
  * Custom Queue Watcher that saves queue changes to sessions.json
@@ -173,6 +174,15 @@ export class SoundyQueueWatcher implements QueueChangesWatcher {
 				error,
 			);
 		});
+
+		const player = this.client.manager.getPlayer(guildId);
+		if (player?.playing) {
+			syncNextTrack(this.client, player).catch((error) => {
+				this.logger.debug(
+					`[QueueWatcher] Failed to sync next track after shuffle for guild ${guildId}: ${error}`,
+				);
+			});
+		}
 	}
 
 	/**
@@ -218,6 +228,15 @@ export class SoundyQueueWatcher implements QueueChangesWatcher {
 					error,
 				);
 			});
+
+			const player = this.client.manager.getPlayer(guildId);
+			if (player?.playing) {
+				syncNextTrack(this.client, player).catch((error) => {
+					this.logger.debug(
+						`[QueueWatcher] Failed to sync next track after adding tracks for guild ${guildId}: ${error}`,
+					);
+				});
+			}
 		}, 100);
 	}
 
@@ -246,5 +265,14 @@ export class SoundyQueueWatcher implements QueueChangesWatcher {
 				error,
 			);
 		});
+
+		const player = this.client.manager.getPlayer(guildId);
+		if (player?.playing) {
+			syncNextTrack(this.client, player).catch((error) => {
+				this.logger.debug(
+					`[QueueWatcher] Failed to sync next track after removing tracks for guild ${guildId}: ${error}`,
+				);
+			});
+		}
 	}
 }

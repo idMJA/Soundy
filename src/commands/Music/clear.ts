@@ -6,7 +6,7 @@ import {
 	Middlewares,
 } from "seyfert";
 import { SoundyCategory } from "#soundy/types";
-import { SoundyOptions } from "#soundy/utils";
+import { clearNextTrack, SoundyOptions } from "#soundy/utils";
 
 @Declare({
 	name: "clearqueue",
@@ -35,6 +35,7 @@ export default class ClearQueueCommand extends Command {
 		if (!player) return;
 
 		player.queue.tracks.splice(0, player.queue.tracks.length);
+		await clearNextTrack(client, player);
 
 		await ctx.editOrReply({
 			embeds: [

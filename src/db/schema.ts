@@ -27,6 +27,8 @@ export const guild = sqliteTable("guild", {
 	voiceStatus: integer("voice_status", { mode: "boolean" })
 		.notNull()
 		.default(true),
+	// Gapless playback (NodeLink)
+	gapless: integer("gapless", { mode: "boolean" }).notNull().default(true),
 	// Timestamps
 	createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
 	updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),

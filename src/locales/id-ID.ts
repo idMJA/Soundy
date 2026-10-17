@@ -90,6 +90,21 @@ export default {
 						disabled: "Status suara telah dinonaktifkan untuk server ini",
 					},
 				},
+				gapless: {
+					name: "gapless",
+					description: "Aktifkan pemutaran gapless di server ini",
+					options: {
+						enabled: {
+							name: "enabled",
+							description:
+								"Aktifkan atau nonaktifkan pemutaran gapless untuk server ini",
+						},
+					},
+					run: {
+						enabled: "Pemutaran gapless telah diaktifkan untuk server ini",
+						disabled: "Pemutaran gapless telah dinonaktifkan untuk server ini",
+					},
+				},
 			},
 		},
 		// Prefix Commands

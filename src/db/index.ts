@@ -115,6 +115,7 @@ export class SoundyDatabase {
 			defaultVolume?: number;
 			setup?: ISetup | null;
 			prefix?: string;
+			gapless?: boolean;
 		}
 	>();
 
@@ -422,6 +423,52 @@ export class SoundyDatabase {
 				target: schema.guild.id,
 				set: { voiceStatus: enabled },
 			});
+	}
+
+	/**
+	 * Get gapless playback setting for a guild
+	 * @param guildId The guild ID
+	 */
+	public async getGapless(guildId: string): Promise<boolean> {
+		const cached = this.cache.get(guildId)?.gapless;
+		if (cached !== undefined) return cached;
+
+		const data = await this.db
+			.select({ gapless: schema.guild.gapless })
+			.from(schema.guild)
+			.where(eq(schema.guild.id, guildId))
+			.get();
+
+		const gapless = data?.gapless ?? true;
+		this.cache.set(guildId, {
+			...this.cache.get(guildId),
+			gapless,
+		});
+
+		return gapless;
+	}
+
+	/**
+	 * Set gapless playback setting for a guild
+	 * @param guildId The guild ID
+	 * @param enabled Whether gapless playback is enabled
+	 */
+	public async setGapless(guildId: string, enabled: boolean): Promise<void> {
+		await this.db
+			.insert(schema.guild)
+			.values({
+				id: guildId,
+				gapless: enabled,
+			})
+			.onConflictDoUpdate({
+				target: schema.guild.id,
+				set: { gapless: enabled },
+			});
+
+		this.cache.set(guildId, {
+			...this.cache.get(guildId),
+			gapless: enabled,
+		});
 	}
 
 	/**

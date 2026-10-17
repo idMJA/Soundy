@@ -1,6 +1,7 @@
 import { broadcastPlayerUpdate } from "#soundy/api";
 import { LavalinkEventTypes } from "#soundy/types";
 import {
+	clearNextTrack,
 	createLavalinkEvent,
 	createNullEmbed,
 	PlayerSaver,
@@ -127,6 +128,7 @@ export default createLavalinkEvent({
 		player.deleteData("lyricsRequester");
 
 		await playerSaver.clearLyricsData(player.guildId);
+		await clearNextTrack(client, player);
 
 		const mode247 = await client.database.get247Mode(player.guildId);
 		if (!mode247?.enabled) {
