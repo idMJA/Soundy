@@ -350,6 +350,18 @@ export default {
 				check_description: "Please wait while I check the connection...",
 			},
 		},
+		// Profile Commands
+		profile: {
+			name: "profile",
+			description:
+				"View your or another user's music streaming profile & statistics",
+			options: {
+				user: {
+					name: "user",
+					description: "The user to view music profile for",
+				},
+			},
+		},
 		// Autoplay Commands
 		autoplay: {
 			name: "autoplay",

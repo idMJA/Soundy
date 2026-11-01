@@ -372,6 +372,18 @@ export default {
 				check_description: "Mohon tunggu sementara aku memeriksa koneksi...",
 			},
 		},
+		// Profile Commands
+		profile: {
+			name: "profile",
+			description:
+				"Lihat profil & statistik streaming musik kamu atau pengguna lain",
+			options: {
+				user: {
+					name: "user",
+					description: "Pengguna yang ingin dilihat profil musiknya",
+				},
+			},
+		},
 		// Autoplay Commands
 		autoplay: {
 			name: "autoplay",

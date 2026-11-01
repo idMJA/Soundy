@@ -38,5 +38,6 @@ export * from "./Lavalink/Player/Transitions";
 
 // UI utilities
 export * from "./UI/Paginator";
+export * from "./UI/ProfileCard";
 export * from "./UI/SetupEmbed";
 export * from "./UI/Vote";

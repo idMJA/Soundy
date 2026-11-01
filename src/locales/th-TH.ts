@@ -340,6 +340,17 @@ export default {
 				check_description: "โปรดรอในขณะที่ฉันกำลังเช็คการเชื่อมต่อ...",
 			},
 		},
+		// Profile Commands
+		profile: {
+			name: "profile",
+			description: "ดูโปรไฟล์และสถิติการฟังเพลงของคุณหรือผู้ใช้อื่น",
+			options: {
+				user: {
+					name: "user",
+					description: "ผู้ใช้ที่คุณต้องการดูโปรไฟล์เพลง",
+				},
+			},
+		},
 		// Autoplay Commands
 		autoplay: {
 			name: "autoplay",

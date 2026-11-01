@@ -18,14 +18,7 @@ export let db: ReturnType<typeof drizzle>;
 export async function cleanOldStats() {
 	try {
 		if (!db) return;
-		pinoLogger.info(
-			"[Database] Cleaning up old statistics (>30 days) & expired votes...",
-		);
-		await db
-			.delete(schema.trackStats)
-			.where(
-				lt(schema.trackStats.lastPlayed, sql`datetime('now', '-30 days')`),
-			);
+		pinoLogger.info("[Database] Cleaning up expired votes...");
 		await db
 			.delete(schema.userVote)
 			.where(lt(schema.userVote.expiresAt, sql`datetime('now')`));
@@ -67,6 +60,35 @@ export async function initDatabase() {
 	}, 60000);
 
 	db = drizzle({ client });
+
+	try {
+		await db.run(sql`
+			CREATE TABLE IF NOT EXISTS user_listening_friends (
+				id TEXT PRIMARY KEY,
+				user_id TEXT NOT NULL,
+				friend_id TEXT NOT NULL,
+				time_ms INTEGER NOT NULL DEFAULT 0,
+				listen_count INTEGER NOT NULL DEFAULT 1,
+				last_listened TEXT DEFAULT CURRENT_TIMESTAMP
+			)
+		`);
+		await db.run(sql`
+			CREATE INDEX IF NOT EXISTS idx_track_stats_lookup ON track_stats (user_id, track_id, guild_id)
+		`);
+		await db.run(sql`
+			CREATE INDEX IF NOT EXISTS idx_track_stats_user_plays ON track_stats (user_id, play_count)
+		`);
+		await db.run(sql`
+			CREATE INDEX IF NOT EXISTS idx_user_stats_lookup ON user_stats (user_id, guild_id)
+		`);
+		await db.run(sql`
+			CREATE INDEX IF NOT EXISTS idx_friends_lookup ON user_listening_friends (user_id, friend_id)
+		`);
+	} catch (tableErr) {
+		pinoLogger.warn(
+			`[Database] Failed to ensure tables or indexes: ${tableErr}`,
+		);
+	}
 
 	// Trigger initial cleanup and schedule daily pruning (every 24h)
 	await cleanOldStats();
@@ -494,12 +516,6 @@ export class SoundyDatabase {
 		length?: number,
 		isStream?: boolean,
 	): Promise<void> {
-		const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-
-		await this.db
-			.delete(schema.trackStats)
-			.where(eq(schema.trackStats.lastPlayed, twoWeeksAgo.toISOString()));
-
 		const now = new Date().toISOString();
 
 		const existingTrack = await this.db
@@ -552,12 +568,6 @@ export class SoundyDatabase {
 	 * @param guildId The guild ID
 	 */
 	public async updateUserStats(userId: string, guildId: string): Promise<void> {
-		const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-
-		await this.db
-			.delete(schema.userStats)
-			.where(eq(schema.userStats.lastPlayed, twoWeeksAgo.toISOString()));
-
 		const now = new Date().toISOString();
 
 		const existingStats = await this.db
@@ -1614,6 +1624,185 @@ export class SoundyDatabase {
 				speedImprovement: 1,
 			};
 		}
+	}
+
+	/**
+	 * Update listening friends when multiple users are in the same voice channel.
+	 */
+	public async updateListeningFriends(
+		userIds: string[],
+		durationMs: number,
+	): Promise<void> {
+		if (userIds.length < 2) return;
+		const validDuration =
+			durationMs > 0 && durationMs < 86_400_000 ? durationMs : 0;
+		const now = new Date().toISOString();
+
+		for (let i = 0; i < userIds.length; i++) {
+			const u1 = userIds[i];
+			if (!u1) continue;
+			for (let j = 0; j < userIds.length; j++) {
+				if (i === j) continue;
+				const u2 = userIds[j];
+				if (!u2) continue;
+
+				try {
+					const existing = await this.db
+						.select()
+						.from(schema.userListeningFriends)
+						.where(
+							and(
+								eq(schema.userListeningFriends.userId, u1),
+								eq(schema.userListeningFriends.friendId, u2),
+							),
+						)
+						.get();
+
+					if (existing) {
+						await this.db
+							.update(schema.userListeningFriends)
+							.set({
+								timeMs: existing.timeMs + validDuration,
+								listenCount: existing.listenCount + 1,
+								lastListened: now,
+							})
+							.where(eq(schema.userListeningFriends.id, existing.id));
+					} else {
+						await this.db.insert(schema.userListeningFriends).values({
+							id: randomUUID(),
+							userId: u1,
+							friendId: u2,
+							timeMs: validDuration,
+							listenCount: 1,
+							lastListened: now,
+						});
+					}
+				} catch (err) {
+					pinoLogger.warn(
+						`[Database] Error updating listening friends for ${u1} <-> ${u2}: ${err}`,
+					);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Get comprehensive profile statistics for a user.
+	 */
+	public async getUserProfileStats(userId: string) {
+		const userTotalPlays = await this.db
+			.select({
+				total: sql<number>`COALESCE(sum(${schema.userStats.playCount}), 0)`.as(
+					"total",
+				),
+			})
+			.from(schema.userStats)
+			.where(eq(schema.userStats.userId, userId))
+			.get();
+		const totalSongs = Number(userTotalPlays?.total || 0);
+
+		let songRank = 1;
+		if (totalSongs > 0) {
+			const higherRanked = await this.db
+				.select({
+					count: sql<number>`count(distinct sub.user_id)`.as("count"),
+				})
+				.from(
+					sql`(SELECT user_id, sum(play_count) as total FROM user_stats GROUP BY user_id HAVING total > ${totalSongs}) AS sub`,
+				)
+				.get();
+			songRank = (higherRanked?.count ? Number(higherRanked.count) : 0) + 1;
+		}
+
+		const userListeningTime = await this.db
+			.select({
+				totalTime:
+					sql<number>`COALESCE(sum(${schema.trackStats.length} * ${schema.trackStats.playCount}), 0)`.as(
+						"totalTime",
+					),
+			})
+			.from(schema.trackStats)
+			.where(
+				and(
+					eq(schema.trackStats.userId, userId),
+					eq(schema.trackStats.isStream, false),
+				),
+			)
+			.get();
+		const totalTimeMs = Number(userListeningTime?.totalTime || 0);
+
+		let timeRank = 1;
+		if (totalTimeMs > 0) {
+			const higherTimeRanked = await this.db
+				.select({
+					count: sql<number>`count(distinct sub.user_id)`.as("count"),
+				})
+				.from(
+					sql`(SELECT user_id, sum(length * play_count) as total FROM track_stats WHERE is_stream = 0 GROUP BY user_id HAVING total > ${totalTimeMs}) AS sub`,
+				)
+				.get();
+			timeRank =
+				(higherTimeRanked?.count ? Number(higherTimeRanked.count) : 0) + 1;
+		}
+
+		const votesResult = await this.db
+			.select({
+				count: sql<number>`count(*)`.as("count"),
+			})
+			.from(schema.userVote)
+			.where(eq(schema.userVote.userId, userId))
+			.get();
+		const totalVotes = Number(votesResult?.count || 0);
+		const isPremium = await this.hasActivePremium(userId);
+
+		const topServers = await this.db
+			.select({
+				guildId: schema.userStats.guildId,
+				playCount: schema.userStats.playCount,
+			})
+			.from(schema.userStats)
+			.where(eq(schema.userStats.userId, userId))
+			.orderBy(desc(schema.userStats.playCount))
+			.limit(3);
+
+		const topFriends = await this.db
+			.select({
+				friendId: schema.userListeningFriends.friendId,
+				timeMs: schema.userListeningFriends.timeMs,
+				listenCount: schema.userListeningFriends.listenCount,
+			})
+			.from(schema.userListeningFriends)
+			.where(eq(schema.userListeningFriends.userId, userId))
+			.orderBy(
+				desc(schema.userListeningFriends.timeMs),
+				desc(schema.userListeningFriends.listenCount),
+			)
+			.limit(3);
+
+		const topTracks = await this.db
+			.select({
+				title: schema.trackStats.title,
+				author: schema.trackStats.author,
+				artwork: schema.trackStats.artwork,
+				length: schema.trackStats.length,
+				playCount: schema.trackStats.playCount,
+			})
+			.from(schema.trackStats)
+			.where(eq(schema.trackStats.userId, userId))
+			.orderBy(desc(schema.trackStats.playCount))
+			.limit(3);
+
+		return {
+			totalSongs,
+			songRank,
+			totalTimeMs,
+			timeRank,
+			totalVotes,
+			isPremium,
+			topServers,
+			topFriends,
+			topTracks,
+		};
 	}
 
 	/**

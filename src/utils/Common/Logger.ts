@@ -23,13 +23,36 @@ export const pinoLogger = pino({
 			: undefined,
 });
 
+function formatLogArg(arg: unknown): string {
+	if (
+		arg instanceof Error ||
+		(typeof arg === "object" &&
+			arg !== null &&
+			"message" in arg &&
+			("stack" in arg || "name" in arg))
+	) {
+		const err = arg as Error;
+		return err.stack || `${err.name || "Error"}: ${err.message}`;
+	}
+	if (typeof arg === "object" && arg !== null) {
+		try {
+			const json = JSON.stringify(arg);
+			if (json === "{}" && "message" in arg) {
+				return String((arg as { message: unknown }).message);
+			}
+			return json;
+		} catch {
+			return String(arg);
+		}
+	}
+	return String(arg);
+}
+
 /**
  * Redirect Seyfert internal logger events to Pino.
  */
 Logger.customize((_this, level, args) => {
-	const message = args
-		.map((a) => (typeof a === "object" ? JSON.stringify(a) : String(a)))
-		.join(" ");
+	const message = args.map(formatLogArg).join(" ");
 
 	switch (level) {
 		case LogLevels.Debug:

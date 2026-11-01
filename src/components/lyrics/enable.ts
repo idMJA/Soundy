@@ -43,6 +43,21 @@ export default class LyricsEnableComponent extends ComponentCommand {
 		if (!track) return;
 		const { cmd, component } = await ctx.getLocale();
 
+		if (track.info.isStream) {
+			await ctx
+				.editOrReply({
+					flags: MessageFlags.Ephemeral,
+					embeds: [
+						{
+							color: EmbedColors.Red,
+							description: `${client.config.emoji.no} ${component.lyrics.no_lyrics}`,
+						},
+					],
+				})
+				.catch(() => null);
+			return;
+		}
+
 		try {
 			await ctx.deferReply();
 		} catch (deferErr) {

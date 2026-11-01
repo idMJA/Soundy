@@ -81,6 +81,32 @@ export default createLavalinkEvent({
 			);
 			await client.database.updateUserStats(requesterId, player.guildId);
 
+			if (player.voiceChannelId) {
+				const allVoiceStates =
+					client.cache.voiceStates?.values(player.guildId) ?? [];
+				const listeners = allVoiceStates
+					.filter(
+						(vs) =>
+							vs.channelId === player.voiceChannelId &&
+							vs.userId !== client.botId,
+					)
+					.map((vs) => vs.userId);
+
+				if (listeners.length >= 2) {
+					const trackDuration =
+						track.info.duration && !track.info.isStream
+							? track.info.duration
+							: 180_000;
+					client.database
+						.updateListeningFriends(listeners, trackDuration)
+						.catch((err) =>
+							client.logger.warn(
+								`[Music] Failed to update listening friends: ${err}`,
+							),
+						);
+				}
+			}
+
 			const voice = await client.channels
 				.fetch(player.voiceChannelId)
 				.catch(() => null);

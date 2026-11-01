@@ -60,19 +60,24 @@ export default createEvent({
 					guildCount = 0;
 				const shardCount = client.gateway.totalShards;
 
-				const token = client.config.topgg.token.startsWith("Bearer ")
-					? client.config.topgg.token
-					: `Bearer ${client.config.topgg.token}`;
+				if (client.topgg) {
+					await client.topgg.postMetrics({
+						serverCount: guildCount,
+						shardCount: shardCount,
+					});
+				} else {
+					const token = client.config.topgg.token.startsWith("Bearer ")
+						? client.config.topgg.token
+						: `Bearer ${client.config.topgg.token}`;
 
-				await ky.patch("https://top.gg/api/v1/projects/@me/metrics", {
-					headers: {
-						Authorization: token,
-					},
-					json: {
-						server_count: guildCount,
-						shard_count: shardCount,
-					},
-				});
+					await ky.patch("https://top.gg/api/v1/projects/@me/metrics", {
+						headers: { Authorization: token },
+						json: {
+							server_count: guildCount,
+							shard_count: shardCount,
+						},
+					});
+				}
 
 				client.logger.info(
 					`[Top.gg] Metrics posted | Servers: ${guildCount} | Shards: ${shardCount}`,

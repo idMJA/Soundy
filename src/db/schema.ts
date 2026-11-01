@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 // =========================================
 // Guild Settings & Configuration
@@ -75,30 +75,41 @@ export const playlistTrack = sqliteTable("playlist_track", {
 // Statistics Tables
 // =========================================
 
-export const trackStats = sqliteTable("track_stats", {
-	id: text("id").primaryKey(),
-	trackId: text("track_id").notNull(),
-	title: text("title").notNull(),
-	author: text("author").notNull(),
-	uri: text("uri").notNull(),
-	artwork: text("artwork"),
-	length: integer("length"),
-	isStream: integer("is_stream", { mode: "boolean" }).default(false),
-	userId: text("user_id").notNull(), // Tambahkan userId untuk recently played
-	playCount: integer("play_count").notNull().default(1),
-	guildId: text("guild_id").notNull(),
-	lastPlayed: text("last_played").default(sql`CURRENT_TIMESTAMP`),
-	createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-});
+export const trackStats = sqliteTable(
+	"track_stats",
+	{
+		id: text("id").primaryKey(),
+		trackId: text("track_id").notNull(),
+		title: text("title").notNull(),
+		author: text("author").notNull(),
+		uri: text("uri").notNull(),
+		artwork: text("artwork"),
+		length: integer("length"),
+		isStream: integer("is_stream", { mode: "boolean" }).default(false),
+		userId: text("user_id").notNull(),
+		playCount: integer("play_count").notNull().default(1),
+		guildId: text("guild_id").notNull(),
+		lastPlayed: text("last_played").default(sql`CURRENT_TIMESTAMP`),
+		createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+	},
+	(t) => [
+		index("idx_track_stats_lookup").on(t.userId, t.trackId, t.guildId),
+		index("idx_track_stats_user_plays").on(t.userId, t.playCount),
+	],
+);
 
-export const userStats = sqliteTable("user_stats", {
-	id: text("id").primaryKey(),
-	userId: text("user_id").notNull(),
-	guildId: text("guild_id").notNull(),
-	playCount: integer("play_count").notNull().default(1),
-	lastPlayed: text("last_played").default(sql`CURRENT_TIMESTAMP`),
-	createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-});
+export const userStats = sqliteTable(
+	"user_stats",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id").notNull(),
+		guildId: text("guild_id").notNull(),
+		playCount: integer("play_count").notNull().default(1),
+		lastPlayed: text("last_played").default(sql`CURRENT_TIMESTAMP`),
+		createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+	},
+	(t) => [index("idx_user_stats_lookup").on(t.userId, t.guildId)],
+);
 
 // =========================================
 // User Vote & Premium
@@ -111,3 +122,20 @@ export const userVote = sqliteTable("user_vote", {
 	expiresAt: text("expires_at").notNull(),
 	type: text("type").notNull().default("vote"),
 });
+
+// =========================================
+// User Listening Friends (Listening Companion)
+// =========================================
+
+export const userListeningFriends = sqliteTable(
+	"user_listening_friends",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id").notNull(),
+		friendId: text("friend_id").notNull(),
+		timeMs: integer("time_ms").notNull().default(0),
+		listenCount: integer("listen_count").notNull().default(1),
+		lastListened: text("last_listened").default(sql`CURRENT_TIMESTAMP`),
+	},
+	(t) => [index("idx_friends_lookup").on(t.userId, t.friendId)],
+);

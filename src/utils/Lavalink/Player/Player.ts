@@ -18,13 +18,13 @@ export function isRateLimitOrRecoverableSearchError(
 	if (error) {
 		const message =
 			error instanceof Error
-				? `${error.message} ${error.stack || ""}`
+				? `${error.name}: ${error.message}`
 				: String(error);
 		if (
-			/rate\s*limit|too\s*many\s*requests|429|quota|blocked|status\s*code\s*429|ip\s*banned/i.test(
+			/rate\s*limit|too\s*many\s*requests|\b429\b|quota|blocked|ip\s*banned/i.test(
 				message,
 			) ||
-			/5\d{2}|internal\s*server\s*error|service\s*unavailable|bad\s*gateway|gateway\s*timeout/i.test(
+			/\b5\d{2}\b|internal\s*server\s*error|service\s*unavailable|bad\s*gateway|gateway\s*timeout/i.test(
 				message,
 			)
 		) {

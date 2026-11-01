@@ -14,9 +14,23 @@ interface VoteWebhookPayload {
 	user?: string;
 	user_id?: string;
 	platform_id?: string;
-	type?: "upvote" | "test" | "vote.create" | "webhook.test";
+	type?: string;
 	query?: string;
 	isWeekend?: boolean;
+	data?: {
+		user?: {
+			id?: string;
+			platform_id?: string;
+			name?: string;
+			avatar_url?: string;
+		};
+		project?: {
+			id?: string;
+			type?: string;
+			platform?: string;
+			platform_id?: string;
+		};
+	};
 }
 
 interface ServerResponse {
@@ -146,28 +160,47 @@ export function APIServer(client: UsingClient): void {
 
 					let isValid = false;
 
-					// Top.gg v1 HMAC SHA-256 Signature Verification
-					if (signature) {
-						const rawPayload =
-							typeof body === "string" ? body : JSON.stringify(body);
-						const expectedSignature = crypto
-							.createHmac("sha256", secret)
-							.update(rawPayload)
-							.digest("hex");
-
-						if (
-							crypto.timingSafeEqual(
-								Buffer.from(signature),
-								Buffer.from(expectedSignature),
-							)
-						) {
-							isValid = true;
-						}
+					// 1. Direct Authorization token check (dashboard setting)
+					if (authHeader && authHeader === secret) {
+						isValid = true;
 					}
 
-					// Fallback to legacy v0 Authorization header check
-					if (!isValid && authHeader && authHeader === secret) {
-						isValid = true;
+					// 2. Top.gg v1 HMAC SHA-256 Signature Verification: t={unix_timestamp},v1={hex_signature}
+					if (!isValid && signature) {
+						try {
+							const rawPayload =
+								typeof body === "string" ? body : JSON.stringify(body);
+							let timestamp = "";
+							let receivedSig = "";
+
+							const parts = signature.split(",");
+							for (const part of parts) {
+								const [k, v] = part.split("=");
+								if (k?.trim() === "t") timestamp = v?.trim() ?? "";
+								if (k?.trim() === "v1") receivedSig = v?.trim() ?? "";
+							}
+
+							const dataToSign = timestamp
+								? `${timestamp}.${rawPayload}`
+								: rawPayload;
+							const expectedSignature = crypto
+								.createHmac("sha256", secret)
+								.update(dataToSign)
+								.digest("hex");
+
+							if (
+								receivedSig &&
+								receivedSig.length === expectedSignature.length &&
+								crypto.timingSafeEqual(
+									Buffer.from(receivedSig),
+									Buffer.from(expectedSignature),
+								)
+							) {
+								isValid = true;
+							}
+						} catch {
+							isValid = false;
+						}
 					}
 
 					if (!isValid) {
@@ -181,8 +214,47 @@ export function APIServer(client: UsingClient): void {
 					}
 				}
 
-				const vote = body as VoteWebhookPayload;
-				const userId = vote.user_id || vote.platform_id || vote.user;
+				const vote = (
+					typeof body === "string" ? JSON.parse(body) : body
+				) as VoteWebhookPayload;
+
+				const isTest = vote.type === "webhook.test" || vote.type === "test";
+
+				const userId =
+					vote.data?.user?.platform_id ||
+					vote.data?.user?.id ||
+					vote.user_id ||
+					vote.platform_id ||
+					vote.user;
+
+				if (isTest) {
+					client.logger.info(
+						"[Vote] Received test webhook from Top.gg successfully",
+					);
+
+					if (userId) {
+						try {
+							const voter = (await client.users
+								.fetch(userId)
+								.catch(() => null)) || {
+								id: userId,
+								username: vote.data?.user?.name || "Top.gg Tester",
+								name: vote.data?.user?.name || "Top.gg Tester",
+								avatar: null,
+							};
+							await sendVoteWebhook(client, voter, true);
+						} catch (webhookErr) {
+							client.logger.warn(
+								`[Vote] Failed to send test vote notification to Discord: ${webhookErr}`,
+							);
+						}
+					}
+					set.status = 200;
+					return {
+						success: true,
+						message: "Test webhook received and Discord notification sent",
+					};
+				}
 
 				// Validate required user ID field
 				if (!userId) {
@@ -191,10 +263,11 @@ export function APIServer(client: UsingClient): void {
 				}
 
 				try {
-					const voter = await client.users.fetch(userId);
+					const voter = await client.users.fetch(userId).catch(() => null);
 					if (!voter) {
-						set.status = 404;
-						return { error: "User not found" };
+						client.logger.warn(`[Vote] User ${userId} not found in Discord`);
+						set.status = 200;
+						return { success: false, message: "User not found on Discord" };
 					}
 
 					// check if user already has an active vote premium to prevent spam

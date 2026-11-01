@@ -213,6 +213,18 @@ export default class LyricsCommand extends Command {
 				searchQuery = query;
 			}
 		} else if (track) {
+			if (track.info.isStream) {
+				await ctx.editOrReply({
+					embeds: [
+						new Embed()
+							.setColor(client.config.color.no)
+							.setDescription(
+								`${client.config.emoji.no} ${component.lyrics.no_lyrics}`,
+							),
+					],
+				});
+				return;
+			}
 			searchQuery = `${track.info.title} ${track.info.author}`;
 		} else {
 			await ctx.editOrReply({

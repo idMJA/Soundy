@@ -140,7 +140,8 @@ export async function fetchLrclibFallback(
 			track_name: trackTitle,
 			artist_name: trackArtist,
 		};
-		if (durationMs && durationMs > 0) {
+		// only attach duration if realistic (< 24h), preventing 400 Bad Request on live streams
+		if (durationMs && durationMs > 0 && durationMs < 86_400_000) {
 			searchParams.duration = Math.round(durationMs / 1000);
 		}
 

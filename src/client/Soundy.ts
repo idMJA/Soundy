@@ -1,3 +1,4 @@
+import { Api as TopggApi } from "@top-gg/sdk";
 import { Client, LimitedCollection } from "seyfert";
 import { HandleCommand } from "seyfert/lib/commands/handle";
 import { ActivityType, PresenceUpdateStatus } from "seyfert/lib/types";
@@ -47,6 +48,11 @@ export default class Soundy extends Client<true> {
 	 * Soundy database instance.
 	 */
 	public readonly database: SoundyDatabase;
+
+	/**
+	 * Top.gg API client instance.
+	 */
+	public readonly topgg: TopggApi | null = null;
 
 	/**
 	 * Create a new Soundy instance.
@@ -139,6 +145,9 @@ export default class Soundy extends Client<true> {
 		});
 		this.manager = new SoundyManager(this);
 		this.database = new SoundyDatabase();
+		if (this.config.topgg?.token) {
+			this.topgg = new TopggApi(this.config.topgg.token);
+		}
 		this.run();
 	}
 
@@ -146,8 +155,8 @@ export default class Soundy extends Client<true> {
 	 * Setup process event listeners
 	 */
 	private setupProcessListeners(): void {
-		process.on("unhandledRejection", (reason, promise) => {
-			this.logger.error("Unhandled Rejection at:", promise, "reason:", reason);
+		process.on("unhandledRejection", (reason) => {
+			this.logger.error("Unhandled Rejection:", reason);
 			this.logger.warn("Bot will continue running despite the error");
 		});
 

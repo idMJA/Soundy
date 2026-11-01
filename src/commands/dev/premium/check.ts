@@ -61,17 +61,44 @@ export default class CheckPremiumCommand extends SubCommand {
 				return;
 			}
 
-			const premiumStatus = await ctx.client.database.getPremiumStatus(
+			let currentStatus = await ctx.client.database.getPremiumStatus(
 				targetUser.id,
 			);
-			const premiumStats = await ctx.client.database.getPremiumStats(
+			let currentStats = await ctx.client.database.getPremiumStats(
 				targetUser.id,
 			);
 
 			if (
 				!(
-					premiumStatus ||
-					(isUserPremiumStats(premiumStats) && premiumStats.active)
+					currentStatus ||
+					(isUserPremiumStats(currentStats) && currentStats.active)
+				)
+			) {
+				if (ctx.client.topgg) {
+					try {
+						const topVote = await ctx.client.topgg
+							.getVote(targetUser.id)
+							.catch(() => null);
+						if (
+							topVote?.expiresAt &&
+							topVote.expiresAt.getTime() > Date.now()
+						) {
+							await ctx.client.database.addUserVote(targetUser.id);
+							currentStatus = await ctx.client.database.getPremiumStatus(
+								targetUser.id,
+							);
+							currentStats = await ctx.client.database.getPremiumStats(
+								targetUser.id,
+							);
+						}
+					} catch {}
+				}
+			}
+
+			if (
+				!(
+					currentStatus ||
+					(isUserPremiumStats(currentStats) && currentStats.active)
 				)
 			) {
 				await ctx.editOrReply({
@@ -89,24 +116,24 @@ export default class CheckPremiumCommand extends SubCommand {
 			// Format remaining time in a readable format
 			let formattedTime = "Unknown";
 			const premiumType =
-				(isUserPremiumStats(premiumStats) ? premiumStats.type : null) ||
-				(premiumStatus ? premiumStatus.type : "Unknown");
+				(isUserPremiumStats(currentStats) ? currentStats.type : null) ||
+				(currentStatus ? currentStatus.type : "Unknown");
 
-			if (premiumStatus) {
-				const ms = premiumStatus.timeRemaining;
+			if (currentStatus) {
+				const ms = currentStatus.timeRemaining;
 
 				const days = Math.floor(ms / (24 * 60 * 60 * 1000));
 				const hours = Math.floor(
 					(ms % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000),
 				);
-				const minutes = Math.floor((ms % (60 * 60 * 1000)) / (60 * 1000));
+				const minutes = Math.floor((ms % (60 * 1000)) / 1000);
 
 				formattedTime = `${days} days, ${hours} hours, ${minutes} minutes`;
 			}
 
 			const expiryDate =
-				isUserPremiumStats(premiumStats) && premiumStats.expiresAt
-					? premiumStats.expiresAt.toLocaleString()
+				isUserPremiumStats(currentStats) && currentStats.expiresAt
+					? currentStats.expiresAt.toLocaleString()
 					: "Unknown";
 
 			await ctx.editOrReply({

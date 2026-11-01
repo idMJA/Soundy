@@ -1,3 +1,4 @@
+import type { Track, UnresolvedTrack } from "lavalink-client";
 import {
 	Command,
 	type CommandContext,
@@ -87,13 +88,15 @@ const option = {
 							}),
 						);
 
-						const flatTracks = allTracks.flat();
+						const flatTracks: (Track | UnresolvedTrack)[] = allTracks.flat();
 						await interaction
 							.respond(
 								flatTracks
-									.filter((t) => Boolean(t?.info?.title && t?.info?.uri))
+									.filter((t: Track | UnresolvedTrack) =>
+										Boolean(t?.info?.title && t?.info?.uri),
+									)
 									.slice(0, 10)
-									.map((track) => {
+									.map((track: Track | UnresolvedTrack) => {
 										const duration = track.info.isStream
 											? "LIVE"
 											: (TimeFormat.toDotted(track.info.duration) ?? "Unknown");
@@ -131,9 +134,11 @@ const option = {
 				await interaction
 					.respond(
 						tracks
-							.filter((t) => Boolean(t?.info?.title && t?.info?.uri))
+							.filter((t: Track | UnresolvedTrack) =>
+								Boolean(t?.info?.title && t?.info?.uri),
+							)
 							.slice(0, 25)
-							.map((track) => {
+							.map((track: Track | UnresolvedTrack) => {
 								const duration = track.info.isStream
 									? "LIVE"
 									: (TimeFormat.toDotted(track.info.duration) ?? "Unknown");
